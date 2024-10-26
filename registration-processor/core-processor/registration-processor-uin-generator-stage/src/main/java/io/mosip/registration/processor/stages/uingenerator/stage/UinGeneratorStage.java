@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.*;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.json.JSONArray;
@@ -333,7 +332,8 @@ public class UinGeneratorStage extends MosipVerticleAPIManager {
 								description);
 					} else if (RegistrationType.UPDATE.toString().equalsIgnoreCase(object.getReg_type())
 							|| (RegistrationType.RES_UPDATE.toString()
-									.equalsIgnoreCase(object.getReg_type()))) {
+									.equalsIgnoreCase(object.getReg_type()))
+							|| RegistrationType.RENEWAL.toString().equalsIgnoreCase(object.getReg_type())) {
 						isTransactionSuccessful = uinUpdate(registrationId, registrationStatusDto.getRegistrationType(), uinField, object, demographicIdentity,
 								description);
 					}

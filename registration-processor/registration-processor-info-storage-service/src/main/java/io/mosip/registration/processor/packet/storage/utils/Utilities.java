@@ -10,14 +10,9 @@ import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import java.util.*;
-import io.mosip.registration.processor.core.idrepo.dto.IdRequestDTO1;
-
 
 import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONArray;
@@ -44,6 +39,7 @@ import io.mosip.registration.processor.core.exception.PacketManagerException;
 import io.mosip.registration.processor.core.exception.RegistrationProcessorCheckedException;
 import io.mosip.registration.processor.core.exception.RegistrationProcessorUnCheckedException;
 import io.mosip.registration.processor.core.exception.util.PlatformErrorMessages;
+import io.mosip.registration.processor.core.idrepo.dto.IdRequestDTO1;
 import io.mosip.registration.processor.core.idrepo.dto.IdResponseDTO1;
 import io.mosip.registration.processor.core.idrepo.dto.ResponseDTO;
 import io.mosip.registration.processor.core.logger.RegProcessorLogger;
@@ -619,7 +615,7 @@ public class Utilities {
 	public JSONObject getIdentityJSONObjectByHandle(String handle) throws ApisResourceAccessException {
 		if (handle != null) {
 			IdRequestDTO1 idRequestDTO = new IdRequestDTO1();
-			idRequestDTO.setId(handle.concat("@nin"));
+			idRequestDTO.setId(handle.toLowerCase() + "@nin");
 			idRequestDTO.setIdType("handle");
 
 			IdResponseDTO1 idResponseDto = (IdResponseDTO1) restClientService.postApi(ApiName.IDREPORETRIEVEIDBYID, "", "", idRequestDTO, IdResponseDTO1.class);

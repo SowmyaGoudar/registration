@@ -618,7 +618,8 @@ public class Utilities {
 			idRequestDTO.setId(handle.toLowerCase() + "@nin");
 			idRequestDTO.setIdType("handle");
 
-			IdResponseDTO1 idResponseDto = (IdResponseDTO1) restClientService.postApi(ApiName.IDREPORETRIEVEIDBYID, "", "", idRequestDTO, IdResponseDTO1.class);
+			IdResponseDTO1 idResponseDto = (IdResponseDTO1) restClientService.postApi(ApiName.RETRIEVEIDENTITY, "", "",
+					idRequestDTO, IdResponseDTO1.class);
 			regProcLogger.debug(LoggerFileConstant.SESSIONID.toString(), LoggerFileConstant.UIN.toString(), "",
 					"Utilities::getUINByHandle():: IDREPORETRIEVEIDBYID POST service call ended Successfully");
 

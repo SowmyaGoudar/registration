@@ -184,7 +184,8 @@ public class BioDedupeProcessor {
 				}
 
 			} else if (registrationType.equalsIgnoreCase(SyncTypeDto.UPDATE.toString())
-					|| registrationType.equalsIgnoreCase(SyncTypeDto.RES_UPDATE.toString())) {
+		            || registrationType.equalsIgnoreCase(SyncTypeDto.RES_UPDATE.toString())
+		            || registrationType.equalsIgnoreCase(SyncTypeDto.RENEWAL.toString())) {
 				String packetStatus = abisHandlerUtil.getPacketStatus(registrationStatusDto);
 				if (packetStatus.equalsIgnoreCase(AbisConstant.PRE_ABIS_IDENTIFICATION)) {
 					updatePacketPreAbisIdentification(registrationStatusDto, object);

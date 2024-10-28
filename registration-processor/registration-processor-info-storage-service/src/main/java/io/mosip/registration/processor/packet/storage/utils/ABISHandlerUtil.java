@@ -216,8 +216,8 @@ public class ABISHandlerUtil {
 			String matchedUin = idRepoService.getUinByRid(machedRegId,
 					utilities.getGetRegProcessorDemographicIdentity());
 
-			if (registrationType.equalsIgnoreCase(SyncTypeDto.UPDATE.toString())) {
-				String packetUin = utilities.getUIn(registrationId, registrationType, stageName);
+			if (registrationType.equalsIgnoreCase(SyncTypeDto.UPDATE.toString()) || registrationType.equalsIgnoreCase(SyncTypeDto.RENEWAL.toString())) {
+				String packetUin = utilities.getUINByHandle(registrationId, registrationType, stageName);
 				if (matchedUin != null && !packetUin.equals(matchedUin)) {
 					filteredRegMap.put(matchedUin, machedRegId);
 				}

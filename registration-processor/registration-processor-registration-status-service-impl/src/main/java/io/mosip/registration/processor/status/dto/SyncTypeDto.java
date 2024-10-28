@@ -14,6 +14,9 @@ public enum SyncTypeDto {
     /** The update uin. */
 	UPDATE("UPDATE"),
 
+	/** The renewal uin. */
+	RENEWAL("RENEWAL"),
+	
 	/** The lost uin. */
 	LOST("LOST"),
 

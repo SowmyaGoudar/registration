@@ -14,6 +14,9 @@ public enum RegistrationType {
 
 	/** The update. */
 	UPDATE("update"),
+	
+	/** The renewal. */
+	RENEWAL("renewal"),
 
 	/** The res update. */
 	RES_UPDATE("res_update"),

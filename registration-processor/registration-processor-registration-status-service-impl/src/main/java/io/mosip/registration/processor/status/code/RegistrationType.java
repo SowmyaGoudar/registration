@@ -11,6 +11,9 @@ public enum RegistrationType {
 
 	/** The update. */
 	UPDATE,
+	
+	/** The renewal. */
+	RENEWAL,
 
 	/** The correction. */
 	CORRECTION,

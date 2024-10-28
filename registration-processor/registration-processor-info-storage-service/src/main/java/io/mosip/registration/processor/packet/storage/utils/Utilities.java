@@ -39,7 +39,6 @@ import io.mosip.registration.processor.core.exception.PacketManagerException;
 import io.mosip.registration.processor.core.exception.RegistrationProcessorCheckedException;
 import io.mosip.registration.processor.core.exception.RegistrationProcessorUnCheckedException;
 import io.mosip.registration.processor.core.exception.util.PlatformErrorMessages;
-import io.mosip.registration.processor.core.idrepo.dto.IdRequestDTO1;
 import io.mosip.registration.processor.core.idrepo.dto.IdResponseDTO1;
 import io.mosip.registration.processor.core.idrepo.dto.ResponseDTO;
 import io.mosip.registration.processor.core.logger.RegProcessorLogger;
@@ -614,12 +613,26 @@ public class Utilities {
 
 	public JSONObject getIdentityJSONObjectByHandle(String handle) throws ApisResourceAccessException {
 		if (handle != null) {
-			IdRequestDTO1 idRequestDTO = new IdRequestDTO1();
-			idRequestDTO.setId(handle.toLowerCase() + "@nin");
-			idRequestDTO.setIdType("handle");
+			List<String> pathSegments = new ArrayList<>();
+			pathSegments.add(handle.toLowerCase() + "@nin");
+			IdResponseDTO1 idResponseDto;
 
-			IdResponseDTO1 idResponseDto = (IdResponseDTO1) restClientService.postApi(ApiName.RETRIEVEIDENTITY, "", "",
-					idRequestDTO, IdResponseDTO1.class);
+			String typeParam = "type";
+			String typeParamValue = "all";
+			String typeIdParam = "idType";
+			String typeIdParamValue = "handle";
+
+			List<String> queryParams = new ArrayList<>();
+			queryParams.add(typeParam);
+			queryParams.add(typeIdParam);
+
+			List<Object> queryParamValues = new ArrayList<Object>();
+			queryParamValues.add(typeParamValue);
+			queryParamValues.add(typeIdParamValue);
+
+
+			idResponseDto = (IdResponseDTO1) restClientService.getApi(ApiName.RETRIEVEIDENTITY, pathSegments,
+					queryParams, queryParamValues, IdResponseDTO1.class);
 			regProcLogger.debug(LoggerFileConstant.SESSIONID.toString(), LoggerFileConstant.UIN.toString(), "",
 					"Utilities::getUINByHandle():: IDREPORETRIEVEIDBYID POST service call ended Successfully");
 

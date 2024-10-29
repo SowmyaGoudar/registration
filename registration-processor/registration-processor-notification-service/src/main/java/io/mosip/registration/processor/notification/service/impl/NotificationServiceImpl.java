@@ -10,9 +10,7 @@ import org.json.JSONException;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -93,6 +91,7 @@ public class NotificationServiceImpl implements NotificationService {
 	private static final String DUPLICATE_UIN=NOTIFICATION_TEMPLATE_CODE+"duplicate.uin.";
 	private static final String TECHNICAL_ISSUE=NOTIFICATION_TEMPLATE_CODE+"technical.issue.";
 	private static final String PAUSED_FOR_ADDITIONAL_INFO=NOTIFICATION_TEMPLATE_CODE+"paused.for.additional.info.";
+	private static final String UIN_RENEWAL = NOTIFICATION_TEMPLATE_CODE + "uin.renewal.";
 
 
 	/** The core audit request builder. */
@@ -286,6 +285,8 @@ public class NotificationServiceImpl implements NotificationService {
 		else if (regtype.equalsIgnoreCase(RegistrationType.ACTIVATED.toString()))
 			type = NotificationTemplateType.UIN_UPDATE;
 		else if (regtype.equalsIgnoreCase(RegistrationType.DEACTIVATED.toString()))
+			type = NotificationTemplateType.UIN_UPDATE;
+		else if (regtype.equalsIgnoreCase(RegistrationType.RENEWAL.toString()))
 			type = NotificationTemplateType.UIN_UPDATE;
 		return type;
 	}
@@ -485,6 +486,12 @@ public class NotificationServiceImpl implements NotificationService {
 				messageSenderDto.setEmailTemplateCode(env.getProperty(UIN_UPDATE+EMAIL));
 				messageSenderDto.setIdType(IdType.UIN);
 				messageSenderDto.setSubjectCode(env.getProperty(UIN_UPDATE+SMS));
+			} else if (regType.equalsIgnoreCase(RegistrationType.RENEWAL.name())
+			) {
+				messageSenderDto.setSmsTemplateCode(env.getProperty(UIN_RENEWAL + SMS));
+				messageSenderDto.setEmailTemplateCode(env.getProperty(UIN_RENEWAL + EMAIL));
+				messageSenderDto.setIdType(IdType.UIN);
+				messageSenderDto.setSubjectCode(env.getProperty(UIN_RENEWAL + SMS));
 			}
 			break;
 		case DUPLICATE_UIN:

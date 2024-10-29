@@ -334,9 +334,10 @@ public class CitizenshipVerificationProcessor {
 
 		String fatherNIN = applicantFields.get(MappingJsonConstants.FATHER_NIN);
 		regProcLogger.info("Father's NIN: " + fatherNIN);
+		
 		String motherNIN = applicantFields.get(MappingJsonConstants.MOTHER_NIN);
 		regProcLogger.info("Mother's NIN: " + motherNIN);
-
+		
 		LocalDate applicantDob = parseDate(applicantFields.get(MappingJsonConstants.APPLICANT_DATEOFBIRTH), formatter);
 		regProcLogger.info(
 				"Parsed applicant date of birth from string '" + applicantDob + "' to LocalDate: " + applicantDob);
@@ -378,8 +379,8 @@ public class CitizenshipVerificationProcessor {
 						applicantFields.get("registrationId"));
 				return false;
 			}
-
-			JSONObject parentInfoJson = utility.retrieveIdrepoJson(parentNin);
+			
+			JSONObject parentInfoJson = utility.getIdentityJSONObjectByHandle(parentNin);
 
 			if (parentInfoJson == null) {
 				logAndSetStatusError(registrationStatusDto, parentType + "'s NIN not found in repo data.",
@@ -409,7 +410,7 @@ public class CitizenshipVerificationProcessor {
 
 			regProcLogger.info("Living status retrieved: " + livingStatus);
 
-			String status = utility.retrieveIdrepoJsonStatus(parentNin);
+			String status = utility.retrieveIdrepoJsonStatusForNIN(parentNin);
 			regProcLogger.info("ID repo status retrieved: " + status);
 
 			boolean isValidStatus = checkStatus(livingStatus, status, registrationStatusDto, description,
@@ -568,7 +569,6 @@ public class CitizenshipVerificationProcessor {
 						applicantFields.get("registrationId"));
 			}
 		} else {
-
 			logAndSetStatusError(registrationStatusDto, "Mismatch in " + person1.get(MappingJsonConstants.PERSON) + ", "
 					+ person2.get(MappingJsonConstants.PERSON) + "'s " + MappingJsonConstants.TRIBE + " information.",
 					StatusUtil.CITIZENSHIP_VERIFICATION_TRIBE_MISMATCH.getCode(),
@@ -794,10 +794,10 @@ public class CitizenshipVerificationProcessor {
 				return false;
 			}
 
-			JSONObject guardianInfoJson = utility.retrieveIdrepoJson(guardianNin);
+			JSONObject guardianInfoJson = utility.getIdentityJSONObjectByHandle(guardianNin);
 			regProcLogger.info("guardianInfoJson: " + guardianInfoJson);
 
-			String status = utility.retrieveIdrepoJsonStatus(guardianNin);
+			String status = utility.retrieveIdrepoJsonStatusForNIN(guardianNin);
 			regProcLogger.info("status: " + status);
 
 			if (guardianRelationValue.equalsIgnoreCase(Relationship.GRAND_FATHER_ON_FATHERS_SIDE.getRelationship())
@@ -852,7 +852,7 @@ public class CitizenshipVerificationProcessor {
 
 		String livingStatus = applicantFields.get(MappingJsonConstants.GUARDIAN_LIVING_STATUS);
 
-		String status = utility.retrieveIdrepoJsonStatus(guardianNin);
+		String status = utility.retrieveIdrepoJsonStatusForNIN(guardianNin);
 
 		String guardianRelationToApplicantJson = applicantFields
 				.get(MappingJsonConstants.GUARDIAN_RELATION_TO_APPLICANT);
@@ -1149,7 +1149,7 @@ public class CitizenshipVerificationProcessor {
 		}
 
 		String livingStatus = applicantFields.get(MappingJsonConstants.GUARDIAN_LIVING_STATUS);
-		String status = utility.retrieveIdrepoJsonStatus(guardianNin);
+		String status = utility.retrieveIdrepoJsonStatusForNIN(guardianNin);
 
 		String guardianRelationToApplicantJson = applicantFields
 				.get(MappingJsonConstants.GUARDIAN_RELATION_TO_APPLICANT);
@@ -1208,7 +1208,7 @@ public class CitizenshipVerificationProcessor {
 		}
 
 		String livingStatus = applicantFields.get(MappingJsonConstants.GUARDIAN_LIVING_STATUS);
-		String status = utility.retrieveIdrepoJsonStatus(guardianNin);
+		String status = utility.retrieveIdrepoJsonStatusForNIN(guardianNin);
 
 		String guardianRelationToApplicantJson = applicantFields
 				.get(MappingJsonConstants.GUARDIAN_RELATION_TO_APPLICANT);

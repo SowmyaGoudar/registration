@@ -8,7 +8,7 @@
 	</parent>
 	
 	<artifactId>registration-processor-stage-group-8</artifactId>
-    <version>1.2.0.1</version>
+    <version>1.2.0.1-SNAPSHOT</version>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -27,7 +27,7 @@
 		<dependency>
 			<groupId>io.mosip.registrationprocessor</groupId>
 			<artifactId>registration-processor-citizenship-verification-stage</artifactId>
-			<version>1.2.0.1</version>
+			<version>1.2.0.1-SNAPSHOT</version>
 		</dependency>
 		<!--  -->
 		

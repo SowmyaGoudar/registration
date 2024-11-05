@@ -22,6 +22,8 @@ import io.mosip.kernel.core.util.CryptoUtil;
 import io.mosip.kernel.core.util.exception.JsonProcessingException;
 import io.mosip.registration.processor.core.code.ApiName;
 import io.mosip.registration.processor.core.constant.LoggerFileConstant;
+import io.mosip.registration.processor.core.constant.MappingJsonConstants;
+import io.mosip.registration.processor.core.constant.ProviderStageName;
 import io.mosip.registration.processor.core.exception.ApisResourceAccessException;
 import io.mosip.registration.processor.core.exception.PacketManagerException;
 import io.mosip.registration.processor.core.exception.ValidationFailedException;
@@ -87,11 +89,11 @@ public class LegacyDataValidator {
 
 		regProcLogger.debug("validate called for registrationId {}", registrationId);
 
-		String NIN = "CF200721001NRA";// packetManagerService.getFieldByMappingJsonKey(registrationId,
-				//MappingJsonConstants.NIN, registrationStatusDto.getRegistrationType(),
-				//ProviderStageName.LEGACY_DATA_VALIDATOR);
+		String NIN = packetManagerService.getFieldByMappingJsonKey(registrationId,
+				MappingJsonConstants.NIN, registrationStatusDto.getRegistrationType(),
+				ProviderStageName.LEGACY_DATA_VALIDATOR);
 
-				JSONObject jSONObject = null; // utility.getIdentityJSONObjectByHandle(NIN);
+		JSONObject jSONObject = utility.getIdentityJSONObjectByHandle(NIN);
 		if (jSONObject == null) {
 			boolean isPresentInlegacySystem = false;
 			// fetch legacy system data by calling api

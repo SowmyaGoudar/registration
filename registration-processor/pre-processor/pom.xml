@@ -25,5 +25,8 @@
 		<module>registration-processor-quality-classifier-stage</module>
         <module>registration-processor-securezone-notification-stage</module>
 		<module>registration-processor-packet-classifier-stage</module>
-    </modules>
+		<module>
+			registration-processor-legacy-data-validator-stage
+		</module>
+	</modules>
 </project>

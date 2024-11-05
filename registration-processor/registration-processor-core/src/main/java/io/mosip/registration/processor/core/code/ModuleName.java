@@ -84,4 +84,6 @@ public enum ModuleName {
 	PAYMENT_VALIDATOR, 
 	
 	CITIZENSHIP_VERIFICATION,
+	
+	LEGACY_DATA
 }

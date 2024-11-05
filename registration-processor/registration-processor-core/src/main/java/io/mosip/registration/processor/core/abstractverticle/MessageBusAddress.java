@@ -268,6 +268,12 @@ public class MessageBusAddress implements Serializable {
 	public static final MessageBusAddress CITIZENSHIP_VERIFICATION_BUS_OUT = new MessageBusAddress(
 			"citizenship-verification-bus-out");
 	
+	/** The Constant LEGACYDATA_VALIDATOR_IN. */
+	public static final MessageBusAddress LEGACY_DATA_VALIDATOR_IN = new MessageBusAddress("legacy-data-validator-bus-in");
+
+	/** The Constant LEGACYDATA_VALIDATOR_OUT. */
+	public static final MessageBusAddress LEGACY_DATA_VALIDATOR_OUT = new MessageBusAddress("legacy-data-validator-bus-out");
+	
 	/*
 	 * (non-Javadoc)
 	 *

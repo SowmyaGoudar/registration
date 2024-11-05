@@ -70,4 +70,6 @@ public enum RegistrationTransactionTypeCode {
 	FINALIZATION, 
 	
 	CITIZENSHIP_VERIFICATION,
+	
+	LEGACY_DATA_VALIDATE
 }

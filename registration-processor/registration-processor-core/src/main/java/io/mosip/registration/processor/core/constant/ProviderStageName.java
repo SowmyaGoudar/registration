@@ -22,7 +22,8 @@ public enum  ProviderStageName {
     MESSAGE_SENDER("messagesender"),
     CREDENTIAL_REQUESTOR("credentialrequestor"),
     PAYMENT_VALIDATOR("paymentvalidator"),
-    CITIZENSHIP_VERIFICATION("citizenshipverification");
+    CITIZENSHIP_VERIFICATION("citizenshipverification"),
+    LEGACY_DATA_VALIDATOR("legacydatavalidator");
 
     private String value;
 

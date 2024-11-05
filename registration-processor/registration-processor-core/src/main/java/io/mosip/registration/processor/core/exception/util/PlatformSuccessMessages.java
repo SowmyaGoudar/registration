@@ -180,7 +180,9 @@ public enum PlatformSuccessMessages {
 	RPR_PAYMENT_VALIDATOR_STAGE_SUCCESS(PlatformConstants.RPR_PAYMENT_VALIDATOR_STAGE + "000", "Payment Validation Success"), 
 	
 	RPR_CITIZENSHIP_VERIFICATION_SUCCESS(PlatformConstants.RPR_CITIZENSHIP_VERIFICATION_MODULE + "001",
-"Citizenship Verification successful"),;
+"Citizenship Verification successful"),
+	
+	RPR_LEGACY_DATA_VALIDATE(PlatformConstants.RPR_LEGACY_DATA_VALIDATOR_MODULE + "000", "Legacy Data Validation Success");
 
 	/** The success message. */
 	private final String successMessage;

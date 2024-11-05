@@ -405,9 +405,16 @@ public enum StatusUtil {
 	CITIZENSHIP_VERIFICATION_UNEXPECTED_LIVING_STATUS(StatusConstants.CITIZENSHIP_VERIFICATION + "021", "Unexpected living status"),
 	CITIZENSHIP_VERIFICATION_STATUS_INVALID(StatusConstants.CITIZENSHIP_VERIFICATION + "022", "Invalid status provided"),
 	CITIZENSHIP_VERIFICATION_ALIVE_UIN_DEACTIVATED(StatusConstants.CITIZENSHIP_VERIFICATION + "023", "Operation failed: Living status is alive but UIN status is deactivated"),
-	CITIZENSHIP_VERIFICATION_UNEXPECTED_UIN_STATUS(StatusConstants.CITIZENSHIP_VERIFICATION + "024", "Unexpected UIN status for alive individual");
-	
-	
+	CITIZENSHIP_VERIFICATION_UNEXPECTED_UIN_STATUS(StatusConstants.CITIZENSHIP_VERIFICATION + "024",
+			"Unexpected UIN status for alive individual"),
+	// Legacy data validation stage
+	LEGACY_DATA_VALIDATION_SUCCESS(StatusConstants.LEGACY_DATA_VALIDATION_SUCCESS + "001",
+			"Legacy data validation  success"),
+	LEGACY_DATA_VALIDATION_FAILED(StatusConstants.LEGACY_DATA_VALIDATION_FAILED + "002",
+			"Legacy data validation failed"),
+	PACKET_ON_HOLD_FOR_MIGRATION(StatusConstants.LEGACY_DATA_VALIDATION_FAILED + "003",
+			"Packet On-Hold as on demand migrated packet is not processed yet.");
+
 
 	private final String statusComment;
 	private final String statusCode;

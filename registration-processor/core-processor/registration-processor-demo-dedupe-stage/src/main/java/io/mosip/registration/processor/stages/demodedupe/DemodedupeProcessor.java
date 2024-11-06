@@ -56,6 +56,7 @@ import io.mosip.registration.processor.core.util.JsonUtil;
 import io.mosip.registration.processor.core.util.RegistrationExceptionMapperUtil;
 import io.mosip.registration.processor.packet.storage.dto.ApplicantInfoDto;
 import io.mosip.registration.processor.packet.storage.utils.ABISHandlerUtil;
+import io.mosip.registration.processor.packet.storage.utils.PacketManagerService;
 import io.mosip.registration.processor.packet.storage.utils.Utilities;
 import io.mosip.registration.processor.rest.client.audit.builder.AuditLogRequestBuilder;
 import io.mosip.registration.processor.stages.app.constants.DemoDedupeConstants;
@@ -93,6 +94,9 @@ public class DemodedupeProcessor {
 	/** The packet info manager. */
 	@Autowired
 	private PacketInfoManager<Identity, ApplicantInfoDto> packetInfoManager;
+	
+	@Autowired
+	private PacketManagerService packetManagerService;
 
 
 
@@ -171,8 +175,12 @@ public class DemodedupeProcessor {
 					getIdentityKeysAndFetchValuesFromJSON(registrationId, registrationStatusDto.getRegistrationType(), ProviderStageName.DEMO_DEDUPE);
 
 			JSONObject regProcessorIdentityJson = utility.getRegistrationProcessorMappingJson(MappingJsonConstants.IDENTITY);
-			String uinFieldCheck = utility.getUIn(registrationId, registrationStatusDto.getRegistrationType(), ProviderStageName.DEMO_DEDUPE);
-			JSONObject jsonObject = utility.retrieveIdrepoJson(uinFieldCheck);
+			String nin= packetManagerService.getField(registrationId,
+					"NIN", registrationStatusDto.getRegistrationType(), ProviderStageName.DEMO_DEDUPE);
+			JSONObject jsonObject = utility.retrieveIdrepoJsonWithNIN(nin);
+			
+//			String uinFieldCheck = utility.getUIn(registrationId, registrationStatusDto.getRegistrationType(), ProviderStageName.DEMO_DEDUPE);
+//			JSONObject jsonObject = utility.retrieveIdrepoJson(uinFieldCheck);
 			if (jsonObject == null) {
 				DemoDedupeStatusDTO demoDedupeStatusDTO = insertDemodedupDetailsAndPerformDedup(demographicData, registrationStatusDto,
 						duplicateDtos, object, moduleId, moduleName, isDemoDedupeSkip, description);

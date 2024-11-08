@@ -782,8 +782,12 @@ public class ManualAdjudicationServiceImpl implements ManualAdjudicationService 
 					getDataShareUrl(id,registrationStatusDto.getRegistrationType()));
 			referenceURLs.add(referenceURL);
 			if(registrationStatusDto.getRegistrationType().equalsIgnoreCase(RegistrationType.UPDATE.name())
-					|| registrationStatusDto.getRegistrationType().equalsIgnoreCase(RegistrationType.RES_UPDATE.name())) {
-				String uinField = utility.getUIn(id, registrationStatusDto.getRegistrationType(), ProviderStageName.MANUAL_ADJUDICATION);
+					|| registrationStatusDto.getRegistrationType().equalsIgnoreCase(RegistrationType.RES_UPDATE.name())
+					|| registrationStatusDto.getRegistrationType().equalsIgnoreCase(RegistrationType.RENEWAL.name())) {
+				String nin= packetManagerService.getField(id,
+					"NIN", registrationStatusDto.getRegistrationType(), ProviderStageName.MANUAL_ADJUDICATION);
+				String uinField = utility.getUINByHandle(nin, registrationStatusDto.getRegistrationType(), ProviderStageName.MANUAL_ADJUDICATION);
+			//	String uinField = utility.getUIn(id, registrationStatusDto.getRegistrationType(), ProviderStageName.MANUAL_ADJUDICATION);
 				ReferenceURL referenceURL1=new ReferenceURL();
 				referenceURL1.setSource(ID_REPO);
 				referenceURL1.setStatus(PROCESSED);
@@ -1071,6 +1075,4 @@ public class ManualAdjudicationServiceImpl implements ManualAdjudicationService 
 		}
 		return isResendFlow;
 	}
-
-
 }

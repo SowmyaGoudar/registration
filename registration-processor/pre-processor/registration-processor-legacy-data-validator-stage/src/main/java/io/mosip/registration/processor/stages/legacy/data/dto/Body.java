@@ -10,9 +10,9 @@ import lombok.Data;
 @XmlAccessorType(XmlAccessType.FIELD)
 @Data
 public class Body {
-	@XmlElement(name = "getPerson", namespace = "http://facade.server.pilatus.thirdparty.tidis.muehlbauer.de/")
-	private GetPerson getPerson;
+	@XmlElement(name = "verifyPerson", namespace = "http://facade.server.pilatus.thirdparty.tidis.muehlbauer.de/")
+	private VerifyPerson verifyPerson;
 
 	@XmlElement(name = "getPersonResponse", namespace = "http://facade.server.pilatus.thirdparty.tidis.muehlbauer.de/")
-	private GetPersonResponse getPersonResponse;
+	private VerifyPersonResponse getPersonResponse;
 }

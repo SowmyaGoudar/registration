@@ -1,5 +1,6 @@
 package io.mosip.registration.processor.stages.legacy.data.util;
 
+import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -47,8 +48,8 @@ public class LegacyDataApiUtility {
 		return truncatedTimestamp + "+03:00";
 	}
 
-	public byte[] hashPassword(String password) throws NoSuchAlgorithmException {
+	public byte[] hashPassword(String password) throws NoSuchAlgorithmException, UnsupportedEncodingException {
 		MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
-		return sha1.digest(password.getBytes());
+		return sha1.digest(password.getBytes("UTF-8"));
 	}
 }

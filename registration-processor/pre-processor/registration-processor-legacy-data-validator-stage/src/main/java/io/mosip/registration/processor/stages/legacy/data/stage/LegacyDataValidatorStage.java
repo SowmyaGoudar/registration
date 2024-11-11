@@ -74,6 +74,7 @@ public class LegacyDataValidatorStage extends MosipVerticleAPIManager {
 		this.mosipEventBus = this.getEventBus(this, clusterManagerUrl, workerPoolSize);
 		this.consumeAndSend(mosipEventBus, MessageBusAddress.LEGACY_DATA_VALIDATOR_IN,
 				MessageBusAddress.LEGACY_DATA_VALIDATOR_OUT, messageExpiryTimeLimit);
+
 	}
 
 	@Override

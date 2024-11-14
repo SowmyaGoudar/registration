@@ -175,7 +175,7 @@ public class BiometricAuthenticationStage extends MosipVerticleAPIManager {
 						ProviderStageName.BIO_AUTH);
 				if (StringUtils.isEmpty(biometricsLabel)) {
 					isTransactionSuccessful = checkIndividualAuthentication(registrationId, process,
-							registrationStatusDto);
+							registrationStatusDto,null);
 					description = isTransactionSuccessful
 							? PlatformSuccessMessages.RPR_PKR_BIOMETRIC_AUTHENTICATION.getMessage()
 							: PlatformErrorMessages.BIOMETRIC_AUTHENTICATION_FAILED.getMessage();
@@ -196,13 +196,12 @@ public class BiometricAuthenticationStage extends MosipVerticleAPIManager {
 							registrationStatusDto.setStatusComment(description);
 							registrationStatusDto.setSubStatusCode(StatusUtil.BIOMETRIC_FILE_NOT_FOUND.getCode());
 						} else {
-							isBioAuthSkipped = true;
-							regProcLogger.info(LoggerFileConstant.SESSIONID.toString(),
-									LoggerFileConstant.REGISTRATIONID.toString(), registrationId,
-									"BiometricAuthenticationStage::skipped");
-							isTransactionSuccessful = true;
-							description = StatusUtil.BIOMETRIC_AUTHENTICATION_SKIPPED.getMessage()
-									+ ADULT_BIOMETRIC_UPDATE;
+							isTransactionSuccessful = checkIndividualAuthentication(registrationId, process,
+									registrationStatusDto,biometricRecord);
+							description = isTransactionSuccessful
+									? PlatformSuccessMessages.RPR_PKR_BIOMETRIC_AUTHENTICATION.getMessage()
+									: PlatformErrorMessages.BIOMETRIC_AUTHENTICATION_FAILED.getMessage();
+
 						}
 					} else {
 						isTransactionSuccessful = true;
@@ -353,22 +352,26 @@ public class BiometricAuthenticationStage extends MosipVerticleAPIManager {
 
 	private boolean isUpdateAdultPacket(String registartionType, String applicantType) {
 		return (registartionType.equalsIgnoreCase(RegistrationType.UPDATE.name())
-				|| registartionType.equalsIgnoreCase(RegistrationType.RES_UPDATE.name()))
+				|| registartionType.equalsIgnoreCase(RegistrationType.RES_UPDATE.name())
+				|| registartionType.equalsIgnoreCase(RegistrationType.RENEWAL.name()))
 				&& applicantType.equalsIgnoreCase(BiometricAuthenticationConstants.ADULT);
 	}
 
 	private boolean checkIndividualAuthentication(String registrationId, String process,
-			InternalRegistrationStatusDto registrationStatusDto) throws IOException, BioTypeException,
+			InternalRegistrationStatusDto registrationStatusDto, BiometricRecord biometricRecord)
+			throws IOException, BioTypeException,
 			AuthSystemException, ApisResourceAccessException, PacketManagerException, JsonProcessingException, CertificateException, NoSuchAlgorithmException,ValidationFailedException,Exception {
-
-		BiometricRecord biometricRecord = packetManagerService.getBiometricsByMappingJsonKey(registrationId,
-                MappingJsonConstants.AUTHENTICATION_BIOMETRICS, process, ProviderStageName.BIO_AUTH);
-		if (biometricRecord == null || CollectionUtils.isEmpty(biometricRecord.getSegments())) {
-			registrationStatusDto.setStatusCode(RegistrationStatusCode.FAILED.toString());
-			registrationStatusDto
-					.setStatusComment(StatusUtil.BIOMETRIC_AUTHENTICATION_FAILED_FILE_NOT_FOUND.getMessage());
-			registrationStatusDto.setSubStatusCode(StatusUtil.BIOMETRIC_AUTHENTICATION_FAILED_FILE_NOT_FOUND.getCode());
-			return false;
+		if (biometricRecord == null) {
+			biometricRecord = packetManagerService.getBiometricsByMappingJsonKey(registrationId,
+					MappingJsonConstants.AUTHENTICATION_BIOMETRICS, process, ProviderStageName.BIO_AUTH);
+			if (biometricRecord == null || CollectionUtils.isEmpty(biometricRecord.getSegments())) {
+				registrationStatusDto.setStatusCode(RegistrationStatusCode.FAILED.toString());
+				registrationStatusDto
+						.setStatusComment(StatusUtil.BIOMETRIC_AUTHENTICATION_FAILED_FILE_NOT_FOUND.getMessage());
+				registrationStatusDto
+						.setSubStatusCode(StatusUtil.BIOMETRIC_AUTHENTICATION_FAILED_FILE_NOT_FOUND.getCode());
+				return false;
+			}
 		}
 		String uin = utility.getUINByHandle(registrationId, process, ProviderStageName.BIO_AUTH);
 

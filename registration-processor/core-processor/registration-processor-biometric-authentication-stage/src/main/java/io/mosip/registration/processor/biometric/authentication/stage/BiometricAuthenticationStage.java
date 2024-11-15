@@ -3,6 +3,7 @@ package io.mosip.registration.processor.biometric.authentication.stage;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -98,6 +99,8 @@ public class BiometricAuthenticationStage extends MosipVerticleAPIManager {
 	@Value("${mosip.kernel.applicant.type.age.limit}")
 	private String ageLimit;
 
+	@Value("#{'${mosip.regproc.mandatory.modalities.for.auth:Finger}'.split(',')}")
+	private List<String> mandatoryModalitiesForAuth;
 	/** worker pool size. */
 	@Value("${worker.pool.size}")
 	private Integer workerPoolSize;
@@ -123,6 +126,7 @@ public class BiometricAuthenticationStage extends MosipVerticleAPIManager {
 		mosipEventBus = this.getEventBus(this, clusterManagerUrl, workerPoolSize);
 		this.consumeAndSend(mosipEventBus, MessageBusAddress.BIOMETRIC_AUTHENTICATION_BUS_IN,
 				MessageBusAddress.BIOMETRIC_AUTHENTICATION_BUS_OUT, messageExpiryTimeLimit);
+
 	}
 
 	@Override
@@ -184,8 +188,14 @@ public class BiometricAuthenticationStage extends MosipVerticleAPIManager {
 							JsonUtil.readValueWithUnknownProperties(biometricsLabel, JSONObject.class),
 							MappingJsonConstants.VALUE);
 					if (individualBiometricsFileName != null && !individualBiometricsFileName.isEmpty()) {
-						BiometricRecord biometricRecord = packetManagerService.getBiometricsByMappingJsonKey(
-								registrationId, MappingJsonConstants.INDIVIDUAL_BIOMETRICS, process,
+						String biometricFileName = JsonUtil
+								.getJSONValue(
+										JsonUtil.getJSONObject(utility.getRegistrationProcessorMappingJson(
+												MappingJsonConstants.IDENTITY),
+												MappingJsonConstants.INDIVIDUAL_BIOMETRICS),
+										MappingJsonConstants.VALUE);
+						BiometricRecord biometricRecord = packetManagerService.getBiometrics(registrationId,
+								biometricFileName, mandatoryModalitiesForAuth, process,
 								ProviderStageName.BIO_AUTH);
 						if (biometricRecord == null || biometricRecord.getSegments() == null
 								|| biometricRecord.getSegments().isEmpty()) {

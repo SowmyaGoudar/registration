@@ -126,7 +126,6 @@ public class BiometricAuthenticationStage extends MosipVerticleAPIManager {
 		mosipEventBus = this.getEventBus(this, clusterManagerUrl, workerPoolSize);
 		this.consumeAndSend(mosipEventBus, MessageBusAddress.BIOMETRIC_AUTHENTICATION_BUS_IN,
 				MessageBusAddress.BIOMETRIC_AUTHENTICATION_BUS_OUT, messageExpiryTimeLimit);
-
 	}
 
 	@Override
@@ -247,9 +246,11 @@ public class BiometricAuthenticationStage extends MosipVerticleAPIManager {
 					registrationStatusDto.setStatusComment(StatusUtil.BIOMETRIC_AUTHENTICATION_SUCCESS.getMessage());
 				}
 			} else {
+				registrationStatusDto.setSubStatusCode(StatusUtil.BIOMETRIC_AUTHENTICATION_FAILED.getCode());
 				registrationStatusDto
 						.setLatestTransactionStatusCode(RegistrationTransactionStatusCode.FAILED.toString());
 				registrationStatusDto.setStatusCode(RegistrationTransactionStatusCode.FAILED.toString());
+				registrationStatusDto.setStatusComment(StatusUtil.BIOMETRIC_AUTHENTICATION_FAILED.getMessage());
 			}
 
 		} catch (IOException | NoSuchAlgorithmException e) {
@@ -319,7 +320,12 @@ public class BiometricAuthenticationStage extends MosipVerticleAPIManager {
 			object.setInternalError(Boolean.TRUE);
 		} catch (ValidationFailedException e) {
 			isTransactionSuccessful=false;
-			description=PlatformErrorMessages.INDIVIDUAL_BIOMETRIC_AUTHENTICATION_FAILED.getMessage();
+			registrationStatusDto.setStatusCode(RegistrationStatusCode.FAILED.name());
+			registrationStatusDto.setLatestTransactionStatusCode(RegistrationTransactionStatusCode.FAILED.toString());
+			registrationStatusDto.setSubStatusCode(StatusUtil.BIOMETRIC_AUTHENTICATION_FAILED.getCode());
+			registrationStatusDto.setStatusComment(trimExceptionMessage
+					.trimExceptionMessage(e.getMessage()));
+			code = PlatformErrorMessages.BIOMETRIC_AUTHENTICATION_AUTH_SYSTEM_EXCEPTION.getCode();
 			regProcLogger.error(LoggerFileConstant.SESSIONID.toString(), code, registrationId,
 					description + e.getMessage() + ExceptionUtils.getStackTrace(e));
 			object.setInternalError(Boolean.TRUE);
@@ -385,7 +391,10 @@ public class BiometricAuthenticationStage extends MosipVerticleAPIManager {
 		}
 		String uin = utility.getUINByHandle(registrationId, process, ProviderStageName.BIO_AUTH);
 
-		bioUtil.authenticateBiometrics(uin,BiometricAuthenticationConstants.INDIVIDUAL_TYPE_UIN,biometricRecord.getSegments(),registrationStatusDto,StatusUtil.INTRODUCER_AUTHENTICATION_FAILED.getMessage(),StatusUtil.INTRODUCER_AUTHENTICATION_FAILED.getCode());
+		bioUtil.authenticateBiometrics(uin, BiometricAuthenticationConstants.INDIVIDUAL_TYPE_UIN,
+				biometricRecord.getSegments(), registrationStatusDto,
+				StatusUtil.BIOMETRIC_AUTHENTICATION_FAILED.getMessage(),
+				StatusUtil.BIOMETRIC_AUTHENTICATION_FAILED.getCode());
 		return true;
 	}
 

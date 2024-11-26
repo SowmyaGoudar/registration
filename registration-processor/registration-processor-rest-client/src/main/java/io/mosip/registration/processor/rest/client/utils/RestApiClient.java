@@ -225,7 +225,7 @@ public class RestApiClient {
 		// headers.add("Cookie", getToken());
 		headers.add(TracingConstant.TRACE_HEADER, (String) ContextualData.getOrDefault(TracingConstant.TRACE_ID_KEY));
 		if (mediaType != null) {
-			headers.add("Content-Type", MediaType.APPLICATION_JSON.toString());
+			headers.add("Content-Type", mediaType.toString());
 		}
 		if (requestType != null) {
 			try {

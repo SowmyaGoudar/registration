@@ -38,6 +38,7 @@ import io.mosip.registration.processor.core.spi.restclient.RegistrationProcessor
 import io.mosip.registration.processor.core.status.util.StatusUtil;
 import io.mosip.registration.processor.core.util.JsonUtil;
 import io.mosip.registration.processor.core.util.RegistrationExceptionMapperUtil;
+import io.mosip.registration.processor.packet.storage.utils.FingrePrintConvertor;
 import io.mosip.registration.processor.packet.storage.utils.PriorityBasedPacketManagerService;
 import io.mosip.registration.processor.packet.storage.utils.Utilities;
 import io.mosip.registration.processor.stages.legacy.data.dto.Body;
@@ -161,9 +162,15 @@ public class LegacyDataValidator {
 		return wsqFormatBiometrics;
 	}
 
-	private Map<String, String> convertISOToWSQFormat(Map<String, byte[]> isoImageMap) {
-		// TODO Auto-generated method stub
-		return null;
+	private Map<String, String> convertISOToWSQFormat(Map<String, byte[]> isoImageMap) throws IOException {
+		Map<String, String> wsqFormatBiometrics = new HashMap<String, String>();
+		for (Map.Entry<String, byte[]> entry : isoImageMap.entrySet()) {
+			byte[] wsqData = FingrePrintConvertor.convertIsoToWsq(entry.getValue());
+			FingrePrintConvertor.getImage(wsqData);
+			wsqFormatBiometrics.put(entry.getKey(), CryptoUtil.encodeToPlainBase64(wsqData));
+		}
+		System.out.println("map" + wsqFormatBiometrics);
+		return wsqFormatBiometrics;
 	}
 
 	private boolean checkNINAVailableInLegacy(String registrationId, String NIN, Map<String, String> positionAndWsqMap)

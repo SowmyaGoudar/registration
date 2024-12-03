@@ -325,7 +325,7 @@ public class CitizenshipVerificationProcessor {
 	private boolean handleValidationWithParentNinFound(Map<String, String> applicantFields,
 			InternalRegistrationStatusDto registrationStatusDto, LogDescription description) {
 		regProcLogger.info("Citizenship verification proceed: Handling validation with parents NIN found");
-
+		boolean isParentInfoValid = false;
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(MappingJsonConstants.DATE_FORMAT);
 
 		String fatherNIN = applicantFields.get(MappingJsonConstants.FATHER_NIN);
@@ -345,16 +345,17 @@ public class CitizenshipVerificationProcessor {
 
 		if (fatherNIN != null) {
 
-			return validateParentInfo(fatherNIN, "FATHER", applicantFields, applicantDob, formatter,
+			isParentInfoValid = validateParentInfo(fatherNIN, "FATHER", applicantFields, applicantDob, formatter,
 					registrationStatusDto, description);
-		} else if (motherNIN != null) {
+		}
+		if (isParentInfoValid == false && motherNIN != null) {
 
-			return validateParentInfo(motherNIN, "MOTHER", applicantFields, applicantDob, formatter,
+			isParentInfoValid = validateParentInfo(motherNIN, "MOTHER", applicantFields, applicantDob, formatter,
 					registrationStatusDto, description);
 		}
 
 		regProcLogger.error("Neither parent's NIN is provided.");
-		return false;
+		return isParentInfoValid;
 	}
 
 	private boolean validateParentInfo(String parentNin, String parentType, Map<String, String> applicantFields,

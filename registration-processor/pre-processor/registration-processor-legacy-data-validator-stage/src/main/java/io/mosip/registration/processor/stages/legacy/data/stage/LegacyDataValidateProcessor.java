@@ -135,7 +135,7 @@ public class LegacyDataValidateProcessor {
 		} catch (ValidationFailedException e) {
 			object.setInternalError(Boolean.FALSE);
 			updateDTOsAndLogError(registrationStatusDto, RegistrationStatusCode.REJECTED,
-					StatusUtil.VALIDATION_FAILED_EXCEPTION, RegistrationExceptionTypeCode.VALIDATION_FAILED_EXCEPTION,
+					StatusUtil.LEGACY_DATA_VALIDATION_FAILED, RegistrationExceptionTypeCode.VALIDATION_FAILED_EXCEPTION,
 					description, PlatformErrorMessages.RPR_LEGACY_DATA_VALIDATION_FAILED, e);
 		} catch (BaseUncheckedException e) {
 			updateDTOsAndLogError(registrationStatusDto, RegistrationStatusCode.FAILED,

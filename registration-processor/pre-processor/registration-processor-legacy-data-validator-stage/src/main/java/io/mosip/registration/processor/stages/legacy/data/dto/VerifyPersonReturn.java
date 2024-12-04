@@ -8,7 +8,11 @@ import lombok.Data;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @Data
-public class VerifyPersonResponse {
-	@XmlElement(name = "return")
-	public VerifyPersonReturn returnElement;
+public class VerifyPersonReturn {
+
+	@XmlElement(name = "transactionStatus")
+	private TransactionStatus transactionStatus;
+
+	@XmlElement(name = "matchingStatus")
+	private boolean matchingStatus;
 }

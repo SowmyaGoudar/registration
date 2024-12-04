@@ -28,6 +28,7 @@ import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.kernel.core.util.CryptoUtil;
 import io.mosip.kernel.core.util.exception.JsonProcessingException;
 import io.mosip.registration.processor.core.code.ApiName;
+import io.mosip.registration.processor.core.constant.LoggerFileConstant;
 import io.mosip.registration.processor.core.constant.MappingJsonConstants;
 import io.mosip.registration.processor.core.constant.ProviderStageName;
 import io.mosip.registration.processor.core.exception.ApisResourceAccessException;
@@ -48,11 +49,13 @@ import io.mosip.registration.processor.stages.legacy.data.dto.Header;
 import io.mosip.registration.processor.stages.legacy.data.dto.Password;
 import io.mosip.registration.processor.stages.legacy.data.dto.Position;
 import io.mosip.registration.processor.stages.legacy.data.dto.Request;
+import io.mosip.registration.processor.stages.legacy.data.dto.TransactionStatus;
 import io.mosip.registration.processor.stages.legacy.data.dto.UsernameToken;
 import io.mosip.registration.processor.stages.legacy.data.dto.VerifyPerson;
 import io.mosip.registration.processor.stages.legacy.data.dto.VerifyPersonResponse;
 import io.mosip.registration.processor.stages.legacy.data.stage.exception.PacketOnHoldException;
 import io.mosip.registration.processor.stages.legacy.data.util.LegacyDataApiUtility;
+import io.mosip.registration.processor.status.code.RegistrationStatusCode;
 import io.mosip.registration.processor.status.dto.InternalRegistrationStatusDto;
 import io.mosip.registration.processor.status.dto.RegistrationStatusDto;
 import io.mosip.registration.processor.status.service.RegistrationStatusService;
@@ -178,16 +181,17 @@ public class LegacyDataValidator {
 		boolean isValid = false;
 		Envelope requestEnvelope = createGetPersonRequest(NIN, positionAndWsqMap);
 		String request = marshalToXml(requestEnvelope);
+		System.out.println(request);
 		String response = (String) restApi.postApi(ApiName.GETPERSONURL, "", "", request, String.class,
 				MediaType.TEXT_XML);
 		JAXBContext jaxbContext = JAXBContext.newInstance(Envelope.class);
 		Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 		StringReader reader = new StringReader(response);
 		Envelope responseEnvelope = (Envelope) unmarshaller.unmarshal(reader);
-		VerifyPersonResponse verifyPersonResponse = responseEnvelope.getBody().getGetPersonResponse();
-		/*TransactionStatus transactionStatus = verifyPersonResponse.getReturnData().getTransactionStatus();
+		VerifyPersonResponse verifyPersonResponse = responseEnvelope.getBody().getVerifyPersonResponse();
+		TransactionStatus transactionStatus = verifyPersonResponse.getReturnElement().getTransactionStatus();
 		if (transactionStatus.getTransactionStatus().equalsIgnoreCase("Ok")) {
-			if (verifyPersonResponse.getReturnData().getNationalId().equals(NIN)) {
+			if (verifyPersonResponse.getReturnElement().isMatchingStatus()) {
 				isValid = true;
 			}
 		} else if (transactionStatus.getTransactionStatus().equalsIgnoreCase("Error")) {
@@ -195,7 +199,7 @@ public class LegacyDataValidator {
 					registrationId,
 					RegistrationStatusCode.FAILED.toString() + transactionStatus.getError().getCode()
 							+ transactionStatus.getError().getMessage());
-		}*/
+		}
 		return isValid;
 	}
 

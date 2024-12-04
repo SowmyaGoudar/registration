@@ -165,6 +165,12 @@
     <groupId>io.mosip.biometric.util</groupId>
     <artifactId>biometrics-util</artifactId>
     <version>1.2.0.2</version>
-</dependency>
+    <exclusions>
+    	<exclusion>
+    		<groupId>com.fasterxml.jackson.dataformat</groupId>
+    		<artifactId>jackson-dataformat-xml</artifactId>
+    	</exclusion>
+    </exclusions>
+		</dependency>
 	</dependencies>
 </project>

@@ -13,6 +13,6 @@ public class Body {
 	@XmlElement(name = "verifyPerson", namespace = "http://facade.server.pilatus.thirdparty.tidis.muehlbauer.de/")
 	private VerifyPerson verifyPerson;
 
-	@XmlElement(name = "getPersonResponse", namespace = "http://facade.server.pilatus.thirdparty.tidis.muehlbauer.de/")
-	private VerifyPersonResponse getPersonResponse;
+	@XmlElement(name = "verifyPersonResponse", namespace = "http://facade.server.pilatus.thirdparty.tidis.muehlbauer.de/")
+	private VerifyPersonResponse verifyPersonResponse;
 }

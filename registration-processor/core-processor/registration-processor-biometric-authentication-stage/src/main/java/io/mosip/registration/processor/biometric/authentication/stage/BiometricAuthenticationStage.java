@@ -4,9 +4,12 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.json.JSONException;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +19,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import io.mosip.kernel.biometrics.constant.BiometricType;
+import io.mosip.kernel.biometrics.entities.BIR;
 import io.mosip.kernel.biometrics.entities.BiometricRecord;
 import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.kernel.core.util.exception.JsonProcessingException;
@@ -390,9 +395,9 @@ public class BiometricAuthenticationStage extends MosipVerticleAPIManager {
 			}
 		}
 		String uin = utility.getUINByHandle(registrationId, process, ProviderStageName.BIO_AUTH);
-
+		BiometricRecord filtertedBiometricRecord = filterExceptionBiometrics(biometricRecord);
 		bioUtil.authenticateBiometrics(uin, BiometricAuthenticationConstants.INDIVIDUAL_TYPE_UIN,
-				biometricRecord.getSegments(), registrationStatusDto,
+				filtertedBiometricRecord.getSegments(), registrationStatusDto,
 				StatusUtil.BIOMETRIC_AUTHENTICATION_FAILED.getMessage(),
 				StatusUtil.BIOMETRIC_AUTHENTICATION_FAILED.getCode());
 		return true;
@@ -406,6 +411,24 @@ public class BiometricAuthenticationStage extends MosipVerticleAPIManager {
 		} else {
 			object.setIsValid(false);
 		}
+	}
+
+	private BiometricRecord filterExceptionBiometrics(BiometricRecord biometricRecord)
+			throws JsonProcessingException, IOException,
+			JSONException {
+		List<BIR> segments = biometricRecord.getSegments().stream().filter(bio -> {
+			Map<String, String> othersMap = bio.getOthers().entrySet().stream()
+					.collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
+			return (othersMap == null || !othersMap.containsKey("EXCEPTION")) ? true
+					: !(Boolean.parseBoolean(othersMap.get("EXCEPTION")));
+		}).collect(Collectors.toList());
+		if (segments != null) {
+			segments = segments.stream().filter(bio -> !bio.getBdbInfo().getType().get(0).name()
+					.equalsIgnoreCase(BiometricType.EXCEPTION_PHOTO.name())).collect(Collectors.toList());
+		}
+		BiometricRecord biorecord = new BiometricRecord();
+		biorecord.setSegments(segments);
+		return biorecord;
 	}
 
 }

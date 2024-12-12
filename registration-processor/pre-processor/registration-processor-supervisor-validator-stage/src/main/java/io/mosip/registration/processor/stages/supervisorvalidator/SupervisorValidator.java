@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.json.JSONException;
+import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.xml.sax.SAXException;
@@ -256,10 +257,20 @@ public class SupervisorValidator {
 			userId = getIndividualIdByUserId(userId);
 			individualType = null;
 		}
+		JSONObject jsonObject = utility.getIdentityJSONObjectByHandle(userId);
+		if (jsonObject != null) {
+	    String uin = JsonUtil.getJSONValue(jsonObject, "UIN");
 		List<BIR> filtertedBirs = filterExceptionBiometrics(list);
-		bioUtil.authenticateBiometrics(userId, individualType, filtertedBirs, registrationStatusDto,
+		bioUtil.authenticateBiometrics(uin, individualType, filtertedBirs, registrationStatusDto,
 				StatusUtil.SUPERVISOR_AUTHENTICATION_FAILED.getMessage(),
 				StatusUtil.SUPERVISOR_AUTHENTICATION_FAILED.getCode());
+	}
+		else {
+			throw new ValidationFailedException(
+					StatusUtil.BIOMETRICS_VALIDATION_FAILURE.getMessage() + " for Supervisor : " + userId,
+					StatusUtil.BIOMETRICS_VALIDATION_FAILURE.getCode());
+		}
+	
 	}
 
 	/**

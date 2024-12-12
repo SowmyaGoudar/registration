@@ -166,6 +166,9 @@ public class MessageBusAddress implements Serializable {
 	/** The Constant MANUAL_VERIFICATION_BUS_IN. */
 	public static final MessageBusAddress VERIFICATION_BUS_IN = new MessageBusAddress("verification-bus-in");
 
+	public static final MessageBusAddress MVS_BUS_OUT = new MessageBusAddress("mvs-bus-out");
+
+	public static final MessageBusAddress MVS_BUS_IN = new MessageBusAddress("mvs-bus-in");
 
 	/** The Constant UIN_GENERATION_BUS_IN. */
 	public static final MessageBusAddress UIN_GENERATION_BUS_IN = new MessageBusAddress("uin-generator-bus-in");

@@ -154,6 +154,9 @@ public class MessageNotificationServiceImpl
 
 	@Value("${mosip.default.user-preferred-language-attribute:#{null}}")
 	private String userPreferredLanguageAttribute;
+	
+	@Value("${mosip.regproc.masked:false}")
+	private boolean ismasked;
 
 	/** The resclient. */
 	@Autowired
@@ -458,8 +461,14 @@ public class MessageNotificationServiceImpl
 
 			if (NIN.length() >= 7) {
 				maskedNin = "*******" + NIN.substring(7);
-				attributes.put("MASKEDNIN", NIN);
 			}
+			
+			if(ismasked==true)
+			attributes.put("MASKEDNIN",maskedNin );
+			
+			else 
+				attributes.put("MASKEDNIN",NIN );
+			
 			attributes.put("RID", id);
 			attributes.put("UIN", uin);
 			attributes.put("VID", getVid(uin));

@@ -226,7 +226,7 @@ public class MVSStage extends MosipVerticleAPIManager {
 				throw new InvalidMessageException(PlatformErrorMessages.RPR_INVALID_MESSSAGE.getCode(), PlatformErrorMessages.RPR_INVALID_MESSSAGE.getMessage());
 			}
 			DocumentDTO resp = JsonUtil.readValueWithUnknownProperties(response, DocumentDTO.class);
-			packetManagerService.createPacket("10002100340000120241115101214", resp.getDocuments(), "REGISTRATION_CLIENT", "MVS_DOC");
+			//packetManagerService.createPacket("10002100340000120241115101214", resp.getDocuments(), "REGISTRATION_CLIENT", "MVS_DOC");
 			/*
 			 * VerificationResponseDTO resp =
 			 * JsonUtil.readValueWithUnknownProperties(response,

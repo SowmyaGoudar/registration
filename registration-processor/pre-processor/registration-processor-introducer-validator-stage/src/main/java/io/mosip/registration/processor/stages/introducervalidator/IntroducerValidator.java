@@ -10,6 +10,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.collections.CollectionUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -39,6 +40,7 @@ import io.mosip.registration.processor.core.exception.ValidationFailedException;
 import io.mosip.registration.processor.core.logger.RegProcessorLogger;
 import io.mosip.registration.processor.core.packet.dto.FieldValue;
 import io.mosip.registration.processor.core.status.util.StatusUtil;
+import io.mosip.registration.processor.core.util.JsonUtil;
 import io.mosip.registration.processor.core.util.RegistrationExceptionMapperUtil;
 import io.mosip.registration.processor.packet.manager.idreposervice.IdRepoService;
 import io.mosip.registration.processor.packet.storage.utils.BioSdkUtil;
@@ -99,14 +101,14 @@ public class IntroducerValidator {
 
 		regProcLogger.debug("validate called for registrationId {}", registrationId);
 
-		String introducerUIN = packetManagerService.getFieldByMappingJsonKey(registrationId,
-				MappingJsonConstants.INTRODUCER_UIN, registrationStatusDto.getRegistrationType(),
+		String introducerNIN = packetManagerService.getFieldByMappingJsonKey(registrationId,
+				MappingJsonConstants.INTRODUCER_NIN, registrationStatusDto.getRegistrationType(),
 				ProviderStageName.INTRODUCER_VALIDATOR);
 		String introducerRID = packetManagerService.getFieldByMappingJsonKey(registrationId,
 				MappingJsonConstants.INTRODUCER_RID, registrationStatusDto.getRegistrationType(),
 				ProviderStageName.INTRODUCER_VALIDATOR);
-
-		if (isValidIntroducer(introducerUIN, introducerRID)) {
+		String introducerUIN=null;
+		if (isValidIntroducer(introducerNIN, introducerRID)) {
 			registrationStatusDto.setLatestTransactionStatusCode(registrationExceptionMapperUtil
 					.getStatusCode(RegistrationExceptionTypeCode.INTRODUCER_UIN_AND_RID_NOT_IN_PACKET));
 			registrationStatusDto.setStatusCode(RegistrationStatusCode.REJECTED.toString());
@@ -116,7 +118,7 @@ public class IntroducerValidator {
 					StatusUtil.UIN_RID_NOT_FOUND.getCode());
 		}
 
-		if ((introducerUIN == null || introducerUIN.isEmpty())
+		if ((introducerNIN == null || introducerNIN.isEmpty())
 				&& isValidIntroducerRid(introducerRID, registrationId, registrationStatusDto)) {
 
 			introducerUIN = idRepoService.getUinByRid(introducerRID, utility.getGetRegProcessorDemographicIdentity());
@@ -132,7 +134,18 @@ public class IntroducerValidator {
 			}
 
 		}
-		if (introducerUIN != null && !introducerUIN.isEmpty()) {
+		if (introducerNIN != null && !introducerNIN.isEmpty()) {
+			JSONObject parentInfoJson = utility.getIdentityJSONObjectByHandle(introducerNIN);
+			if (parentInfoJson == null) {
+				registrationStatusDto.setLatestTransactionStatusCode(registrationExceptionMapperUtil
+						.getStatusCode(RegistrationExceptionTypeCode.INTRODUCER_UIN_NOT_AVAIALBLE));
+				registrationStatusDto.setStatusCode(RegistrationStatusCode.FAILED.toString());
+				regProcLogger.debug("validate called for registrationId {} {}", registrationId,
+						StatusUtil.INTRODUCER_UIN_NOT_FOUND_FOR_NIN.getMessage());
+				throw new BaseCheckedException(StatusUtil.INTRODUCER_UIN_NOT_FOUND.getMessage(),
+						StatusUtil.INTRODUCER_UIN_NOT_FOUND_FOR_NIN.getCode());
+			}
+			introducerUIN = JsonUtil.getJSONValue(parentInfoJson, "UIN");
 			validateIntroducerBiometric(registrationId, registrationStatusDto, introducerUIN);
 		} else {
 			throw new ValidationFailedException(StatusUtil.INTRODUCER_AUTHENTICATION_FAILED.getMessage(),

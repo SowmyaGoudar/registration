@@ -19,6 +19,7 @@
         <module>registration-processor-uin-generator-stage</module>
         <module>registration-processor-abis</module>
 	<module>registration-processor-manual-adjudication-stage</module>
+	<module>registration-processor-mvs-stage</module>
         <module>registration-processor-abis-handler-stage</module>
         <module>registration-processor-abis-middleware-stage</module>
     	<module>registration-processor-biometric-authentication-stage</module>

@@ -130,6 +130,7 @@ public class NotificationUtility {
 	private static final String ACTIVATE=NOTIFICATION_TEMPLATE_CODE+"activate.";
 	private static final String DEACTIVATE=NOTIFICATION_TEMPLATE_CODE+"deactivate.";
 	private static final String UIN_UPDATE=NOTIFICATION_TEMPLATE_CODE+"uin.update.";
+	private static final String UIN_RENEWAL=NOTIFICATION_TEMPLATE_CODE+"uin.renewal.";
 	private static final String RES_UPDATE=NOTIFICATION_TEMPLATE_CODE+"resident.update.";
 	private static final String TECHNICAL_ISSUE=NOTIFICATION_TEMPLATE_CODE+"technical.issue.";
 	private static final String SUP_REJECT=NOTIFICATION_TEMPLATE_CODE+"supervisor.reject.";
@@ -423,6 +424,8 @@ public class NotificationUtility {
 			type = NotificationTemplateType.NEW_REG;
 		else if (registrationStatusDto.getRegistrationType().equalsIgnoreCase(SyncTypeDto.UPDATE.getValue()))
 			type = NotificationTemplateType.UIN_UPDATE;
+		else if (registrationStatusDto.getRegistrationType().equalsIgnoreCase(SyncTypeDto.RENEWAL.getValue()))
+			type = NotificationTemplateType.UIN_RENEWAL;
 		else if (registrationStatusDto.getRegistrationType().equalsIgnoreCase(SyncTypeDto.RES_REPRINT.getValue()))
 			type = NotificationTemplateType.REPRINT_UIN;
 		else if (registrationStatusDto.getRegistrationType().equalsIgnoreCase(SyncTypeDto.ACTIVATED.getValue()))
@@ -451,6 +454,11 @@ public class NotificationUtility {
 			MessageSenderDTO.setSmsTemplateCode(env.getProperty(UIN_UPDATE+SMS));
 			MessageSenderDTO.setEmailTemplateCode(env.getProperty(UIN_UPDATE+EMAIL));
 			MessageSenderDTO.setSubjectTemplateCode(env.getProperty(UIN_UPDATE+SUB));
+			break;
+		case UIN_RENEWAL:
+			MessageSenderDTO.setSmsTemplateCode(env.getProperty(UIN_RENEWAL+SMS));
+			MessageSenderDTO.setEmailTemplateCode(env.getProperty(UIN_RENEWAL+EMAIL));
+			MessageSenderDTO.setSubjectTemplateCode(env.getProperty(UIN_RENEWAL+SUB));
 			break;
 		case REPRINT_UIN:
 			MessageSenderDTO.setSmsTemplateCode(env.getProperty(REPRINT_UIN+SMS));

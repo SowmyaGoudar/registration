@@ -1,22 +1,24 @@
 package io.mosip.registration.processor.citizenship.verification.stage;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-
-import java.io.ByteArrayInputStream;
+import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import io.mosip.registration.processor.core.code.EventId;
-import io.mosip.registration.processor.core.code.EventName;
-import io.mosip.registration.processor.core.code.EventType;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,6 +33,9 @@ import io.mosip.registration.processor.citizenship.verification.service.NinUsage
 import io.mosip.registration.processor.citizenship.verification.util.NotificationUtility;
 import io.mosip.registration.processor.core.abstractverticle.MessageBusAddress;
 import io.mosip.registration.processor.core.abstractverticle.MessageDTO;
+import io.mosip.registration.processor.core.code.EventId;
+import io.mosip.registration.processor.core.code.EventName;
+import io.mosip.registration.processor.core.code.EventType;
 import io.mosip.registration.processor.core.code.ModuleName;
 import io.mosip.registration.processor.core.code.RegistrationExceptionTypeCode;
 import io.mosip.registration.processor.core.code.RegistrationTransactionStatusCode;
@@ -49,23 +54,14 @@ import io.mosip.registration.processor.core.status.util.TrimExceptionMessage;
 import io.mosip.registration.processor.core.util.RegistrationExceptionMapperUtil;
 import io.mosip.registration.processor.packet.manager.decryptor.Decryptor;
 import io.mosip.registration.processor.packet.storage.exception.IdRepoAppException;
-
 import io.mosip.registration.processor.packet.storage.utils.Utilities;
 import io.mosip.registration.processor.rest.client.audit.builder.AuditLogRequestBuilder;
 import io.mosip.registration.processor.status.code.RegistrationStatusCode;
 import io.mosip.registration.processor.status.dto.InternalRegistrationStatusDto;
 import io.mosip.registration.processor.status.dto.RegistrationAdditionalInfoDTO;
 import io.mosip.registration.processor.status.dto.RegistrationStatusDto;
-
 import io.mosip.registration.processor.status.entity.SyncRegistrationEntity;
 import io.mosip.registration.processor.status.service.RegistrationStatusService;
-
-import java.time.LocalDate;
-import java.time.Period;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-
-import org.json.simple.JSONObject;
 
 @Service
 public class CitizenshipVerificationProcessor {
@@ -259,7 +255,7 @@ public class CitizenshipVerificationProcessor {
 			applicantFields.put(MappingJsonConstants.GUARDIAN_LIVING_STATUS, "Alive");
 
 			regProcLogger.info("fields fetched {}: " + applicantFields.toString());
-
+			System.out.println("fields fetched {}: " + applicantFields.toString());
 			String citizenshipType = null;
 			String jsonCitizenshipTypes = applicantFields.get(MappingJsonConstants.APPLICANT_CITIZENSHIPTYPE);
 
@@ -273,7 +269,7 @@ public class CitizenshipVerificationProcessor {
 			} catch (Exception e) {
 
 			}
-
+			System.out.println("****************************************************citizenshipType" + citizenshipType);
 			if (!CitizenshipType.BIRTH.getCitizenshipType().equalsIgnoreCase(citizenshipType)) {
 				regProcLogger.info("Citizenship verification failed: Not Citizen By Birth");
 				logAndSetStatusError(registrationStatusDto,
@@ -329,7 +325,7 @@ public class CitizenshipVerificationProcessor {
 	private boolean handleValidationWithParentNinFound(Map<String, String> applicantFields,
 			InternalRegistrationStatusDto registrationStatusDto, LogDescription description) {
 		regProcLogger.info("Citizenship verification proceed: Handling validation with parents NIN found");
-
+		boolean isParentInfoValid = false;
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(MappingJsonConstants.DATE_FORMAT);
 
 		String fatherNIN = applicantFields.get(MappingJsonConstants.FATHER_NIN);
@@ -349,16 +345,17 @@ public class CitizenshipVerificationProcessor {
 
 		if (fatherNIN != null) {
 
-			return validateParentInfo(fatherNIN, "FATHER", applicantFields, applicantDob, formatter,
+			isParentInfoValid = validateParentInfo(fatherNIN, "FATHER", applicantFields, applicantDob, formatter,
 					registrationStatusDto, description);
-		} else if (motherNIN != null) {
+		}
+		if (isParentInfoValid == false && motherNIN != null) {
 
-			return validateParentInfo(motherNIN, "MOTHER", applicantFields, applicantDob, formatter,
+			isParentInfoValid = validateParentInfo(motherNIN, "MOTHER", applicantFields, applicantDob, formatter,
 					registrationStatusDto, description);
 		}
 
 		regProcLogger.error("Neither parent's NIN is provided.");
-		return false;
+		return isParentInfoValid;
 	}
 
 	private boolean validateParentInfo(String parentNin, String parentType, Map<String, String> applicantFields,

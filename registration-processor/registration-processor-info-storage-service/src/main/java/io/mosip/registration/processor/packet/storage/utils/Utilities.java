@@ -614,7 +614,12 @@ public class Utilities {
 	public JSONObject getIdentityJSONObjectByHandle(String handle) throws ApisResourceAccessException {
 		if (handle != null) {
 			List<String> pathSegments = new ArrayList<>();
-			pathSegments.add(handle.toLowerCase() + "@nin");
+			if (handle.contains("@nin")) {
+				pathSegments.add(handle);
+			} else {
+				pathSegments.add(handle.toLowerCase() + "@nin");
+			}
+
 			IdResponseDTO1 idResponseDto;
 
 			String typeParam = "type";

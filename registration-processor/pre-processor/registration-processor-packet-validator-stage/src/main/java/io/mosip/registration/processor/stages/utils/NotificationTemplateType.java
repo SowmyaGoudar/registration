@@ -8,6 +8,9 @@ public enum NotificationTemplateType {
 	/** The uin update. */
 	UIN_UPDATE,
 	
+	/** The uin renewal. */
+	UIN_RENEWAL,
+	
 	/** The Lost UIN. */
 	LOST_UIN,
 

@@ -5,23 +5,19 @@ package io.mosip.registration.processor.status.service.impl;
 
 import java.net.URI;
 import java.security.NoSuchAlgorithmException;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import io.mosip.kernel.core.util.DateUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,9 +29,9 @@ import io.mosip.kernel.core.idvalidator.exception.InvalidIDException;
 import io.mosip.kernel.core.idvalidator.spi.RidValidator;
 import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.kernel.core.util.CryptoUtil;
+import io.mosip.kernel.core.util.DateUtils;
 import io.mosip.kernel.core.util.HMACUtils2;
 import io.mosip.kernel.core.util.JsonUtils;
-import io.mosip.kernel.core.util.StringUtils;
 import io.mosip.kernel.core.util.exception.JsonMappingException;
 import io.mosip.kernel.core.util.exception.JsonParseException;
 import io.mosip.kernel.core.util.exception.JsonProcessingException;
@@ -1021,6 +1017,12 @@ public class SyncRegistrationServiceImpl implements SyncRegistrationService<Sync
 			result.append(String.format("%02x", temp));
 		}
 		return result.toString();
+	}
+
+	@Override
+	public SyncRegistrationEntity saveSyncRegistrationEntity(SyncRegistrationEntity syncRegistrationEntity) {
+		syncRegistrationEntity = syncRegistrationDao.save(syncRegistrationEntity);
+		return syncRegistrationEntity;
 	}
 
 }

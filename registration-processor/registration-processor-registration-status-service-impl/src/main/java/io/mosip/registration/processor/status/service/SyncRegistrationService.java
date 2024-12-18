@@ -8,8 +8,8 @@ import io.mosip.registration.processor.status.dto.LostRidDto;
 import io.mosip.registration.processor.status.dto.RegistrationStatusDto;
 import io.mosip.registration.processor.status.dto.RegistrationStatusSubRequestDto;
 import io.mosip.registration.processor.status.dto.RegistrationSyncRequestDTO;
-import io.mosip.registration.processor.status.dto.SyncRegistrationDto;
 import io.mosip.registration.processor.status.dto.SearchInfo;
+import io.mosip.registration.processor.status.dto.SyncRegistrationDto;
 import io.mosip.registration.processor.status.dto.SyncResponseDto;
 import io.mosip.registration.processor.status.entity.SyncRegistrationEntity;
 
@@ -114,5 +114,7 @@ public interface SyncRegistrationService<T, U> {
 	public List<SyncRegistrationEntity> getByPacketIds(List<String> packetIdList);
 
 	public List<LostRidDto> searchLostRid(SearchInfo searchInfo);
+
+	public SyncRegistrationEntity saveSyncRegistrationEntity(SyncRegistrationEntity syncRegistrationEntity);
 
 }

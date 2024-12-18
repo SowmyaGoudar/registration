@@ -32,7 +32,6 @@ import io.mosip.registration.processor.core.status.util.TrimExceptionMessage;
 import io.mosip.registration.processor.core.util.RegistrationExceptionMapperUtil;
 import io.mosip.registration.processor.packet.storage.exception.ParsingException;
 import io.mosip.registration.processor.rest.client.audit.builder.AuditLogRequestBuilder;
-import io.mosip.registration.processor.stages.legacy.data.stage.exception.PacketOnHoldException;
 import io.mosip.registration.processor.status.code.RegistrationStatusCode;
 import io.mosip.registration.processor.status.dto.InternalRegistrationStatusDto;
 import io.mosip.registration.processor.status.dto.RegistrationStatusDto;
@@ -112,10 +111,6 @@ public class LegacyDataValidateProcessor {
 			updateDTOsAndLogError(registrationStatusDto, RegistrationStatusCode.PROCESSING,
 					StatusUtil.PACKET_MANAGER_EXCEPTION, RegistrationExceptionTypeCode.PACKET_MANAGER_EXCEPTION,
 					description, PlatformErrorMessages.PACKET_MANAGER_EXCEPTION, e);
-		} catch (PacketOnHoldException e) {
-			updateDTOsAndLogError(registrationStatusDto, RegistrationStatusCode.PROCESSING,
-					StatusUtil.PACKET_ON_HOLD_FOR_MIGRATION, RegistrationExceptionTypeCode.ON_HOLD_PACKET, description,
-					PlatformErrorMessages.RPR_LEGACY_DATA_VALIDATION_FAILED, e);
 		} catch (DataAccessException e) {
 			updateDTOsAndLogError(registrationStatusDto, RegistrationStatusCode.PROCESSING,
 					StatusUtil.DB_NOT_ACCESSIBLE, RegistrationExceptionTypeCode.DATA_ACCESS_EXCEPTION, description,

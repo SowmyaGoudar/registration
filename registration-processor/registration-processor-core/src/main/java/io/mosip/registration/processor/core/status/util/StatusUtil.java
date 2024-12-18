@@ -414,8 +414,8 @@ public enum StatusUtil {
 			"Legacy data validation  success"),
 	LEGACY_DATA_VALIDATION_FAILED(StatusConstants.LEGACY_DATA_VALIDATION_FAILED + "002",
 			"Legacy data validation failed"),
-	PACKET_ON_HOLD_FOR_MIGRATION(StatusConstants.LEGACY_DATA_VALIDATION_FAILED + "003",
-			"Packet On-Hold as on demand migrated packet is not processed yet.");
+	ON_DEMAND_PACKET_CREATION_SUCCESS(StatusConstants.LEGACY_DATA_VALIDATION_SUCCESS + "003",
+			"OnDemand Packet created");
 
 
 	private final String statusComment;

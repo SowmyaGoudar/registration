@@ -5,12 +5,7 @@ import java.awt.image.DataBufferByte;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
-import java.io.File;
 import java.io.IOException;
-
-import javax.imageio.ImageIO;
-
-import org.jnbis.api.Jnbis;
 
 import io.mosip.biometrics.util.ConvertRequestDto;
 import io.mosip.biometrics.util.finger.FingerBDIR;
@@ -78,27 +73,4 @@ public class FingrePrintConvertor {
 		}
 	}
 
-	public static void getImage(byte[] wsqData) {
-		try {
-			// Decode the WSQ byte array to a Bitmap
-			org.jnbis.api.model.Bitmap bitmap = Jnbis.wsq().decode(wsqData).asBitmap();
-
-			// Create BufferedImage from Bitmap data
-			BufferedImage image = new BufferedImage(bitmap.getWidth(), bitmap.getHeight(),
-					BufferedImage.TYPE_BYTE_GRAY);
-			image.getRaster().setDataElements(0, 0, bitmap.getWidth(), bitmap.getHeight(), bitmap.getPixels());
-
-			// Save the BufferedImage to an output file
-			String outputImagePath = "E:\\\\image16.png"; // Path for the output
-															// image
-
-			ImageIO.write(image, "png", new File(outputImagePath));
-
-			System.out.println("Image saved successfully at: " + outputImagePath);
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.out.println("Failed to convert WSQ to image.");
-		}
-
-	}
 }

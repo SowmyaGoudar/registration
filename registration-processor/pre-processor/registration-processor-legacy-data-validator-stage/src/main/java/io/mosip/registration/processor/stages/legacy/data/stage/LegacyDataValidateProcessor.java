@@ -21,10 +21,10 @@ import io.mosip.registration.processor.core.code.ModuleName;
 import io.mosip.registration.processor.core.code.RegistrationExceptionTypeCode;
 import io.mosip.registration.processor.core.code.RegistrationTransactionStatusCode;
 import io.mosip.registration.processor.core.code.RegistrationTransactionTypeCode;
+import io.mosip.registration.processor.core.exception.ApisResourceAccessException;
 import io.mosip.registration.processor.core.exception.PacketManagerException;
 import io.mosip.registration.processor.core.exception.ValidationFailedException;
 import io.mosip.registration.processor.core.exception.util.PlatformErrorMessages;
-import io.mosip.registration.processor.core.exception.util.PlatformSuccessMessages;
 import io.mosip.registration.processor.core.logger.LogDescription;
 import io.mosip.registration.processor.core.logger.RegProcessorLogger;
 import io.mosip.registration.processor.core.status.util.StatusUtil;
@@ -79,7 +79,7 @@ public class LegacyDataValidateProcessor {
 		object.setIsValid(Boolean.FALSE);
 		object.setInternalError(Boolean.TRUE);
 
-		regProcLogger.debug("process called for registrationId {}", registrationId);
+		regProcLogger.debug("LegacyDataValidateProcessor called for registrationId {}", registrationId);
 		registrationId = object.getRid();
 
 		InternalRegistrationStatusDto registrationStatusDto = registrationStatusService
@@ -90,18 +90,8 @@ public class LegacyDataValidateProcessor {
 		registrationStatusDto.setRegistrationStageName(stageName);
 		try {
 
-			legacyDataValidator.validate(registrationId, registrationStatusDto);
-
-			registrationStatusDto.setLatestTransactionStatusCode(RegistrationTransactionStatusCode.SUCCESS.toString());
-			registrationStatusDto.setStatusComment(StatusUtil.LEGACY_DATA_VALIDATION_SUCCESS.getMessage());
-			registrationStatusDto.setSubStatusCode(StatusUtil.LEGACY_DATA_VALIDATION_SUCCESS.getCode());
-			registrationStatusDto.setStatusCode(RegistrationStatusCode.PROCESSING.toString());
-
-			description.setMessage(
-					PlatformSuccessMessages.RPR_LEGACY_DATA_VALIDATE.getMessage() + " -- " + registrationId);
-			description.setCode(PlatformSuccessMessages.RPR_LEGACY_DATA_VALIDATE.getCode());
-
-			regProcLogger.info("process call ended for registrationId {} {} {}", registrationId,
+			legacyDataValidator.validate(registrationId, registrationStatusDto, description, object);
+			regProcLogger.info("LegacyDataValidateProcessor call ended for registrationId {} {} {}", registrationId,
 					description.getCode() + description.getMessage());
 
 			object.setIsValid(Boolean.TRUE);
@@ -114,6 +104,11 @@ public class LegacyDataValidateProcessor {
 		} catch (DataAccessException e) {
 			updateDTOsAndLogError(registrationStatusDto, RegistrationStatusCode.PROCESSING,
 					StatusUtil.DB_NOT_ACCESSIBLE, RegistrationExceptionTypeCode.DATA_ACCESS_EXCEPTION, description,
+					PlatformErrorMessages.RPR_RGS_REGISTRATION_TABLE_NOT_ACCESSIBLE, e);
+		} catch (ApisResourceAccessException e) {
+			updateDTOsAndLogError(registrationStatusDto, RegistrationStatusCode.PROCESSING,
+					StatusUtil.API_RESOUCE_ACCESS_FAILED, RegistrationExceptionTypeCode.APIS_RESOURCE_ACCESS_EXCEPTION,
+					description,
 					PlatformErrorMessages.RPR_RGS_REGISTRATION_TABLE_NOT_ACCESSIBLE, e);
 		} catch (IOException e) {
 			updateDTOsAndLogError(registrationStatusDto, RegistrationStatusCode.FAILED, StatusUtil.IO_EXCEPTION,

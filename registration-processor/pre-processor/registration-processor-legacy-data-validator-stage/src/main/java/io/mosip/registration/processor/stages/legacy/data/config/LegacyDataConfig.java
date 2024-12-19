@@ -3,7 +3,6 @@ package io.mosip.registration.processor.stages.legacy.data.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import io.mosip.registration.processor.packet.storage.utils.CredentialManagerUtil;
 import io.mosip.registration.processor.stages.legacy.data.stage.LegacyDataValidateProcessor;
 
 @Configuration
@@ -13,10 +12,4 @@ public class LegacyDataConfig {
 	public LegacyDataValidateProcessor getLegacyDataValidateProcessor() {
 		return new LegacyDataValidateProcessor();
 	}
-
-	@Bean
-	public CredentialManagerUtil getCredentialManagerUtil() {
-		return new CredentialManagerUtil();
-	}
-
 }

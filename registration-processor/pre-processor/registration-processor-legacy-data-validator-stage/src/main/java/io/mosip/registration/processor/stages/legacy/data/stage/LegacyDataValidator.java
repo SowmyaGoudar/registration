@@ -36,6 +36,7 @@ import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.kernel.core.util.CryptoUtil;
 import io.mosip.kernel.core.util.DateUtils;
 import io.mosip.kernel.core.util.exception.JsonProcessingException;
+import io.mosip.registration.processor.core.abstractverticle.MessageDTO;
 import io.mosip.registration.processor.core.code.ApiName;
 import io.mosip.registration.processor.core.code.ModuleName;
 import io.mosip.registration.processor.core.code.RegistrationTransactionStatusCode;
@@ -51,6 +52,7 @@ import io.mosip.registration.processor.core.exception.util.PlatformSuccessMessag
 import io.mosip.registration.processor.core.http.RequestWrapper;
 import io.mosip.registration.processor.core.http.ResponseWrapper;
 import io.mosip.registration.processor.core.idrepo.dto.Documents;
+import io.mosip.registration.processor.core.logger.LogDescription;
 import io.mosip.registration.processor.core.logger.RegProcessorLogger;
 import io.mosip.registration.processor.core.packet.dto.DocumentDto;
 import io.mosip.registration.processor.core.packet.dto.PacketDto;
@@ -136,11 +138,12 @@ public class LegacyDataValidator {
 	private String password;
 
 
-	public boolean validate(String registrationId, InternalRegistrationStatusDto registrationStatusDto)
+	public void validate(String registrationId, InternalRegistrationStatusDto registrationStatusDto,
+			LogDescription description, MessageDTO object)
 			throws ApisResourceAccessException, PacketManagerException, JsonProcessingException, IOException,
 			ValidationFailedException, PacketOnHoldException, JAXBException, NoSuchAlgorithmException,
 			NumberFormatException, JSONException {
-		boolean isValidPacket = false;
+
 		regProcLogger.debug("validate called for registrationId {}", registrationId);
 
 		String NIN =  packetManagerService.getFieldByMappingJsonKey(registrationId,
@@ -151,12 +154,13 @@ public class LegacyDataValidator {
 		
 		if (jSONObject == null) {
 			Map<String, String> positionAndWsqMap = getBiometricsWSQFormat(registrationId, registrationStatusDto);
-			boolean isPresentInlegacySystem = false;
-			// fetch legacy system data by calling api
-			isPresentInlegacySystem = checkNINAVailableInLegacy(registrationId, NIN, positionAndWsqMap);
+			boolean isPresentInlegacySystem = checkNINAVailableInLegacy(registrationId, NIN, positionAndWsqMap);
 			if (isPresentInlegacySystem) {
+				regProcLogger.info("NIN is present in legacy system and call for ondemand migration : {}",
+						registrationId);
 					// Call for ondemand migration of packet by passing NIN
-					// get Demographic details from legacy and biometrics and document from RENEWAL
+					// get Demographic details and documents from legacy and biometrics
+					// from RENEWAL
 					// and create packet using packet manager with NEW
 					// TODO this to call api of migration to get demographic
 					Response response = new Response();
@@ -164,32 +168,73 @@ public class LegacyDataValidator {
 					PacketDto packetDto = createOnDemandPacket(
 							demographics, registrationStatusDto);
 					if (packetDto != null) {
-						boolean storageFlag = createSyncAndRegistration(packetDto,
+						SyncRegistrationEntity syncRegistrationEntityForOndemand = createSyncAndRegistration(packetDto,
 								registrationStatusDto.getRegistrationStageName());
-						isValidPacket = true;
-						// update registrationStatusDto status as MERGED and comment registration id
+						if (syncRegistrationEntityForOndemand != null) {
+							registrationStatusDto.setLatestTransactionStatusCode(
+									RegistrationTransactionStatusCode.SUCCESS.toString());
+							registrationStatusDto
+									.setStatusComment(StatusUtil.ON_DEMAND_PACKET_CREATION_SUCCESS.getMessage());
+							registrationStatusDto
+									.setSubStatusCode(StatusUtil.ON_DEMAND_PACKET_CREATION_SUCCESS.getCode());
+							registrationStatusDto.setStatusCode(RegistrationStatusCode.MERGED.toString());
+
+							description.setMessage(
+									PlatformSuccessMessages.RPR_LEGACY_DATA_VALIDATE_ONDEMAND_PACKET.getMessage()
+											+ " -- " + registrationId);
+							description.setCode(
+									PlatformSuccessMessages.RPR_LEGACY_DATA_VALIDATE_ONDEMAND_PACKET.getCode());
+							object.setIsValid(true);
+							object.setReg_type(syncRegistrationEntityForOndemand.getRegistrationType());
+							object.setRid(syncRegistrationEntityForOndemand.getRegistrationId());
+							object.setWorkflowInstanceId(syncRegistrationEntityForOndemand.getWorkflowInstanceId());
+							regProcLogger.info("Ondemand Packet will move forward further stages : {} ",
+									registrationId);
+						}
 					} else {
-						// reprocess it if any
+						regProcLogger.info("Ondemand creation is failed packet going for reprocess : {} ",
+								registrationId);
+						registrationStatusDto
+								.setLatestTransactionStatusCode(RegistrationTransactionStatusCode.REPROCESS.toString());
+						registrationStatusDto
+								.setStatusComment(StatusUtil.ON_DEMAND_PACKET_CREATION_FAILED.getMessage());
+						registrationStatusDto.setSubStatusCode(StatusUtil.ON_DEMAND_PACKET_CREATION_FAILED.getCode());
+						registrationStatusDto.setStatusCode(RegistrationStatusCode.PROCESSING.toString());
+						description.setMessage(
+								PlatformSuccessMessages.RPR_LEGACY_DATA_VALIDATE_ONDEMAND_PACKET.getMessage() + " -- "
+										+ registrationId);
+						description.setCode(PlatformSuccessMessages.RPR_LEGACY_DATA_VALIDATE_ONDEMAND_PACKET.getCode());
+						object.setIsValid(true);
+						object.setInternalError(true);
 					}
 
 			} else {
+				regProcLogger.info("NIN is not  present in legacy system : {}", registrationId);
 				throw new ValidationFailedException(StatusUtil.LEGACY_DATA_VALIDATION_FAILED.getMessage(),
 						StatusUtil.LEGACY_DATA_VALIDATION_FAILED.getCode());
 			}
 		} else {
-			isValidPacket = true;
+			regProcLogger.info("NIN is present in mosip system : {}", registrationId);
+			registrationStatusDto.setLatestTransactionStatusCode(RegistrationTransactionStatusCode.SUCCESS.toString());
+			registrationStatusDto.setStatusComment(StatusUtil.LEGACY_DATA_VALIDATION_SUCCESS.getMessage());
+			registrationStatusDto.setSubStatusCode(StatusUtil.LEGACY_DATA_VALIDATION_SUCCESS.getCode());
+			registrationStatusDto.setStatusCode(RegistrationStatusCode.PROCESSING.toString());
+
+			description.setMessage(
+					PlatformSuccessMessages.RPR_LEGACY_DATA_VALIDATE.getMessage() + " -- " + registrationId);
+			description.setCode(PlatformSuccessMessages.RPR_LEGACY_DATA_VALIDATE.getCode());
 		}
 
 		regProcLogger.debug("validate call ended for registrationId {}", registrationId);
-		return isValidPacket;
+
 	}
 
-	private boolean createSyncAndRegistration(PacketDto packetDto, String stageName) {
-		boolean storageFlag = false;
+	private SyncRegistrationEntity createSyncAndRegistration(PacketDto packetDto, String stageName) {
 		SyncRegistrationEntity syncRegistrationEntity = createSyncEntity(packetDto);
 		syncRegistrationEntity = syncRegistrationService.saveSyncRegistrationEntity(syncRegistrationEntity);
-		storageFlag = createRegistrationStatusEntity(stageName, syncRegistrationEntity);
-		return storageFlag;
+		regProcLogger.info("Successfully sync the ondemand packet : {} {}", packetDto.getId());
+		createRegistrationStatusEntity(stageName, syncRegistrationEntity);
+		return syncRegistrationEntity;
 	}
 
 	private SyncRegistrationEntity createSyncEntity(PacketDto packetDto) {
@@ -212,8 +257,10 @@ public class LegacyDataValidator {
 			InternalRegistrationStatusDto registrationStatusDto) throws ApisResourceAccessException,
 			PacketManagerException,
 			JsonProcessingException, IOException, NumberFormatException, JSONException {
+
 		String registrationId = registrationStatusDto.getRegistrationId();
 		String registrationType = registrationStatusDto.getRegistrationType();
+		regProcLogger.info("Getting details to create ondemand packet : {}", registrationId);
 		String schemaVersion = packetManagerService.getFieldByMappingJsonKey(registrationStatusDto.getRegistrationId(),
 				MappingJsonConstants.IDSCHEMA_VERSION, registrationType, ProviderStageName.LEGACY_DATA_VALIDATOR);
 
@@ -231,6 +278,7 @@ public class LegacyDataValidator {
 		}
 		Map<String, String> metaInfo = packetManagerService.getMetaInfo(registrationId, registrationType,
 				ProviderStageName.LEGACY_DATA_VALIDATOR);
+		regProcLogger.info("successfully got  details to create ondemand packet : {}", registrationId);
 		SyncRegistrationEntity regEntity = syncRegistrationService
 				.findByWorkflowInstanceId(registrationStatusDto.getWorkflowInstanceId());
 		PacketDto packetDto = new PacketDto();
@@ -258,7 +306,10 @@ public class LegacyDataValidator {
 		if ((responseWrapper.getErrors() != null && !responseWrapper.getErrors().isEmpty())
 				|| responseWrapper.getResponse() == null) {
 			ErrorDTO error = (ErrorDTO) responseWrapper.getErrors().get(0);
+			regProcLogger.info("Error while creating packet through to packet manager : {} {}", registrationId,
+					error.getMessage());
 		} else {
+			regProcLogger.info("Successfully created packet through to packet manager : {}", registrationId);
 			return packetDto;
 		}
 		return null;
@@ -267,7 +318,8 @@ public class LegacyDataValidator {
 	private Map<String, String> getBiometricsWSQFormat(String registrationId,
 			InternalRegistrationStatusDto registrationStatusDto)
 			throws IOException, ApisResourceAccessException, PacketManagerException, JsonProcessingException,
-			ValidationFailedException {
+			ValidationFailedException
+	{
 		
 		JSONObject regProcessorIdentityJson = utility
 				.getRegistrationProcessorMappingJson(MappingJsonConstants.IDENTITY);
@@ -282,6 +334,8 @@ public class LegacyDataValidator {
 				ProviderStageName.LEGACY_DATA_VALIDATOR);
 		if (biometricRecord == null || biometricRecord.getSegments() == null
 				|| biometricRecord.getSegments().isEmpty()) {
+			regProcLogger.error(LoggerFileConstant.SESSIONID.toString(), LoggerFileConstant.REGISTRATIONID.toString(),
+					registrationId, RegistrationStatusCode.FAILED.toString() + "Biometrics are not present for packet");
 			throw new ValidationFailedException(StatusUtil.LEGACY_DATA_VALIDATION_FAILED.getMessage(),
 					StatusUtil.LEGACY_DATA_VALIDATION_FAILED.getCode());
 		}
@@ -295,8 +349,9 @@ public class LegacyDataValidator {
 				}
          }
 		}
+		
 		Map<String, String> wsqFormatBiometrics = convertISOToWSQFormat(isoImageMap);
-
+		regProcLogger.info("Converted ISO to WSQ successfully : {}", registrationId);
 		return wsqFormatBiometrics;
 	}
 
@@ -306,7 +361,6 @@ public class LegacyDataValidator {
 			byte[] wsqData = FingrePrintConvertor.convertIsoToWsq(entry.getValue());
 			wsqFormatBiometrics.put(entry.getKey(), CryptoUtil.encodeToPlainBase64(wsqData));
 		}
-		System.out.println("map" + wsqFormatBiometrics);
 		return wsqFormatBiometrics;
 	}
 
@@ -315,8 +369,7 @@ public class LegacyDataValidator {
 		boolean isValid = false;
 		Envelope requestEnvelope = createGetPersonRequest(NIN, positionAndWsqMap);
 		String request = marshalToXml(requestEnvelope);
-		System.out.println(request);
-		String response = (String) restApi.postApi(ApiName.GETPERSONURL, "", "", request, String.class,
+		String response = (String) restApi.postApi(ApiName.VERIFYPERSONURL, "", "", request, String.class,
 				MediaType.TEXT_XML);
 		JAXBContext jaxbContext = JAXBContext.newInstance(Envelope.class);
 		Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
@@ -325,10 +378,13 @@ public class LegacyDataValidator {
 		VerifyPersonResponse verifyPersonResponse = responseEnvelope.getBody().getVerifyPersonResponse();
 		TransactionStatus transactionStatus = verifyPersonResponse.getReturnElement().getTransactionStatus();
 		if (transactionStatus.getTransactionStatus().equalsIgnoreCase("Ok")) {
+			regProcLogger.info("Matching status for legacy system for NIN present in  : {}{}", registrationId,
+					verifyPersonResponse.getReturnElement().isMatchingStatus());
 			if (verifyPersonResponse.getReturnElement().isMatchingStatus()) {
 				isValid = true;
 			}
 		} else if (transactionStatus.getTransactionStatus().equalsIgnoreCase("Error")) {
+			regProcLogger.info("Transaction status is Error : {}", registrationId);
 			regProcLogger.error(LoggerFileConstant.SESSIONID.toString(), LoggerFileConstant.REGISTRATIONID.toString(),
 					registrationId,
 					RegistrationStatusCode.FAILED.toString() + transactionStatus.getError().getCode()
@@ -485,8 +541,7 @@ public class LegacyDataValidator {
 		return biometricData;
 		}
 
-		private boolean createRegistrationStatusEntity(String stageName, SyncRegistrationEntity regEntity) {
-			Boolean storageFlag = false;
+		private void createRegistrationStatusEntity(String stageName, SyncRegistrationEntity regEntity) {
 			InternalRegistrationStatusDto dto = registrationStatusService.getRegistrationStatus(
 					regEntity.getRegistrationId(), regEntity.getRegistrationType(), 1,
 					regEntity.getWorkflowInstanceId());
@@ -521,8 +576,8 @@ public class LegacyDataValidator {
 			String moduleId = PlatformSuccessMessages.RPR_LEGACY_DATA_VALIDATE.getCode();
 			String moduleName = ModuleName.LEGACY_DATA.toString();
 			registrationStatusService.addRegistrationStatus(dto, moduleId, moduleName);
-			storageFlag = true;
-			return storageFlag;
+			regProcLogger.info("Successfully created record in registration for ondemand packet : {} ",
+					regEntity.getRegistrationId());
 		}
 
 }

@@ -14,10 +14,12 @@ import io.mosip.imagedecoder.model.DecoderResponseInfo;
 import io.mosip.imagedecoder.model.Response;
 import io.mosip.imagedecoder.openjpeg.OpenJpegDecoder;
 import io.mosip.imagedecoder.spi.IImageDecoderApi;
+import io.mosip.kernel.core.logger.spi.Logger;
+import io.mosip.registration.processor.core.logger.RegProcessorLogger;
 
 public class FingrePrintConvertor {
 
-
+	private static Logger regProcLogger = RegProcessorLogger.getLogger(FingrePrintConvertor.class);
 	// Method to convert ISO to WSQ
 
 	public static byte[] convertIsoToWsq(byte[] isoBytes) throws IOException {

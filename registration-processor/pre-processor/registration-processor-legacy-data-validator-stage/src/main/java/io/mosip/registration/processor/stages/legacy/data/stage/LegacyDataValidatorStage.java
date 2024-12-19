@@ -71,16 +71,10 @@ public class LegacyDataValidatorStage extends MosipVerticleAPIManager {
 	 * Deploy verticle.
 	 */
 	public void deployVerticle() {
-		// this.mosipEventBus = this.getEventBus(this, clusterManagerUrl,
-		// workerPoolSize);
-		// this.consumeAndSend(mosipEventBus,
-		// MessageBusAddress.LEGACY_DATA_VALIDATOR_IN,
-		// MessageBusAddress.LEGACY_DATA_VALIDATOR_OUT, messageExpiryTimeLimit);
-		MessageDTO object = new MessageDTO();
-		object.setReg_type("RENEWAL");
-		object.setRid("10040100260000920241108073248");
-		object.setWorkflowInstanceId("adfd64c3-7f12-4741-9a19-ca9cfd385e8b");
-		process(object);
+		this.mosipEventBus = this.getEventBus(this, clusterManagerUrl, workerPoolSize);
+		this.consumeAndSend(mosipEventBus, MessageBusAddress.LEGACY_DATA_VALIDATOR_IN,
+				MessageBusAddress.LEGACY_DATA_VALIDATOR_OUT, messageExpiryTimeLimit);
+
 	}
 
 	@Override

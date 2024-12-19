@@ -1,7 +1,5 @@
 package io.mosip.registration.processor.core.exception.util;
 
-import io.mosip.registration.processor.core.status.util.StatusConstants;
-
 // TODO: Auto-generated Javadoc
 /**
  * The Enum RPRPlatformErrorMessages.
@@ -1460,9 +1458,11 @@ public enum PlatformErrorMessages {
 	// Citizenship Verification stage
 	RPR_CITIZENSHIP_VERIFICATION_FAILED(PlatformConstants.RPR_CITIZENSHIP_VERIFICATION_MODULE + "001", "Citizenship Verification failed"),
 	
-	RPR_LEGACY_DATA_VALIDATION_FAILED(PlatformConstants.RPR_LEGACY_DATA_VALIDATOR_MODULE + "001", "Legacy Data Validation failed");
+	RPR_LEGACY_DATA_VALIDATION_FAILED(PlatformConstants.RPR_LEGACY_DATA_VALIDATOR_MODULE + "001",
+			"Legacy Data Validation failed"),
 	
-
+	RPR_LEGACY_DATA_ON_DEMAND_PACKET_CREATION_FAILED(PlatformConstants.RPR_LEGACY_DATA_VALIDATOR_MODULE + "001",
+			"Ondemand packet creation failed");
 
 
 	/** The error message. */

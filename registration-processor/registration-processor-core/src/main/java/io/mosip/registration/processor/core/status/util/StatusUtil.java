@@ -415,7 +415,9 @@ public enum StatusUtil {
 	LEGACY_DATA_VALIDATION_FAILED(StatusConstants.LEGACY_DATA_VALIDATION_FAILED + "002",
 			"Legacy data validation failed"),
 	ON_DEMAND_PACKET_CREATION_SUCCESS(StatusConstants.LEGACY_DATA_VALIDATION_SUCCESS + "003",
-			"OnDemand Packet created");
+			"OnDemand Packet created"),
+	ON_DEMAND_PACKET_CREATION_FAILED(StatusConstants.LEGACY_DATA_VALIDATION_SUCCESS + "004",
+			"OnDemand Packet creattion failed");
 
 
 	private final String statusComment;

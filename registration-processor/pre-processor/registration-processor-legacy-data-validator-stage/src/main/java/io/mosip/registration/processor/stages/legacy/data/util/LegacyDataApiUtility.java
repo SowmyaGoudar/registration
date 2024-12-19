@@ -42,10 +42,23 @@ public class LegacyDataApiUtility {
 		// Get the ISO 8601 formatted string of the EAT time
 		DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 		String timeStamp = timeNow.format(formatter);
+
+		return timeStamp;
+	}
+
+	public String createTimestampForRequest(String timeStamp) {
+
 		String truncatedTimestamp = timeStamp.substring(0, timeStamp.length() - 10); // Trim milliseconds and timezone
 
 		// Append the static timezone offset +03:00
 		return truncatedTimestamp + "+03:00";
+	}
+
+	public String createTimestampForDigest(String timeStamp) {
+
+		String truncatedTimestamp = timeStamp.substring(0, timeStamp.length() - 10); // Trim milliseconds and timezone
+
+		return truncatedTimestamp + "+0300";
 	}
 
 	public byte[] hashPassword(String password) throws NoSuchAlgorithmException, UnsupportedEncodingException {

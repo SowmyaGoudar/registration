@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -53,15 +54,12 @@ import io.mosip.registration.processor.core.idrepo.dto.Documents;
 import io.mosip.registration.processor.core.logger.RegProcessorLogger;
 import io.mosip.registration.processor.core.packet.dto.DocumentDto;
 import io.mosip.registration.processor.core.packet.dto.PacketDto;
-import io.mosip.registration.processor.core.packet.dto.PacketInfo;
-import io.mosip.registration.processor.core.packet.dto.PacketInfoResponse;
 import io.mosip.registration.processor.core.spi.restclient.RegistrationProcessorRestClientService;
 import io.mosip.registration.processor.core.status.util.StatusUtil;
 import io.mosip.registration.processor.core.util.JsonUtil;
 import io.mosip.registration.processor.core.util.RegistrationExceptionMapperUtil;
 import io.mosip.registration.processor.packet.storage.dto.Document;
 import io.mosip.registration.processor.packet.storage.dto.FieldResponseDto;
-import io.mosip.registration.processor.packet.storage.utils.CredentialManagerUtil;
 import io.mosip.registration.processor.packet.storage.utils.FingrePrintConvertor;
 import io.mosip.registration.processor.packet.storage.utils.IdSchemaUtil;
 import io.mosip.registration.processor.packet.storage.utils.PriorityBasedPacketManagerService;
@@ -137,8 +135,6 @@ public class LegacyDataValidator {
 	@Value("${mosip.regproc.legacydata.validator.tpi.password}")
 	private String password;
 
-	@Autowired
-	private CredentialManagerUtil credentialManagerUtil;
 
 	public boolean validate(String registrationId, InternalRegistrationStatusDto registrationStatusDto)
 			throws ApisResourceAccessException, PacketManagerException, JsonProcessingException, IOException,
@@ -147,10 +143,12 @@ public class LegacyDataValidator {
 		boolean isValidPacket = false;
 		regProcLogger.debug("validate called for registrationId {}", registrationId);
 
-		String NIN = packetManagerService.getFieldByMappingJsonKey(registrationId, MappingJsonConstants.NIN,
-				registrationStatusDto.getRegistrationType(), ProviderStageName.LEGACY_DATA_VALIDATOR);
+		String NIN =  packetManagerService.getFieldByMappingJsonKey(registrationId,
+				MappingJsonConstants.NIN, registrationStatusDto.getRegistrationType(),
+		ProviderStageName.LEGACY_DATA_VALIDATOR);
 
 		JSONObject jSONObject = utility.getIdentityJSONObjectByHandle(NIN);
+		
 		if (jSONObject == null) {
 			Map<String, String> positionAndWsqMap = getBiometricsWSQFormat(registrationId, registrationStatusDto);
 			boolean isPresentInlegacySystem = false;
@@ -163,10 +161,10 @@ public class LegacyDataValidator {
 					// TODO this to call api of migration to get demographic
 					Response response = new Response();
 					Demographics demographics = new Demographics();
-					io.mosip.registration.processor.core.packet.dto.PacketInfo packetInfo = createOnDemandPacket(
+					PacketDto packetDto = createOnDemandPacket(
 							demographics, registrationStatusDto);
-					if (packetInfo != null) {
-						boolean storageFlag = createSyncAndRegistration(packetInfo,
+					if (packetDto != null) {
+						boolean storageFlag = createSyncAndRegistration(packetDto,
 								registrationStatusDto.getRegistrationStageName());
 						isValidPacket = true;
 						// update registrationStatusDto status as MERGED and comment registration id
@@ -186,31 +184,31 @@ public class LegacyDataValidator {
 		return isValidPacket;
 	}
 
-	private boolean createSyncAndRegistration(PacketInfo packetInfo,String stageName) {
+	private boolean createSyncAndRegistration(PacketDto packetDto, String stageName) {
 		boolean storageFlag = false;
-		SyncRegistrationEntity syncRegistrationEntity = createSyncEntity(packetInfo);
+		SyncRegistrationEntity syncRegistrationEntity = createSyncEntity(packetDto);
 		syncRegistrationEntity = syncRegistrationService.saveSyncRegistrationEntity(syncRegistrationEntity);
 		storageFlag = createRegistrationStatusEntity(stageName, syncRegistrationEntity);
 		return storageFlag;
 	}
 
-	private SyncRegistrationEntity createSyncEntity(PacketInfo packetInfo) {
+	private SyncRegistrationEntity createSyncEntity(PacketDto packetDto) {
 		SyncRegistrationEntity syncRegistrationEntity = new SyncRegistrationEntity();
-		syncRegistrationEntity.setRegistrationId(packetInfo.getId().trim());
+		syncRegistrationEntity.setRegistrationId(packetDto.getId().trim());
 		syncRegistrationEntity.setLangCode("eng");
-		syncRegistrationEntity.setRegistrationType(packetInfo.getProcess());
+		syncRegistrationEntity.setRegistrationType(packetDto.getProcess());
 		syncRegistrationEntity.setPacketHashValue("0");
 		syncRegistrationEntity.setPacketSize(new BigInteger("0"));
 		syncRegistrationEntity.setSupervisorStatus("APPROVED");
-		syncRegistrationEntity.setPacketId(packetInfo.getId());
-		syncRegistrationEntity.setReferenceId(packetInfo.getRefId());
+		syncRegistrationEntity.setPacketId(packetDto.getId());
+		syncRegistrationEntity.setReferenceId(packetDto.getRefId());
 		syncRegistrationEntity.setCreatedBy("MOSIP");
 		syncRegistrationEntity.setCreateDateTime(LocalDateTime.now(ZoneId.of("UTC")));
 		syncRegistrationEntity.setWorkflowInstanceId(RegistrationUtility.generateId());
 		return syncRegistrationEntity;
 	}
 
-	private io.mosip.registration.processor.core.packet.dto.PacketInfo createOnDemandPacket(Demographics demographics,
+	private PacketDto createOnDemandPacket(Demographics demographics,
 			InternalRegistrationStatusDto registrationStatusDto) throws ApisResourceAccessException,
 			PacketManagerException,
 			JsonProcessingException, IOException, NumberFormatException, JSONException {
@@ -261,10 +259,7 @@ public class LegacyDataValidator {
 				|| responseWrapper.getResponse() == null) {
 			ErrorDTO error = (ErrorDTO) responseWrapper.getErrors().get(0);
 		} else {
-			PacketInfoResponse packetInfoResponse = mapper
-					.readValue(mapper.writeValueAsString(responseWrapper.getResponse()),
-					PacketInfoResponse.class);
-			return packetInfoResponse.getPacketinfoList().get(0);
+			return packetDto;
 		}
 		return null;
 	}
@@ -349,19 +344,12 @@ public class LegacyDataValidator {
 		String nonce = CryptoUtil.encodeToPlainBase64(nonceBytes);
 
 		String timestamp = legacyDataApiUtility.createTimestamp();
-		byte[] createdDigestBytes = timestamp.getBytes("UTF-8");
+		String timestampForDigest = legacyDataApiUtility.createTimestampForDigest(timestamp);
+		String timestampForRequest = legacyDataApiUtility.createTimestampForRequest(timestamp);
+		byte[] createdDigestBytes = timestampForDigest.getBytes(StandardCharsets.UTF_8);
 
 		byte[] passwordHashBytes = legacyDataApiUtility.hashPassword(password);
 		String passwordDigest = legacyDataApiUtility.generateDigest(nonceBytes, createdDigestBytes, passwordHashBytes);
-
-		// CredentialManagerUtil credentials =
-		// credentialManagerUtil.withUsername(username).withPassword(password)
-		// .build();
-
-		// Proceed with using credentials
-		// String nonce = credentials.getNonce();
-		/// String created = credentials.getCreatedDatetime();
-		// String passwordDigest = credentials.getPasswordDigest();
 		Envelope envelope = new Envelope();
 		// Header
 		Header header = new Header();
@@ -372,7 +360,7 @@ public class LegacyDataValidator {
 		password.setValue(passwordDigest);
 		token.setPassword(password);
 		token.setNonce(nonce);
-		token.setCreated(timestamp);
+		token.setCreated(timestampForRequest);
 		header.setUsernameToken(token);
 		envelope.setHeader(header);
 

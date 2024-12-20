@@ -186,6 +186,12 @@ public enum PlatformSuccessMessages {
 			"Legacy Data Validation Success"),
 	
 	RPR_LEGACY_DATA_VALIDATE_ONDEMAND_PACKET(PlatformConstants.RPR_LEGACY_DATA_VALIDATOR_MODULE + "001",
+			"OnDemand Packet created"),
+
+	RPR_LEGACY_DATA(PlatformConstants.RPR_LEGACY_DATA_MODULE + "000",
+			"Legacy Data Validation Success"),
+
+	RPR_LEGACY_DATA_ONDEMAND_PACKET(PlatformConstants.RPR_LEGACY_DATA_MODULE + "001",
 			"OnDemand Packet created");
 
 	/** The success message. */

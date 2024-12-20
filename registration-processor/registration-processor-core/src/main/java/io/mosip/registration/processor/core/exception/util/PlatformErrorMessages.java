@@ -1465,6 +1465,15 @@ public enum PlatformErrorMessages {
 			"Ondemand packet creation failed"),
 
 	RPR_LEGACY_DATA_MIGRATION_API_FAILED(PlatformConstants.RPR_LEGACY_DATA_VALIDATOR_MODULE + "003",
+			"Legacy data migration api failed"),
+
+	RPR_LEGACY_DATA_FAILED(PlatformConstants.RPR_LEGACY_DATA_MODULE + "001",
+			"Legacy Data Validation failed"),
+
+	RPR_LEGACY_DATA_VAL_ON_DEMAND_PACKET_CREATION_FAILED(PlatformConstants.RPR_LEGACY_DATA_MODULE + "002",
+			"Ondemand packet creation failed"),
+
+	RPR_LEGACY_DATA_VAL_MIGRATION_API_FAILED(PlatformConstants.RPR_LEGACY_DATA_MODULE + "003",
 			"Legacy data migration api failed");
 
 

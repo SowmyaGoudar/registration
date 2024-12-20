@@ -416,11 +416,20 @@ public enum StatusUtil {
 			"Legacy data validation failed"),
 	ON_DEMAND_PACKET_CREATION_SUCCESS(StatusConstants.LEGACY_DATA_VALIDATION_SUCCESS + "003",
 			"OnDemand Packet created"),
-	ON_DEMAND_PACKET_CREATION_FAILED(StatusConstants.LEGACY_DATA_VALIDATION_SUCCESS + "004",
+	ON_DEMAND_PACKET_CREATION_FAILED(StatusConstants.LEGACY_DATA_VALIDATION_FAILED + "004",
 			"OnDemand Packet creattion failed"),
-	DATA_MIGRATION_API_FAILED(StatusConstants.LEGACY_DATA_VALIDATION_SUCCESS + "005",
+	DATA_MIGRATION_API_FAILED(StatusConstants.LEGACY_DATA_VALIDATION_FAILED + "005",
+			"Data Migration api failed"),
+	LEGACY_DATA_SUCCESS(StatusConstants.LEGACY_DATA_SUCCESS + "001",
+			"Legacy data validation  success"),
+	LEGACY_DATA_FAILED(StatusConstants.LEGACY_DATA_FAILED + "002",
+			"Legacy data validation failed"),
+	LEGACY_DATA_ON_DEMAND_PACKET_CREATION_SUCCESS(StatusConstants.LEGACY_DATA_SUCCESS + "003",
+			"OnDemand Packet created"),
+	LEGACY_DATA_ON_DEMAND_PACKET_CREATION_FAILED(StatusConstants.LEGACY_DATA_FAILED + "004",
+			"OnDemand Packet creattion failed"),
+	LEGACY_DATA_DATA_MIGRATION_API_FAILED(StatusConstants.LEGACY_DATA_FAILED + "005",
 			"Data Migration api failed");
-
 
 	private final String statusComment;
 	private final String statusCode;

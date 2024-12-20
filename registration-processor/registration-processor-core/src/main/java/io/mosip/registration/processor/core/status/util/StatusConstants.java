@@ -170,8 +170,11 @@ public final class StatusConstants {
 	
 	//Legacy data validation stage
 	public static final String LEGACY_DATA_VALIDATION = RPR_REGISTRATION_PROCESSOR_PREFIX + "LDV-";
+	public static final String LEGACY_DATA = RPR_REGISTRATION_PROCESSOR_PREFIX + "LD-";
 	public static final String LEGACY_DATA_VALIDATION_SUCCESS = LEGACY_DATA_VALIDATION + SUCCESS;
 	public static final String LEGACY_DATA_VALIDATION_FAILED = LEGACY_DATA_VALIDATION + FAILED;
+	public static final String LEGACY_DATA_SUCCESS = LEGACY_DATA + SUCCESS;
+	public static final String LEGACY_DATA_FAILED = LEGACY_DATA + FAILED;
 	
 
 }

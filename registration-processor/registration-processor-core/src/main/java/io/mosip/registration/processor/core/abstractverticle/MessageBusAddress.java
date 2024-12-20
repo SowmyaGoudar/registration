@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import io.mosip.registration.processor.core.constant.RegistrationType;
-
 // TODO: Auto-generated Javadoc
 /**
  * This class contains the address values to be used in Registration process.
@@ -277,6 +275,13 @@ public class MessageBusAddress implements Serializable {
 	/** The Constant LEGACYDATA_VALIDATOR_OUT. */
 	public static final MessageBusAddress LEGACY_DATA_VALIDATOR_OUT = new MessageBusAddress("legacy-data-validator-bus-out");
 	
+	public static final MessageBusAddress LEGACY_DATA_IN = new MessageBusAddress(
+			"legacy-data-bus-in");
+
+	/** The Constant LEGACYDATA_VALIDATOR_OUT. */
+	public static final MessageBusAddress LEGACY_DATA_OUT = new MessageBusAddress(
+			"legacy-data-bus-out");
+
 	/*
 	 * (non-Javadoc)
 	 *

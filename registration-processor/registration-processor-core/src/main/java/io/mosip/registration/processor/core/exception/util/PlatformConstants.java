@@ -145,6 +145,8 @@ public final class PlatformConstants {
 	
 	public static final String RPR_LEGACY_DATA_VALIDATOR_MODULE = RPR_REGISTRATION_PROCESSOR_PREFIX + "LDV-";
 
+	public static final String RPR_LEGACY_DATA_MODULE = RPR_REGISTRATION_PROCESSOR_PREFIX + "LD-";
+
 	/**
 	 * Instantiates a new RPR platform error codes.
 	 */

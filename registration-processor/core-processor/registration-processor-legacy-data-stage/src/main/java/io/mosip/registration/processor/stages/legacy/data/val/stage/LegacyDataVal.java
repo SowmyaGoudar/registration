@@ -1,4 +1,4 @@
-package io.mosip.registration.processor.stages.legacy.data.stage;
+package io.mosip.registration.processor.stages.legacy.data.val.stage;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -73,17 +73,18 @@ import io.mosip.registration.processor.packet.storage.utils.IdSchemaUtil;
 import io.mosip.registration.processor.packet.storage.utils.LegacyDataApiUtility;
 import io.mosip.registration.processor.packet.storage.utils.PriorityBasedPacketManagerService;
 import io.mosip.registration.processor.packet.storage.utils.Utilities;
-import io.mosip.registration.processor.stages.legacy.data.dto.Body;
-import io.mosip.registration.processor.stages.legacy.data.dto.Envelope;
-import io.mosip.registration.processor.stages.legacy.data.dto.Fingerprint;
-import io.mosip.registration.processor.stages.legacy.data.dto.Header;
-import io.mosip.registration.processor.stages.legacy.data.dto.Password;
-import io.mosip.registration.processor.stages.legacy.data.dto.Position;
-import io.mosip.registration.processor.stages.legacy.data.dto.Request;
-import io.mosip.registration.processor.stages.legacy.data.dto.TransactionStatus;
-import io.mosip.registration.processor.stages.legacy.data.dto.UsernameToken;
-import io.mosip.registration.processor.stages.legacy.data.dto.VerifyPerson;
-import io.mosip.registration.processor.stages.legacy.data.dto.VerifyPersonResponse;
+import io.mosip.registration.processor.stages.legacy.data.val.dto.Body;
+import io.mosip.registration.processor.stages.legacy.data.val.dto.Envelope;
+import io.mosip.registration.processor.stages.legacy.data.val.dto.Fingerprint;
+import io.mosip.registration.processor.stages.legacy.data.val.dto.Header;
+import io.mosip.registration.processor.stages.legacy.data.val.dto.IdentifyPerson;
+import io.mosip.registration.processor.stages.legacy.data.val.dto.IdentifyPersonResponse;
+import io.mosip.registration.processor.stages.legacy.data.val.dto.Password;
+import io.mosip.registration.processor.stages.legacy.data.val.dto.Person;
+import io.mosip.registration.processor.stages.legacy.data.val.dto.Position;
+import io.mosip.registration.processor.stages.legacy.data.val.dto.Request;
+import io.mosip.registration.processor.stages.legacy.data.val.dto.TransactionStatus;
+import io.mosip.registration.processor.stages.legacy.data.val.dto.UsernameToken;
 import io.mosip.registration.processor.status.code.RegistrationStatusCode;
 import io.mosip.registration.processor.status.dto.InternalRegistrationStatusDto;
 import io.mosip.registration.processor.status.dto.RegistrationStatusDto;
@@ -95,8 +96,8 @@ import io.mosip.registration.processor.status.service.SyncRegistrationService;
 import io.mosip.registration.processor.status.utilities.RegistrationUtility;
 
 @Service
-public class LegacyDataValidator {
-	private static Logger regProcLogger = RegProcessorLogger.getLogger(LegacyDataValidator.class);
+public class LegacyDataVal {
+	private static Logger regProcLogger = RegProcessorLogger.getLogger(LegacyDataVal.class);
 
 	public static final String INDIVIDUAL_TYPE_UIN = "UIN";
 
@@ -149,16 +150,9 @@ public class LegacyDataValidator {
 
 		regProcLogger.debug("validate called for registrationId {}", registrationId);
 
-		String NIN =  packetManagerService.getFieldByMappingJsonKey(registrationId,
-				MappingJsonConstants.NIN, registrationStatusDto.getRegistrationType(),
-		ProviderStageName.LEGACY_DATA_VALIDATOR);
-
-		JSONObject jSONObject = utility.getIdentityJSONObjectByHandle(NIN);
-		
-		if (jSONObject == null) {
 			Map<String, String> positionAndWsqMap = getBiometricsWSQFormat(registrationId, registrationStatusDto);
-			boolean isPresentInlegacySystem = checkNINAVailableInLegacy(registrationId, NIN, positionAndWsqMap);
-			if (isPresentInlegacySystem) {
+			String NIN = checkNINAVailableInLegacy(registrationId, positionAndWsqMap);
+			if (NIN != null) {
 				regProcLogger.info("NIN is present in legacy system and call for ondemand migration : {}",
 						registrationId);
 					MigrationRequestDto migrationRequestDto = new MigrationRequestDto();
@@ -168,9 +162,9 @@ public class LegacyDataValidator {
 					ResponseWrapper responseWrapper = (ResponseWrapper<?>) restApi
 							.putApi(ApiName.MIGARTION_URL, null, "", "", requestWrapper, ResponseWrapper.class,
 									null);
+					regProcLogger.info("Response from migration api : {}{}", registrationId,
+							JsonUtils.javaObjectToJsonString(responseWrapper));
 					if (responseWrapper.getErrors() != null && responseWrapper.getErrors().size() > 0) {
-						regProcLogger.error("Error from migration api : {}{}", registrationId,
-								JsonUtils.javaObjectToJsonString(responseWrapper));
 						ErrorDTO error = (ErrorDTO) responseWrapper.getErrors().get(0);
 						throw new DataMigrationException(error.getErrorCode(), error.getMessage());
 					}
@@ -221,21 +215,18 @@ public class LegacyDataValidator {
 					}
 
 			} else {
-				regProcLogger.error("NIN is not  present in legacy system : {}", registrationId);
-				throw new ValidationFailedException(StatusUtil.LEGACY_DATA_VALIDATION_FAILED.getMessage(),
-						StatusUtil.LEGACY_DATA_VALIDATION_FAILED.getCode());
-			}
-		} else {
-			regProcLogger.info("NIN is present in mosip system : {}", registrationId);
-			registrationStatusDto.setLatestTransactionStatusCode(RegistrationTransactionStatusCode.SUCCESS.toString());
-			registrationStatusDto.setStatusComment(StatusUtil.LEGACY_DATA_VALIDATION_SUCCESS.getMessage());
-			registrationStatusDto.setSubStatusCode(StatusUtil.LEGACY_DATA_VALIDATION_SUCCESS.getCode());
-			registrationStatusDto.setStatusCode(RegistrationStatusCode.PROCESSING.toString());
+				regProcLogger.info("NIN is not present in legacy system so proceed for new registration: {}",
+						registrationId);
+				registrationStatusDto
+						.setLatestTransactionStatusCode(RegistrationTransactionStatusCode.SUCCESS.toString());
+				registrationStatusDto.setStatusComment(StatusUtil.LEGACY_DATA_VALIDATION_SUCCESS.getMessage());
+				registrationStatusDto.setSubStatusCode(StatusUtil.LEGACY_DATA_VALIDATION_SUCCESS.getCode());
+				registrationStatusDto.setStatusCode(RegistrationStatusCode.PROCESSING.toString());
 
-			description.setMessage(
-					PlatformSuccessMessages.RPR_LEGACY_DATA_VALIDATE.getMessage() + " -- " + registrationId);
-			description.setCode(PlatformSuccessMessages.RPR_LEGACY_DATA_VALIDATE.getCode());
-		}
+				description.setMessage(
+						PlatformSuccessMessages.RPR_LEGACY_DATA_VALIDATE.getMessage() + " -- " + registrationId);
+				description.setCode(PlatformSuccessMessages.RPR_LEGACY_DATA_VALIDATE.getCode());
+			}
 
 		regProcLogger.debug("validate call ended for registrationId {}", registrationId);
 
@@ -274,10 +265,11 @@ public class LegacyDataValidator {
 		String registrationType = registrationStatusDto.getRegistrationType();
 		regProcLogger.info("Getting details to create ondemand packet : {}", registrationId);
 		String schemaVersion = packetManagerService.getFieldByMappingJsonKey(registrationStatusDto.getRegistrationId(),
-				MappingJsonConstants.IDSCHEMA_VERSION, registrationType, ProviderStageName.LEGACY_DATA_VALIDATOR);
+				MappingJsonConstants.IDSCHEMA_VERSION, registrationType, ProviderStageName.LEGACY_DATA);
 
-		Map<String, String> fieldMap = packetManagerService.getFields(registrationId,
-				idSchemaUtil.getDefaultFields(Double.valueOf(schemaVersion)),registrationType, ProviderStageName.LEGACY_DATA_VALIDATOR);
+		//Map<String, String> fieldMap = packetManagerService.getFields(registrationId,
+			//	idSchemaUtil.getDefaultFields(Double.valueOf(schemaVersion)), registrationType,
+			//	ProviderStageName.LEGACY_DATA);
 		// TODO remove it when merging to dev
 		// JSONObject demographicIdentity = new JSONObject();
 		// loadDemographicIdentity(fieldMap, demographicIdentity);
@@ -285,13 +277,13 @@ public class LegacyDataValidator {
 
 		Map<String, BiometricRecord> biometrics = getBiometrics(registrationId, registrationType);
 		List<FieldResponseDto> audits = packetManagerService.getAudits(registrationId, registrationType,
-				ProviderStageName.LEGACY_DATA_VALIDATOR);
+				ProviderStageName.LEGACY_DATA);
 		List<Map<String, String>> auditList = new ArrayList<>();
 		for (FieldResponseDto dto : audits) {
 			auditList.add(dto.getFields());
 		}
 		Map<String, String> metaInfo = packetManagerService.getMetaInfo(registrationId, registrationType,
-				ProviderStageName.LEGACY_DATA_VALIDATOR);
+				ProviderStageName.LEGACY_DATA);
 		regProcLogger.info("successfully got  details to create ondemand packet : {}", registrationId);
 		SyncRegistrationEntity regEntity = syncRegistrationService
 				.findByWorkflowInstanceId(registrationStatusDto.getWorkflowInstanceId());
@@ -343,13 +335,13 @@ public class LegacyDataValidator {
 		BiometricRecord biometricRecord = packetManagerService.getBiometrics(registrationId,
 				individualBiometricsLabel,
 				modalities, registrationStatusDto.getRegistrationType(),
-				ProviderStageName.LEGACY_DATA_VALIDATOR);
+				ProviderStageName.LEGACY_DATA);
 		if (biometricRecord == null || biometricRecord.getSegments() == null
 				|| biometricRecord.getSegments().isEmpty()) {
 			regProcLogger.error(LoggerFileConstant.SESSIONID.toString(), LoggerFileConstant.REGISTRATIONID.toString(),
 					registrationId, RegistrationStatusCode.FAILED.toString() + "Biometrics are not present for packet");
-			throw new ValidationFailedException(StatusUtil.LEGACY_DATA_VALIDATION_FAILED.getMessage(),
-					StatusUtil.LEGACY_DATA_VALIDATION_FAILED.getCode());
+			throw new ValidationFailedException(StatusUtil.LEGACY_DATA_FAILED.getMessage(),
+					StatusUtil.LEGACY_DATA_FAILED.getCode());
 		}
 		Map<String, byte[]> isoImageMap = new HashMap<String, byte[]>();
 		for (BIR bir : biometricRecord.getSegments()) {
@@ -376,26 +368,34 @@ public class LegacyDataValidator {
 		return wsqFormatBiometrics;
 	}
 
-	private boolean checkNINAVailableInLegacy(String registrationId, String NIN, Map<String, String> positionAndWsqMap)
+	private String checkNINAVailableInLegacy(String registrationId, Map<String, String> positionAndWsqMap)
 			throws JAXBException, ApisResourceAccessException, NoSuchAlgorithmException, UnsupportedEncodingException {
-		boolean isValid = false;
-		Envelope requestEnvelope = createGetPersonRequest(NIN, positionAndWsqMap);
+		String NIN = null;
+		Envelope requestEnvelope = createIdentifyPersonRequest(positionAndWsqMap);
 		String request = marshalToXml(requestEnvelope);
-		String response = (String) restApi.postApi(ApiName.VERIFYPERSONURL, "", "", request, String.class,
+		String response = (String) restApi.postApi(ApiName.IDENTIFYPERSONURL, "", "", request, String.class,
 				MediaType.TEXT_XML);
-		regProcLogger.info("Response from legacy system : {}{}", registrationId, response);
+		regProcLogger.info("Response from legacy system : {}{}", registrationId,
+				response);
 		JAXBContext jaxbContext = JAXBContext.newInstance(Envelope.class);
 		Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 		StringReader reader = new StringReader(response);
 		Envelope responseEnvelope = (Envelope) unmarshaller.unmarshal(reader);
-		VerifyPersonResponse verifyPersonResponse = responseEnvelope.getBody().getVerifyPersonResponse();
-		TransactionStatus transactionStatus = verifyPersonResponse.getReturnElement().getTransactionStatus();
+		IdentifyPersonResponse identifyPersonResponse = responseEnvelope.getBody().getIdentifyPersonResponse();
+		TransactionStatus transactionStatus = identifyPersonResponse.getReturnElement().getTransactionStatus();
 		if (transactionStatus.getTransactionStatus().equalsIgnoreCase("Ok")) {
-			regProcLogger.info("Matching status for legacy system for NIN present in  : {}{}", registrationId,
-					verifyPersonResponse.getReturnElement().isMatchingStatus());
-			if (verifyPersonResponse.getReturnElement().isMatchingStatus()) {
-				isValid = true;
+			List<Person> persons = identifyPersonResponse.getReturnElement().getPersons();
+			if (persons != null && !persons.isEmpty()) {
+				if (persons.size() == 1) {
+					regProcLogger.info("Single nin returned from legacy : {}", registrationId);
+					NIN = persons.get(0).getNationalId();
+				} else {
+					regProcLogger.info("Mulitple nins returned from legacy : {}", registrationId);
+				}
+			} else {
+				regProcLogger.info("No  nins returned from legacy : {}", registrationId);
 			}
+			
 		} else if (transactionStatus.getTransactionStatus().equalsIgnoreCase("Error")) {
 			regProcLogger.info("Transaction status is Error : {}", registrationId);
 			regProcLogger.error(LoggerFileConstant.SESSIONID.toString(), LoggerFileConstant.REGISTRATIONID.toString(),
@@ -403,10 +403,10 @@ public class LegacyDataValidator {
 					RegistrationStatusCode.FAILED.toString() + transactionStatus.getError().getCode()
 							+ transactionStatus.getError().getMessage());
 		}
-		return isValid;
+		return NIN;
 	}
 
-	private Envelope createGetPersonRequest(String NIN, Map<String, String> positionAndWsqMap)
+	private Envelope createIdentifyPersonRequest(Map<String, String> positionAndWsqMap)
 			throws NoSuchAlgorithmException, UnsupportedEncodingException {
 
 		byte[] nonceBytes = legacyDataApiUtility.generateNonce();
@@ -435,9 +435,8 @@ public class LegacyDataValidator {
 
 		// Body
 		Body body = new Body();
-		VerifyPerson verifyPerson = new VerifyPerson();
+		IdentifyPerson identifyPerson = new IdentifyPerson();
 		Request request = new Request();
-		request.setNationalId(NIN);
 		List<Fingerprint> fingerprints = new ArrayList<Fingerprint>();
 		for (Map.Entry<String, String> entry : positionAndWsqMap.entrySet()) {
 			Fingerprint fingerprint = new Fingerprint();
@@ -446,8 +445,8 @@ public class LegacyDataValidator {
 			fingerprints.add(fingerprint);
 		}
 		request.setFingerprints(fingerprints);
-		verifyPerson.setRequest(request);
-		body.setVerifyPerson(verifyPerson);
+		identifyPerson.setRequest(request);
+		body.setIdentifyPerson(identifyPerson);
 		envelope.setBody(body);
 
 		return envelope;
@@ -564,7 +563,7 @@ public class LegacyDataValidator {
 
 			}
 			dto.setRegistrationId(regEntity.getRegistrationId());
-			dto.setLatestTransactionTypeCode(RegistrationTransactionTypeCode.LEGACY_DATA_VALIDATE.toString());
+			dto.setLatestTransactionTypeCode(RegistrationTransactionTypeCode.LEGACY_DATA.toString());
 			dto.setLatestTransactionTimes(DateUtils.getUTCCurrentDateTime());
 			dto.setRegistrationStageName(stageName);
 			dto.setRegistrationType(regEntity.getRegistrationType());
@@ -583,8 +582,8 @@ public class LegacyDataValidator {
 			dto.setWorkflowInstanceId(regEntity.getWorkflowInstanceId());
 
 			/** Module-Id can be Both Success/Error code */
-			String moduleId = PlatformSuccessMessages.RPR_LEGACY_DATA_VALIDATE.getCode();
-			String moduleName = ModuleName.LEGACY_DATA_VALIDATE.toString();
+			String moduleId = PlatformSuccessMessages.RPR_LEGACY_DATA.getCode();
+			String moduleName = ModuleName.LEGACY_DATA.toString();
 			registrationStatusService.addRegistrationStatus(dto, moduleId, moduleName);
 			regProcLogger.info("Successfully created record in registration for ondemand packet : {} ",
 					regEntity.getRegistrationId());

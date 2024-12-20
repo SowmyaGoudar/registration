@@ -1,4 +1,4 @@
-package io.mosip.registration.processor.stages.legacy.data.util;
+package io.mosip.registration.processor.packet.storage.utils;
 
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;

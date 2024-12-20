@@ -35,6 +35,7 @@ import io.mosip.kernel.biometrics.entities.BiometricRecord;
 import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.kernel.core.util.CryptoUtil;
 import io.mosip.kernel.core.util.DateUtils;
+import io.mosip.kernel.core.util.JsonUtils;
 import io.mosip.kernel.core.util.exception.JsonProcessingException;
 import io.mosip.registration.processor.core.abstractverticle.MessageDTO;
 import io.mosip.registration.processor.core.code.ApiName;
@@ -46,6 +47,7 @@ import io.mosip.registration.processor.core.constant.LoggerFileConstant;
 import io.mosip.registration.processor.core.constant.MappingJsonConstants;
 import io.mosip.registration.processor.core.constant.ProviderStageName;
 import io.mosip.registration.processor.core.exception.ApisResourceAccessException;
+import io.mosip.registration.processor.core.exception.DataMigrationException;
 import io.mosip.registration.processor.core.exception.PacketManagerException;
 import io.mosip.registration.processor.core.exception.ValidationFailedException;
 import io.mosip.registration.processor.core.exception.util.PlatformSuccessMessages;
@@ -54,6 +56,10 @@ import io.mosip.registration.processor.core.http.ResponseWrapper;
 import io.mosip.registration.processor.core.idrepo.dto.Documents;
 import io.mosip.registration.processor.core.logger.LogDescription;
 import io.mosip.registration.processor.core.logger.RegProcessorLogger;
+import io.mosip.registration.processor.core.migration.dto.DemographicsDto;
+import io.mosip.registration.processor.core.migration.dto.DocumentsDTO;
+import io.mosip.registration.processor.core.migration.dto.MigrationRequestDto;
+import io.mosip.registration.processor.core.migration.dto.MigrationResponse;
 import io.mosip.registration.processor.core.packet.dto.DocumentDto;
 import io.mosip.registration.processor.core.packet.dto.PacketDto;
 import io.mosip.registration.processor.core.spi.restclient.RegistrationProcessorRestClientService;
@@ -67,19 +73,16 @@ import io.mosip.registration.processor.packet.storage.utils.IdSchemaUtil;
 import io.mosip.registration.processor.packet.storage.utils.PriorityBasedPacketManagerService;
 import io.mosip.registration.processor.packet.storage.utils.Utilities;
 import io.mosip.registration.processor.stages.legacy.data.dto.Body;
-import io.mosip.registration.processor.stages.legacy.data.dto.Demographics;
 import io.mosip.registration.processor.stages.legacy.data.dto.Envelope;
 import io.mosip.registration.processor.stages.legacy.data.dto.Fingerprint;
 import io.mosip.registration.processor.stages.legacy.data.dto.Header;
 import io.mosip.registration.processor.stages.legacy.data.dto.Password;
 import io.mosip.registration.processor.stages.legacy.data.dto.Position;
 import io.mosip.registration.processor.stages.legacy.data.dto.Request;
-import io.mosip.registration.processor.stages.legacy.data.dto.Response;
 import io.mosip.registration.processor.stages.legacy.data.dto.TransactionStatus;
 import io.mosip.registration.processor.stages.legacy.data.dto.UsernameToken;
 import io.mosip.registration.processor.stages.legacy.data.dto.VerifyPerson;
 import io.mosip.registration.processor.stages.legacy.data.dto.VerifyPersonResponse;
-import io.mosip.registration.processor.stages.legacy.data.stage.exception.PacketOnHoldException;
 import io.mosip.registration.processor.stages.legacy.data.util.LegacyDataApiUtility;
 import io.mosip.registration.processor.status.code.RegistrationStatusCode;
 import io.mosip.registration.processor.status.dto.InternalRegistrationStatusDto;
@@ -141,8 +144,8 @@ public class LegacyDataValidator {
 	public void validate(String registrationId, InternalRegistrationStatusDto registrationStatusDto,
 			LogDescription description, MessageDTO object)
 			throws ApisResourceAccessException, PacketManagerException, JsonProcessingException, IOException,
-			ValidationFailedException, PacketOnHoldException, JAXBException, NoSuchAlgorithmException,
-			NumberFormatException, JSONException {
+			ValidationFailedException, JAXBException, NoSuchAlgorithmException,
+			NumberFormatException, JSONException, DataMigrationException {
 
 		regProcLogger.debug("validate called for registrationId {}", registrationId);
 
@@ -158,15 +161,24 @@ public class LegacyDataValidator {
 			if (isPresentInlegacySystem) {
 				regProcLogger.info("NIN is present in legacy system and call for ondemand migration : {}",
 						registrationId);
-					// Call for ondemand migration of packet by passing NIN
-					// get Demographic details and documents from legacy and biometrics
-					// from RENEWAL
-					// and create packet using packet manager with NEW
-					// TODO this to call api of migration to get demographic
-					Response response = new Response();
-					Demographics demographics = new Demographics();
+					MigrationRequestDto migrationRequestDto = new MigrationRequestDto();
+					migrationRequestDto.setNin(NIN);
+					RequestWrapper<MigrationRequestDto> requestWrapper = new RequestWrapper();
+					requestWrapper.setRequest(migrationRequestDto);
+					ResponseWrapper responseWrapper = (ResponseWrapper<?>) restApi
+							.putApi(ApiName.MIGARTION_URL, null, "", "", requestWrapper, ResponseWrapper.class,
+									null);
+					if (responseWrapper.getErrors() != null && responseWrapper.getErrors().size() > 0) {
+						regProcLogger.error("Error from migration api : {}{}", registrationId,
+								JsonUtils.javaObjectToJsonString(responseWrapper));
+						ErrorDTO error = (ErrorDTO) responseWrapper.getErrors().get(0);
+						throw new DataMigrationException(error.getErrorCode(), error.getMessage());
+					}
+					MigrationResponse migrationResponse = objectMapper.readValue(
+							JsonUtils.javaObjectToJsonString(responseWrapper.getResponse()),
+							MigrationResponse.class);
 					PacketDto packetDto = createOnDemandPacket(
-							demographics, registrationStatusDto);
+							migrationResponse.getDemographics(), migrationResponse.getDocuments(),registrationStatusDto);
 					if (packetDto != null) {
 						SyncRegistrationEntity syncRegistrationEntityForOndemand = createSyncAndRegistration(packetDto,
 								registrationStatusDto.getRegistrationStageName());
@@ -209,7 +221,7 @@ public class LegacyDataValidator {
 					}
 
 			} else {
-				regProcLogger.info("NIN is not  present in legacy system : {}", registrationId);
+				regProcLogger.error("NIN is not  present in legacy system : {}", registrationId);
 				throw new ValidationFailedException(StatusUtil.LEGACY_DATA_VALIDATION_FAILED.getMessage(),
 						StatusUtil.LEGACY_DATA_VALIDATION_FAILED.getCode());
 			}
@@ -253,7 +265,7 @@ public class LegacyDataValidator {
 		return syncRegistrationEntity;
 	}
 
-	private PacketDto createOnDemandPacket(Demographics demographics,
+	private PacketDto createOnDemandPacket(DemographicsDto demographics, DocumentsDTO documents,
 			InternalRegistrationStatusDto registrationStatusDto) throws ApisResourceAccessException,
 			PacketManagerException,
 			JsonProcessingException, IOException, NumberFormatException, JSONException {
@@ -266,10 +278,12 @@ public class LegacyDataValidator {
 
 		Map<String, String> fieldMap = packetManagerService.getFields(registrationId,
 				idSchemaUtil.getDefaultFields(Double.valueOf(schemaVersion)),registrationType, ProviderStageName.LEGACY_DATA_VALIDATOR);
-		JSONObject demographicIdentity = new JSONObject();
-		loadDemographicIdentity(fieldMap, demographicIdentity);
-		Map<String, DocumentDto> documents=getAllDocumentsByRegId(registrationId, registrationType, demographicIdentity);
-		Map<String, BiometricRecord> biometrics = getBiometrics(registrationId, registrationType, demographicIdentity);
+		// TODO remove it when merging to dev
+		// JSONObject demographicIdentity = new JSONObject();
+		// loadDemographicIdentity(fieldMap, demographicIdentity);
+		//Map<String, DocumentDto> documents=getAllDocumentsByRegId(registrationId, registrationType, demographicIdentity);
+
+		Map<String, BiometricRecord> biometrics = getBiometrics(registrationId, registrationType);
 		List<FieldResponseDto> audits = packetManagerService.getAudits(registrationId, registrationType,
 				ProviderStageName.LEGACY_DATA_VALIDATOR);
 		List<Map<String, String>> auditList = new ArrayList<>();
@@ -288,12 +302,10 @@ public class LegacyDataValidator {
 		packetDto.setRefId(regEntity.getReferenceId());
 		packetDto.setSchemaVersion(schemaVersion);
 		packetDto.setSchemaJson(idSchemaUtil.getIdSchema(Double.parseDouble(schemaVersion)));
-		// TODO need to uncomment
-		// packetDto.setFields(demographics.getFields());
-		packetDto.setFields(fieldMap);
+		packetDto.setFields(demographics.getFields());
 		packetDto.setAudits(auditList);
 		packetDto.setMetaInfo(metaInfo);
-		packetDto.setDocuments(documents);
+		packetDto.setDocuments(documents.getDocuments());
 		packetDto.setBiometrics(biometrics);
 		RequestWrapper<PacketDto> request = new RequestWrapper<>();
 		request.setId(ID);
@@ -519,27 +531,24 @@ public class LegacyDataValidator {
 		}
 	}
 
-	private Map<String, BiometricRecord> getBiometrics(String registrationId, String registrationType,
-			JSONObject demographicIdentity)
+	private Map<String, BiometricRecord> getBiometrics(String registrationId, String registrationType)
 			throws IOException, ApisResourceAccessException, PacketManagerException, JsonProcessingException
 	{
 		Map<String, BiometricRecord> biometricData = new HashMap<String, BiometricRecord>();
-		JSONObject idJSON = demographicIdentity;
-		JSONObject identityJson = utility.getRegistrationProcessorMappingJson(MappingJsonConstants.IDENTITY);
-		String applicantBiometricLabel = JsonUtil.getJSONValue(
-				JsonUtil.getJSONObject(identityJson, MappingJsonConstants.INDIVIDUAL_BIOMETRICS),
+		JSONObject regProcessorIdentityJson = utility
+				.getRegistrationProcessorMappingJson(MappingJsonConstants.IDENTITY);
+		String individualBiometricsLabel = JsonUtil.getJSONValue(
+				JsonUtil.getJSONObject(regProcessorIdentityJson, MappingJsonConstants.INDIVIDUAL_BIOMETRICS),
 				MappingJsonConstants.VALUE);
-
-		HashMap<String, String> applicantBiometric = (HashMap<String, String>) idJSON.get(applicantBiometricLabel);
-		if (applicantBiometric != null) {
-			BiometricRecord biometricRecord = packetManagerService.getBiometrics(registrationId, applicantBiometricLabel, registrationType,
+		BiometricRecord biometricRecord = packetManagerService.getBiometrics(registrationId, individualBiometricsLabel,
+				registrationType,
 					ProviderStageName.LEGACY_DATA_VALIDATOR);
 			if (biometricRecord != null) {
-				biometricData.put(applicantBiometricLabel, biometricRecord);
+				biometricData.put(individualBiometricsLabel, biometricRecord);
 			}
-		}
+
 		return biometricData;
-		}
+	}
 
 		private void createRegistrationStatusEntity(String stageName, SyncRegistrationEntity regEntity) {
 			InternalRegistrationStatusDto dto = registrationStatusService.getRegistrationStatus(

@@ -417,7 +417,9 @@ public enum StatusUtil {
 	ON_DEMAND_PACKET_CREATION_SUCCESS(StatusConstants.LEGACY_DATA_VALIDATION_SUCCESS + "003",
 			"OnDemand Packet created"),
 	ON_DEMAND_PACKET_CREATION_FAILED(StatusConstants.LEGACY_DATA_VALIDATION_SUCCESS + "004",
-			"OnDemand Packet creattion failed");
+			"OnDemand Packet creattion failed"),
+	DATA_MIGRATION_API_FAILED(StatusConstants.LEGACY_DATA_VALIDATION_SUCCESS + "005",
+			"Data Migration api failed");
 
 
 	private final String statusComment;

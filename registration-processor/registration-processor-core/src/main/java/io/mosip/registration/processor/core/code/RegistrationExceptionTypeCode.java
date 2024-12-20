@@ -306,6 +306,6 @@ public enum RegistrationExceptionTypeCode {
 
 	IDREPO_DRAFT_REPROCESSABLE_EXCEPTION,
 	
-	ON_HOLD_PACKET;
+	DATA_MIGRATION_EXCEPTION;
 
 }

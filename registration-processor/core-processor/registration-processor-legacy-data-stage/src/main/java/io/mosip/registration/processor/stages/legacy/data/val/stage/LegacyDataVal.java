@@ -267,14 +267,6 @@ public class LegacyDataVal {
 		String schemaVersion = packetManagerService.getFieldByMappingJsonKey(registrationStatusDto.getRegistrationId(),
 				MappingJsonConstants.IDSCHEMA_VERSION, registrationType, ProviderStageName.LEGACY_DATA);
 
-		//Map<String, String> fieldMap = packetManagerService.getFields(registrationId,
-			//	idSchemaUtil.getDefaultFields(Double.valueOf(schemaVersion)), registrationType,
-			//	ProviderStageName.LEGACY_DATA);
-		// TODO remove it when merging to dev
-		// JSONObject demographicIdentity = new JSONObject();
-		// loadDemographicIdentity(fieldMap, demographicIdentity);
-		//Map<String, DocumentDto> documents=getAllDocumentsByRegId(registrationId, registrationType, demographicIdentity);
-
 		Map<String, BiometricRecord> biometrics = getBiometrics(registrationId, registrationType);
 		List<FieldResponseDto> audits = packetManagerService.getAudits(registrationId, registrationType,
 				ProviderStageName.LEGACY_DATA);

@@ -11,4 +11,6 @@ ALTER TABLE regprc.individual_demographic_dedup DROP COLUMN IF EXISTS nrcid;
 ---------------------delete scripts keep always last if it throws error need to handle it manually--------------------------------------
 DELETE from regprc.transaction_type where code='CITIZENSHIP_VERIFICATION';
 DELETE from regprc.transaction_type where code='PAYMENT_VALIDATION';
+DELETE from regprc.transaction_type where code='LEGACY_DATA';
+DELETE from regprc.transaction_type where code='LEGACY_DATA_VALIDATE';
 

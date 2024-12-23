@@ -381,7 +381,7 @@ public class LegacyDataValidator {
 		boolean isValid = false;
 		Envelope requestEnvelope = createGetPersonRequest(NIN, positionAndWsqMap);
 		String request = marshalToXml(requestEnvelope);
-		String response = (String) restApi.postApi(ApiName.VERIFYPERSONURL, "", "", request, String.class,
+		String response = (String) restApi.postApi(ApiName.LEGACYAPI, "", "", request, String.class,
 				MediaType.TEXT_XML);
 		regProcLogger.info("Response from legacy system : {}{}", registrationId, response);
 		JAXBContext jaxbContext = JAXBContext.newInstance(Envelope.class);

@@ -33,7 +33,9 @@ public enum RegistrationType {
 	/** The lost */
 	LOST("lost"),
 
-	RES_REPRINT("res_reprint");
+	RES_REPRINT("res_reprint"),
+	
+	MIGRATOR("migrator");
 
 	private String regType;
 

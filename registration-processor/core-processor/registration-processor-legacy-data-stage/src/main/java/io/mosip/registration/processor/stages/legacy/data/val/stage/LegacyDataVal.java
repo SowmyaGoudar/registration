@@ -361,10 +361,12 @@ public class LegacyDataVal {
 	}
 
 	private String checkNINAVailableInLegacy(String registrationId, Map<String, String> positionAndWsqMap)
-			throws JAXBException, ApisResourceAccessException, NoSuchAlgorithmException, UnsupportedEncodingException {
+			throws JAXBException, ApisResourceAccessException, NoSuchAlgorithmException, UnsupportedEncodingException,
+			ValidationFailedException {
 		String NIN = null;
 		Envelope requestEnvelope = createIdentifyPersonRequest(positionAndWsqMap);
 		String request = marshalToXml(requestEnvelope);
+		regProcLogger.info("Request to legacy system : {}", request);
 		String response = (String) restApi.postApi(ApiName.LEGACYAPI, "", "", request, String.class,
 				MediaType.TEXT_XML);
 		regProcLogger.info("Response from legacy system : {}{}", registrationId,
@@ -382,7 +384,9 @@ public class LegacyDataVal {
 					regProcLogger.info("Single nin returned from legacy : {}", registrationId);
 					NIN = persons.get(0).getNationalId();
 				} else {
-					regProcLogger.info("Mulitple nins returned from legacy : {}", registrationId);
+					regProcLogger.error("Mulitple nins returned from legacy : {}", registrationId);
+					throw new ValidationFailedException(StatusUtil.LEGACY_DATA_FAILED.getMessage(),
+							StatusUtil.LEGACY_DATA_FAILED.getCode());
 				}
 			} else {
 				regProcLogger.info("No  nins returned from legacy : {}", registrationId);
@@ -394,6 +398,8 @@ public class LegacyDataVal {
 					registrationId,
 					RegistrationStatusCode.FAILED.toString() + transactionStatus.getError().getCode()
 							+ transactionStatus.getError().getMessage());
+			throw new ValidationFailedException(StatusUtil.LEGACY_DATA_VALIDATION_FAILED.getMessage(),
+					StatusUtil.LEGACY_DATA_VALIDATION_FAILED.getCode());
 		}
 		return NIN;
 	}
@@ -408,7 +414,8 @@ public class LegacyDataVal {
 		String timestampForDigest = legacyDataApiUtility.createTimestampForDigest(timestamp);
 		String timestampForRequest = legacyDataApiUtility.createTimestampForRequest(timestamp);
 		byte[] createdDigestBytes = timestampForDigest.getBytes(StandardCharsets.UTF_8);
-
+		regProcLogger.info("timestamp  timestampForDigest timestampForRequest  registration id : {} {} {}", timestamp,
+				timestampForDigest, timestampForRequest);
 		byte[] passwordHashBytes = legacyDataApiUtility.hashPassword(password);
 		String passwordDigest = legacyDataApiUtility.generateDigest(nonceBytes, createdDigestBytes, passwordHashBytes);
 		Envelope envelope = new Envelope();

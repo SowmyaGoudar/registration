@@ -410,7 +410,7 @@ public class LegacyDataValidator {
 
 		String timestamp = legacyDataApiUtility.createTimestamp();
 		String timestampForDigest = legacyDataApiUtility.createTimestampForDigest(timestamp);
-		String timestampForRequest = legacyDataApiUtility.createTimestampForRequest(timestamp);
+		String timestampForRequest = timestamp;
 		byte[] createdDigestBytes = timestampForDigest.getBytes(StandardCharsets.UTF_8);
 
 		byte[] passwordHashBytes = legacyDataApiUtility.hashPassword(password);

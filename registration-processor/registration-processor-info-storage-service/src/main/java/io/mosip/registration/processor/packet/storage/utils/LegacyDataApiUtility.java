@@ -40,36 +40,15 @@ public class LegacyDataApiUtility {
 		ZonedDateTime timeNow = utcNow.withZoneSameInstant(ZoneId.of("Africa/Kampala"));
 
 		// Get the ISO 8601 formatted string of the EAT time
-		DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 		String timeStamp = timeNow.format(formatter);
 
 		return timeStamp;
 	}
 
-	public String createTimestampForRequest(String timeStamp) {
-		String truncatedTimestamp = "";
-		if (timeStamp.length() == 33) {
-
-			truncatedTimestamp = timeStamp.substring(0, timeStamp.length() - 10);
-		} // Trim milliseconds and timezone
-		else {
-			truncatedTimestamp = timeStamp.substring(0, timeStamp.length() - 9);
-		}
-
-		// Append the static timezone offset +03:00
-		return truncatedTimestamp + "+03:00";
-	}
-
 	public String createTimestampForDigest(String timeStamp) {
 
-		String truncatedTimestamp = "";
-		if (timeStamp.length() == 33) {
-
-			truncatedTimestamp = timeStamp.substring(0, timeStamp.length() - 10);
-		} // Trim milliseconds and timezone
-		else {
-			truncatedTimestamp = timeStamp.substring(0, timeStamp.length() - 9);
-		}
+		String truncatedTimestamp = timeStamp.substring(0, timeStamp.length() - 6);
 
 		return truncatedTimestamp + "+0300";
 	}

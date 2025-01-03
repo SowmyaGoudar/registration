@@ -412,7 +412,7 @@ public class LegacyDataVal {
 
 		String timestamp = legacyDataApiUtility.createTimestamp();
 		String timestampForDigest = legacyDataApiUtility.createTimestampForDigest(timestamp);
-		String timestampForRequest = legacyDataApiUtility.createTimestampForRequest(timestamp);
+		String timestampForRequest = timestamp;
 		byte[] createdDigestBytes = timestampForDigest.getBytes(StandardCharsets.UTF_8);
 		regProcLogger.info("timestamp  timestampForDigest timestampForRequest  registration id : {} {} {}", timestamp,
 				timestampForDigest, timestampForRequest);

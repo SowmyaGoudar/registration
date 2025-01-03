@@ -293,8 +293,8 @@ public class LegacyDataValidator {
 				.findByWorkflowInstanceId(registrationStatusDto.getWorkflowInstanceId());
 		PacketDto packetDto = new PacketDto();
 		packetDto.setId(registrationId);
-		packetDto.setSource("REGISTRATION_CLIENT");
-		packetDto.setProcess("NEW");
+		packetDto.setSource("DATAMIGRATOR");
+		packetDto.setProcess("MIGRATOR");
 		packetDto.setRefId(regEntity.getReferenceId());
 		packetDto.setSchemaVersion(schemaVersion);
 		packetDto.setSchemaJson(idSchemaUtil.getIdSchema(Double.parseDouble(schemaVersion)));

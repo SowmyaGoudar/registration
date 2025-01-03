@@ -47,8 +47,14 @@ public class LegacyDataApiUtility {
 	}
 
 	public String createTimestampForRequest(String timeStamp) {
+		String truncatedTimestamp = "";
+		if (timeStamp.length() == 33) {
 
-		String truncatedTimestamp = timeStamp.substring(0, timeStamp.length() - 10); // Trim milliseconds and timezone
+			truncatedTimestamp = timeStamp.substring(0, timeStamp.length() - 10);
+		} // Trim milliseconds and timezone
+		else {
+			truncatedTimestamp = timeStamp.substring(0, timeStamp.length() - 9);
+		}
 
 		// Append the static timezone offset +03:00
 		return truncatedTimestamp + "+03:00";
@@ -56,7 +62,14 @@ public class LegacyDataApiUtility {
 
 	public String createTimestampForDigest(String timeStamp) {
 
-		String truncatedTimestamp = timeStamp.substring(0, timeStamp.length() - 10); // Trim milliseconds and timezone
+		String truncatedTimestamp = "";
+		if (timeStamp.length() == 33) {
+
+			truncatedTimestamp = timeStamp.substring(0, timeStamp.length() - 10);
+		} // Trim milliseconds and timezone
+		else {
+			truncatedTimestamp = timeStamp.substring(0, timeStamp.length() - 9);
+		}
 
 		return truncatedTimestamp + "+0300";
 	}

@@ -627,7 +627,7 @@ public class ManualAdjudicationServiceTest {
 		Mockito.when(registrationProcessorRestClientService.postApi(anyString(), any(), any(), any(), any(), any(),
 				eq(LinkedHashMap.class))).thenReturn(dataShareResponse);
 		Mockito.when(mosipQueueManager.send(any(), anyString(), anyString(), anyInt())).thenReturn(true);
-		manualAdjudicationService.process(object, queue);
+		manualAdjudicationService.process(object, queue, stageName);
 	}
 
 	public void setDataShareDetails() throws Exception {
@@ -760,7 +760,7 @@ public class ManualAdjudicationServiceTest {
 
 		setDataShareDetails();
 
-		manualAdjudicationService.process(object, queue);
+		manualAdjudicationService.process(object, queue, stageName);
 	}
 	@Test
 	public void testManualAdjudicationProcessLatest() throws Exception {
@@ -772,6 +772,6 @@ public class ManualAdjudicationServiceTest {
 		object.setWorkflowInstanceId("26fa3eff-f3b9-48f7-b365-d7f7c2e56e00");
 		setDataShareDetails();
 
-		manualAdjudicationService.process(object, queue);
+		manualAdjudicationService.process(object, queue, stageName);
 	}
 }

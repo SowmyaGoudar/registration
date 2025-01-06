@@ -806,7 +806,7 @@ public class ManualAdjudicationServiceImpl implements ManualAdjudicationService 
 	 */
 
 	@Override
-	public MessageDTO process(MessageDTO object, MosipQueue queue) {
+	public MessageDTO process(MessageDTO object, MosipQueue queue, String stageName) {
 		InternalRegistrationStatusDto registrationStatusDto=new InternalRegistrationStatusDto();
 		TrimExceptionMessage trimExceptionMessage = new TrimExceptionMessage();
 		LogDescription description = new LogDescription();
@@ -836,6 +836,7 @@ public class ManualAdjudicationServiceImpl implements ManualAdjudicationService 
 			registrationStatusDto.setStatusCode(RegistrationStatusCode.PROCESSING.toString());
 			registrationStatusDto
 					.setLatestTransactionStatusCode(RegistrationTransactionStatusCode.IN_PROGRESS.toString());
+			registrationStatusDto.setRegistrationStageName(stageName);
 
 		} catch (DataShareException de) {
 			registrationStatusDto.setStatusCode(RegistrationStatusCode.FAILED.name());

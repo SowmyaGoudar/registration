@@ -87,7 +87,7 @@ public class ReprocessorVerticle extends MosipVerticleAPIManager {
 	private Integer reprocessCount;
 
 	/** Comman seperated stage names that should be excluded while reprocessing. */
-	@Value("#{T(java.util.Arrays).asList('${mosip.registration.processor.reprocessor.exclude-stage-names:PacketReceiverStage}')}")
+	@Value("#{T(java.util.Arrays).asList('${mosip.registration.processor.reprocessor.exclude-stage-names:PacketReceiverStage,ManualAdjudicationStage}')}")
 	private List<String> reprocessExcludeStageNames;
 
 	@Value("${registration.processor.reprocess.restart-from-stage}")

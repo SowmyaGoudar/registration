@@ -22,7 +22,7 @@ import io.mosip.registration.processor.core.code.RegistrationExceptionTypeCode;
 import io.mosip.registration.processor.core.code.RegistrationTransactionStatusCode;
 import io.mosip.registration.processor.core.code.RegistrationTransactionTypeCode;
 import io.mosip.registration.processor.core.exception.ApisResourceAccessException;
-import io.mosip.registration.processor.core.exception.DataMigrationException;
+import io.mosip.registration.processor.core.exception.DataMigrationPacketCreationException;
 import io.mosip.registration.processor.core.exception.PacketManagerException;
 import io.mosip.registration.processor.core.exception.ValidationFailedException;
 import io.mosip.registration.processor.core.exception.util.PlatformErrorMessages;
@@ -98,9 +98,10 @@ public class LegacyDataProcessor {
 			object.setIsValid(Boolean.TRUE);
 			object.setInternalError(Boolean.FALSE);
 			isTransactionSuccessful = true;
-		} catch (DataMigrationException e) {
-			updateDTOsAndLogError(registrationStatusDto, RegistrationStatusCode.PROCESSING,
-					StatusUtil.DATA_MIGRATION_API_FAILED, RegistrationExceptionTypeCode.DATA_MIGRATION_EXCEPTION,
+		} catch (DataMigrationPacketCreationException e) {
+			updateDTOsAndLogError(registrationStatusDto, RegistrationStatusCode.FAILED,
+					StatusUtil.DATA_MIGRATION_API_FAILED,
+					RegistrationExceptionTypeCode.DATA_MIGRATION_PACKET_CREATION_EXCEPTION,
 					description, PlatformErrorMessages.RPR_LEGACY_DATA_FAILED, e);
 		} catch (PacketManagerException e) {
 			updateDTOsAndLogError(registrationStatusDto, RegistrationStatusCode.PROCESSING,
@@ -130,7 +131,7 @@ public class LegacyDataProcessor {
 		} catch (ValidationFailedException e) {
 			object.setInternalError(Boolean.FALSE);
 			updateDTOsAndLogError(registrationStatusDto, RegistrationStatusCode.REJECTED,
-					StatusUtil.LEGACY_DATA_VALIDATION_FAILED, RegistrationExceptionTypeCode.VALIDATION_FAILED_EXCEPTION,
+					StatusUtil.LEGACY_DATA_VALIDATION_FAILED, RegistrationExceptionTypeCode.PACKET_REJECTED,
 					description, PlatformErrorMessages.RPR_LEGACY_DATA_FAILED, e);
 		} catch (BaseUncheckedException e) {
 			updateDTOsAndLogError(registrationStatusDto, RegistrationStatusCode.FAILED,

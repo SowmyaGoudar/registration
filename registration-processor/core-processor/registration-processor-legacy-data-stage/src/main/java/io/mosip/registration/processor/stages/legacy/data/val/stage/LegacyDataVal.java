@@ -3,11 +3,8 @@ package io.mosip.registration.processor.stages.legacy.data.val.stage;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -47,7 +44,7 @@ import io.mosip.registration.processor.core.constant.LoggerFileConstant;
 import io.mosip.registration.processor.core.constant.MappingJsonConstants;
 import io.mosip.registration.processor.core.constant.ProviderStageName;
 import io.mosip.registration.processor.core.exception.ApisResourceAccessException;
-import io.mosip.registration.processor.core.exception.DataMigrationException;
+import io.mosip.registration.processor.core.exception.DataMigrationPacketCreationException;
 import io.mosip.registration.processor.core.exception.PacketManagerException;
 import io.mosip.registration.processor.core.exception.ValidationFailedException;
 import io.mosip.registration.processor.core.exception.util.PlatformSuccessMessages;
@@ -56,18 +53,13 @@ import io.mosip.registration.processor.core.http.ResponseWrapper;
 import io.mosip.registration.processor.core.idrepo.dto.Documents;
 import io.mosip.registration.processor.core.logger.LogDescription;
 import io.mosip.registration.processor.core.logger.RegProcessorLogger;
-import io.mosip.registration.processor.core.migration.dto.DemographicsDto;
-import io.mosip.registration.processor.core.migration.dto.DocumentsDTO;
 import io.mosip.registration.processor.core.migration.dto.MigrationRequestDto;
-import io.mosip.registration.processor.core.migration.dto.MigrationResponse;
 import io.mosip.registration.processor.core.packet.dto.DocumentDto;
-import io.mosip.registration.processor.core.packet.dto.PacketDto;
 import io.mosip.registration.processor.core.spi.restclient.RegistrationProcessorRestClientService;
 import io.mosip.registration.processor.core.status.util.StatusUtil;
 import io.mosip.registration.processor.core.util.JsonUtil;
 import io.mosip.registration.processor.core.util.RegistrationExceptionMapperUtil;
 import io.mosip.registration.processor.packet.storage.dto.Document;
-import io.mosip.registration.processor.packet.storage.dto.FieldResponseDto;
 import io.mosip.registration.processor.packet.storage.utils.FingrePrintConvertor;
 import io.mosip.registration.processor.packet.storage.utils.IdSchemaUtil;
 import io.mosip.registration.processor.packet.storage.utils.LegacyDataApiUtility;
@@ -93,7 +85,6 @@ import io.mosip.registration.processor.status.dto.SyncResponseDto;
 import io.mosip.registration.processor.status.entity.SyncRegistrationEntity;
 import io.mosip.registration.processor.status.service.RegistrationStatusService;
 import io.mosip.registration.processor.status.service.SyncRegistrationService;
-import io.mosip.registration.processor.status.utilities.RegistrationUtility;
 
 @Service
 public class LegacyDataVal {
@@ -146,72 +137,41 @@ public class LegacyDataVal {
 			LogDescription description, MessageDTO object)
 			throws ApisResourceAccessException, PacketManagerException, JsonProcessingException, IOException,
 			ValidationFailedException, JAXBException, NoSuchAlgorithmException,
-			NumberFormatException, JSONException, DataMigrationException {
+			NumberFormatException, JSONException, DataMigrationPacketCreationException {
 
 		regProcLogger.debug("validate called for registrationId {}", registrationId);
 
 			Map<String, String> positionAndWsqMap = getBiometricsWSQFormat(registrationId, registrationStatusDto);
 			String NIN = checkNINAVailableInLegacy(registrationId, positionAndWsqMap);
 			if (NIN != null) {
-				regProcLogger.info("NIN is present in legacy system and call for ondemand migration : {}",
+				regProcLogger.info("Single NIN is present in legacy system and call for ondemand migration : {}",
 						registrationId);
 					MigrationRequestDto migrationRequestDto = new MigrationRequestDto();
 					migrationRequestDto.setNin(NIN);
 					RequestWrapper<MigrationRequestDto> requestWrapper = new RequestWrapper();
 					requestWrapper.setRequest(migrationRequestDto);
 					ResponseWrapper responseWrapper = (ResponseWrapper<?>) restApi
-							.putApi(ApiName.MIGARTION_URL, null, "", "", requestWrapper, ResponseWrapper.class,
+							.putApi(ApiName.MIGARTION_PACKET_CREATION, null, "", "", requestWrapper,
+									ResponseWrapper.class,
 									null);
 					regProcLogger.info("Response from migration api : {}{}", registrationId,
 							JsonUtils.javaObjectToJsonString(responseWrapper));
 					if (responseWrapper.getErrors() != null && responseWrapper.getErrors().size() > 0) {
 						ErrorDTO error = (ErrorDTO) responseWrapper.getErrors().get(0);
-						throw new DataMigrationException(error.getErrorCode(), error.getMessage());
+						throw new DataMigrationPacketCreationException(error.getErrorCode(), error.getMessage());
 					}
-					MigrationResponse migrationResponse = objectMapper.readValue(
+					String migrationResponse = objectMapper.readValue(
 							JsonUtils.javaObjectToJsonString(responseWrapper.getResponse()),
-							MigrationResponse.class);
-					PacketDto packetDto = createOnDemandPacket(
-							migrationResponse.getDemographics(), migrationResponse.getDocuments(),registrationStatusDto);
-					if (packetDto != null) {
-						SyncRegistrationEntity syncRegistrationEntityForOndemand = createSyncAndRegistration(packetDto,
-								registrationStatusDto.getRegistrationStageName());
-						if (syncRegistrationEntityForOndemand != null) {
-							registrationStatusDto.setLatestTransactionStatusCode(
-									RegistrationTransactionStatusCode.SUCCESS.toString());
-							registrationStatusDto
-									.setStatusComment(StatusUtil.ON_DEMAND_PACKET_CREATION_SUCCESS.getMessage());
-							registrationStatusDto
-									.setSubStatusCode(StatusUtil.ON_DEMAND_PACKET_CREATION_SUCCESS.getCode());
-							registrationStatusDto.setStatusCode(RegistrationStatusCode.MERGED.toString());
-
-							description.setMessage(
-									PlatformSuccessMessages.RPR_LEGACY_DATA_VALIDATE_ONDEMAND_PACKET.getMessage()
-											+ " -- " + registrationId);
-							description.setCode(
-									PlatformSuccessMessages.RPR_LEGACY_DATA_VALIDATE_ONDEMAND_PACKET.getCode());
-							object.setIsValid(true);
-							object.setReg_type(syncRegistrationEntityForOndemand.getRegistrationType());
-							object.setRid(syncRegistrationEntityForOndemand.getRegistrationId());
-							object.setWorkflowInstanceId(syncRegistrationEntityForOndemand.getWorkflowInstanceId());
-							regProcLogger.info("Ondemand Packet will move forward further stages : {} ",
-									registrationId);
-						}
+							String.class);
+					if (migrationResponse != null) {
+						regProcLogger.info("ondemand migration happended for registration id : {}", registrationId);
+						throw new ValidationFailedException(StatusUtil.LEGACY_DATA_FAILED.getMessage(),
+								StatusUtil.LEGACY_DATA_FAILED.getCode());
 					} else {
-						regProcLogger.info("Ondemand creation is failed packet going for reprocess : {} ",
+						regProcLogger.info("ondemand migration api response is null  for registration id : {}",
 								registrationId);
-						registrationStatusDto
-								.setLatestTransactionStatusCode(RegistrationTransactionStatusCode.REPROCESS.toString());
-						registrationStatusDto
-								.setStatusComment(StatusUtil.ON_DEMAND_PACKET_CREATION_FAILED.getMessage());
-						registrationStatusDto.setSubStatusCode(StatusUtil.ON_DEMAND_PACKET_CREATION_FAILED.getCode());
-						registrationStatusDto.setStatusCode(RegistrationStatusCode.PROCESSING.toString());
-						description.setMessage(
-								PlatformSuccessMessages.RPR_LEGACY_DATA_VALIDATE_ONDEMAND_PACKET.getMessage() + " -- "
-										+ registrationId);
-						description.setCode(PlatformSuccessMessages.RPR_LEGACY_DATA_VALIDATE_ONDEMAND_PACKET.getCode());
-						object.setIsValid(true);
-						object.setInternalError(true);
+						throw new DataMigrationPacketCreationException(StatusUtil.LEGACY_DATA_FAILED.getMessage(),
+								StatusUtil.LEGACY_DATA_FAILED.getCode());
 					}
 
 			} else {
@@ -230,85 +190,6 @@ public class LegacyDataVal {
 
 		regProcLogger.debug("validate call ended for registrationId {}", registrationId);
 
-	}
-
-	private SyncRegistrationEntity createSyncAndRegistration(PacketDto packetDto, String stageName) {
-		SyncRegistrationEntity syncRegistrationEntity = createSyncEntity(packetDto);
-		syncRegistrationEntity = syncRegistrationService.saveSyncRegistrationEntity(syncRegistrationEntity);
-		regProcLogger.info("Successfully sync the ondemand packet : {} {}", packetDto.getId());
-		createRegistrationStatusEntity(stageName, syncRegistrationEntity);
-		return syncRegistrationEntity;
-	}
-
-	private SyncRegistrationEntity createSyncEntity(PacketDto packetDto) {
-		SyncRegistrationEntity syncRegistrationEntity = new SyncRegistrationEntity();
-		syncRegistrationEntity.setRegistrationId(packetDto.getId().trim());
-		syncRegistrationEntity.setLangCode("eng");
-		syncRegistrationEntity.setRegistrationType(packetDto.getProcess());
-		syncRegistrationEntity.setPacketHashValue("0");
-		syncRegistrationEntity.setPacketSize(new BigInteger("0"));
-		syncRegistrationEntity.setSupervisorStatus("APPROVED");
-		syncRegistrationEntity.setPacketId(packetDto.getId());
-		syncRegistrationEntity.setReferenceId(packetDto.getRefId());
-		syncRegistrationEntity.setCreatedBy("MOSIP");
-		syncRegistrationEntity.setCreateDateTime(LocalDateTime.now(ZoneId.of("UTC")));
-		syncRegistrationEntity.setWorkflowInstanceId(RegistrationUtility.generateId());
-		return syncRegistrationEntity;
-	}
-
-	private PacketDto createOnDemandPacket(DemographicsDto demographics, DocumentsDTO documents,
-			InternalRegistrationStatusDto registrationStatusDto) throws ApisResourceAccessException,
-			PacketManagerException,
-			JsonProcessingException, IOException, NumberFormatException, JSONException {
-
-		String registrationId = registrationStatusDto.getRegistrationId();
-		String registrationType = registrationStatusDto.getRegistrationType();
-		regProcLogger.info("Getting details to create ondemand packet : {}", registrationId);
-		String schemaVersion = packetManagerService.getFieldByMappingJsonKey(registrationStatusDto.getRegistrationId(),
-				MappingJsonConstants.IDSCHEMA_VERSION, registrationType, ProviderStageName.LEGACY_DATA);
-
-		Map<String, BiometricRecord> biometrics = getBiometrics(registrationId, registrationType);
-		List<FieldResponseDto> audits = packetManagerService.getAudits(registrationId, registrationType,
-				ProviderStageName.LEGACY_DATA);
-		List<Map<String, String>> auditList = new ArrayList<>();
-		for (FieldResponseDto dto : audits) {
-			auditList.add(dto.getFields());
-		}
-		Map<String, String> metaInfo = packetManagerService.getMetaInfo(registrationId, registrationType,
-				ProviderStageName.LEGACY_DATA);
-		regProcLogger.info("successfully got  details to create ondemand packet : {}", registrationId);
-		SyncRegistrationEntity regEntity = syncRegistrationService
-				.findByWorkflowInstanceId(registrationStatusDto.getWorkflowInstanceId());
-		PacketDto packetDto = new PacketDto();
-		packetDto.setId(registrationId);
-		packetDto.setSource("REGISTRATION_CLIENT");
-		packetDto.setProcess("NEW");
-		packetDto.setRefId(regEntity.getReferenceId());
-		packetDto.setSchemaVersion(schemaVersion);
-		packetDto.setSchemaJson(idSchemaUtil.getIdSchema(Double.parseDouble(schemaVersion)));
-		packetDto.setFields(demographics.getFields());
-		packetDto.setAudits(auditList);
-		packetDto.setMetaInfo(metaInfo);
-		packetDto.setDocuments(documents.getDocuments());
-		packetDto.setBiometrics(biometrics);
-		RequestWrapper<PacketDto> request = new RequestWrapper<>();
-		request.setId(ID);
-		request.setVersion(VERSION);
-		request.setRequesttime(DateUtils.getUTCCurrentDateTime());
-		request.setRequest(packetDto);
-		ResponseWrapper responseWrapper = (ResponseWrapper<?>) restApi
-				.putApi(ApiName.PACKETMANAGER_CREATE_PACKET, null, "", "", request, ResponseWrapper.class,
-						null);
-		if ((responseWrapper.getErrors() != null && !responseWrapper.getErrors().isEmpty())
-				|| responseWrapper.getResponse() == null) {
-			ErrorDTO error = (ErrorDTO) responseWrapper.getErrors().get(0);
-			regProcLogger.info("Error while creating packet through to packet manager : {} {}", registrationId,
-					error.getMessage());
-		} else {
-			regProcLogger.info("Successfully created packet through to packet manager : {}", registrationId);
-			return packetDto;
-		}
-		return null;
 	}
 
 	private Map<String, String> getBiometricsWSQFormat(String registrationId,

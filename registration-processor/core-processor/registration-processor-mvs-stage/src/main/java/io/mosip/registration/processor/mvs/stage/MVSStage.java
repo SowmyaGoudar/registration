@@ -32,12 +32,10 @@ import io.mosip.registration.processor.core.spi.queue.MosipQueueManager;
 import io.mosip.registration.processor.core.util.JsonUtil;
 import io.mosip.registration.processor.mvs.exception.InvalidMessageException;
 import io.mosip.registration.processor.mvs.exception.handler.MVSExceptionHandler;
-import io.mosip.registration.processor.mvs.request.dto.DocumentDTO;
-import io.mosip.registration.processor.mvs.response.dto.VerificationResponseDTO;
+import io.mosip.registration.processor.mvs.response.dto.MVSResponseDTO;
 import io.mosip.registration.processor.mvs.service.MVSService;
 import io.mosip.registration.processor.mvs.util.MVSRequestValidator;
 import io.mosip.registration.processor.packet.storage.exception.QueueConnectionNotFound;
-import io.mosip.registration.processor.packet.storage.utils.PacketManagerService;
 import io.mosip.registration.processor.packet.storage.utils.PriorityBasedPacketManagerService;
 import io.mosip.registration.processor.rest.client.audit.builder.AuditLogRequestBuilder;
 import io.mosip.registration.processor.status.dto.InternalRegistrationStatusDto;
@@ -157,8 +155,9 @@ public class MVSStage extends MosipVerticleAPIManager {
 	 * Deploy stage.
 	 */
 	public void deployVerticle() {
-		//this.mosipEventBus = this.getEventBus(this, clusterManagerUrl, workerPoolSize);
-		//this.consume(mosipEventBus, MessageBusAddress.MVS_BUS_IN, messageExpiryTimeLimit);
+		this.mosipEventBus = this.getEventBus(this, clusterManagerUrl, workerPoolSize);
+		this.consume(mosipEventBus, MessageBusAddress.MVS_BUS_IN, messageExpiryTimeLimit);
+
 		queue = getQueueConnection();
 		if (queue != null) {
 
@@ -175,12 +174,12 @@ public class MVSStage extends MosipVerticleAPIManager {
 			throw new QueueConnectionNotFound(PlatformErrorMessages.RPR_PRT_QUEUE_CONNECTION_NULL.getMessage());
 		}
 
-		MessageDTO message = new MessageDTO();
-		message.setRid("10002100340000120241115101214");
-		message.setReg_type("NEW");
-		message.setWorkflowInstanceId("1a50e167-c822-4bbb-8948-744c449f5380");
-		message.setIteration(1);
-		process(message);
+//		MessageDTO message = new MessageDTO();
+//		message.setRid("10040100250000320240830073508");
+//		message.setReg_type("NEW");
+//		message.setWorkflowInstanceId("1a50e167-c822-4bbb-8948-744c449f5380");
+//		message.setIteration(1);
+//		process(message);
 	}
 
 	@Override
@@ -225,23 +224,20 @@ public class MVSStage extends MosipVerticleAPIManager {
 						PlatformErrorMessages.RPR_INVALID_MESSSAGE.getCode(), PlatformErrorMessages.RPR_INVALID_MESSSAGE.getMessage());
 				throw new InvalidMessageException(PlatformErrorMessages.RPR_INVALID_MESSSAGE.getCode(), PlatformErrorMessages.RPR_INVALID_MESSSAGE.getMessage());
 			}
-			DocumentDTO resp = JsonUtil.readValueWithUnknownProperties(response, DocumentDTO.class);
-			//packetManagerService.createPacket("10002100340000120241115101214", resp.getDocuments(), "REGISTRATION_CLIENT", "MVS_DOC");
-			/*
-			 * VerificationResponseDTO resp =
-			 * JsonUtil.readValueWithUnknownProperties(response,
-			 * VerificationResponseDTO.class); if (resp != null) {
-			 * packetManagerService.createPacket("",null,"",""); boolean
-			 * isProcessingSuccessful = mVSService.updatePacketStatus(resp, CLASS_NAME,
-			 * queue);
-			 * 
-			 * if (isProcessingSuccessful)
-			 * regProcLogger.info(LoggerFileConstant.SESSIONID.toString(),
-			 * LoggerFileConstant.REGISTRATIONID.toString(), "",
-			 * "ManualVerificationStage::processDecision::success");
-			 * 
-			 * }
-			 */
+//			DocumentDTO resp = JsonUtil.readValueWithUnknownProperties(response, DocumentDTO.class);
+//			packetManagerService.createPacket("10002100340000120241115101214", resp.getDocuments(), "REGISTRATION_CLIENT", "MVS_DOC");
+
+			MVSResponseDTO resp = JsonUtil.readValueWithUnknownProperties(response, MVSResponseDTO.class);
+			if (resp != null) {
+//				packetManagerService.createPacket("",null,"","");
+				boolean isProcessingSuccessful = mVSService.updatePacketStatus(resp, CLASS_NAME, queue);
+
+				if (isProcessingSuccessful)
+					regProcLogger.info(LoggerFileConstant.SESSIONID.toString(), LoggerFileConstant.REGISTRATIONID.toString(), "",
+							"ManualVerificationStage::processDecision::success");
+
+  			}
+
 		} catch (Exception e) {
 			regProcLogger.error("","","", ExceptionUtils.getStackTrace(e));
 		}

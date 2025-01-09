@@ -1,7 +1,5 @@
 package io.mosip.registration.processor.core.exception.util;
 
-import io.mosip.registration.processor.core.status.util.StatusConstants;
-
 // TODO: Auto-generated Javadoc
 /**
  * The Enum RPRPlatformErrorMessages.
@@ -1458,10 +1456,25 @@ public enum PlatformErrorMessages {
 	RPR_PYVS_IDREPO_UIN_RETRIEVAL_FAILED(PlatformConstants.RPR_PAYMENT_VALIDATOR_STAGE + "011", "UIN details retrieval from IDRepo failed"), 
 	RPR_PYVS_FAILED(PlatformConstants.RPR_PAYMENT_VALIDATOR_STAGE + "012", "Payment Validation failed"),
 	// Citizenship Verification stage
-	RPR_CITIZENSHIP_VERIFICATION_FAILED(PlatformConstants.RPR_CITIZENSHIP_VERIFICATION_MODULE + "001", "Citizenship Verification failed")
+	RPR_CITIZENSHIP_VERIFICATION_FAILED(PlatformConstants.RPR_CITIZENSHIP_VERIFICATION_MODULE + "001", "Citizenship Verification failed"),
 	
-	;
+	RPR_LEGACY_DATA_VALIDATION_FAILED(PlatformConstants.RPR_LEGACY_DATA_VALIDATOR_MODULE + "001",
+			"Legacy Data Validation failed"),
+	
+	RPR_LEGACY_DATA_ON_DEMAND_PACKET_CREATION_FAILED(PlatformConstants.RPR_LEGACY_DATA_VALIDATOR_MODULE + "002",
+			"Ondemand packet creation failed"),
 
+	RPR_LEGACY_DATA_MIGRATION_API_FAILED(PlatformConstants.RPR_LEGACY_DATA_VALIDATOR_MODULE + "003",
+			"Legacy data migration api failed"),
+
+	RPR_LEGACY_DATA_FAILED(PlatformConstants.RPR_LEGACY_DATA_MODULE + "001",
+			"Legacy Data Validation failed"),
+
+	RPR_LEGACY_DATA_VAL_ON_DEMAND_PACKET_CREATION_FAILED(PlatformConstants.RPR_LEGACY_DATA_MODULE + "002",
+			"Ondemand packet creation failed"),
+
+	RPR_LEGACY_DATA_VAL_MIGRATION_API_FAILED(PlatformConstants.RPR_LEGACY_DATA_MODULE + "003",
+			"Legacy data migration api failed");
 
 
 	/** The error message. */

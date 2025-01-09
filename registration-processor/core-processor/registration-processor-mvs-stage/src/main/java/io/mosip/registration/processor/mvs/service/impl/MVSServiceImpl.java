@@ -3,9 +3,6 @@ package io.mosip.registration.processor.mvs.service.impl;
 import static io.mosip.registration.processor.mvs.constants.VerificationConstants.DATETIME_PATTERN;
 
 import java.io.IOException;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,7 +31,6 @@ import com.google.common.collect.Lists;
 
 import io.mosip.kernel.biometrics.entities.BiometricRecord;
 import io.mosip.kernel.biometrics.spi.CbeffUtil;
-import io.mosip.kernel.core.dataaccess.exception.DataAccessLayerException;
 import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.kernel.core.util.CryptoUtil;
 import io.mosip.kernel.core.util.DateUtils;
@@ -81,15 +77,13 @@ import io.mosip.registration.processor.mvs.request.dto.Filter;
 import io.mosip.registration.processor.mvs.request.dto.ShareableAttributes;
 import io.mosip.registration.processor.mvs.request.dto.Source;
 import io.mosip.registration.processor.mvs.request.dto.VerificationRequestDTO;
-import io.mosip.registration.processor.mvs.response.dto.VerificationResponseDTO;
+import io.mosip.registration.processor.mvs.response.dto.MVSResponseDTO;
 import io.mosip.registration.processor.mvs.service.MVSService;
 import io.mosip.registration.processor.mvs.stage.MVSStage;
 import io.mosip.registration.processor.mvs.util.SaveVerificationRecordUtility;
 import io.mosip.registration.processor.packet.storage.dto.ApplicantInfoDto;
 import io.mosip.registration.processor.packet.storage.dto.Document;
 import io.mosip.registration.processor.packet.storage.entity.VerificationEntity;
-import io.mosip.registration.processor.packet.storage.entity.VerificationPKEntity;
-import io.mosip.registration.processor.packet.storage.exception.UnableToInsertData;
 import io.mosip.registration.processor.packet.storage.repository.BasePacketRepository;
 import io.mosip.registration.processor.packet.storage.utils.PriorityBasedPacketManagerService;
 import io.mosip.registration.processor.packet.storage.utils.Utilities;
@@ -296,56 +290,42 @@ public class MVSServiceImpl implements MVSService {
 	 * verification.dto.ManualVerificationDTO)
 	 */
 	@Override
-	public boolean updatePacketStatus(VerificationResponseDTO manualVerificationDTO, String stageName,
-			MosipQueue queue) {
+	public boolean updatePacketStatus(MVSResponseDTO mvsResponseDTO, String stageName,
+									  MosipQueue queue) {
 
 		TrimExceptionMessage trimExceptionMessage = new TrimExceptionMessage();
 		LogDescription description = new LogDescription();
-		boolean isTransactionSuccessful = false;
+		boolean isTransactionSuccessful = true;
 
 		regProcLogger.debug(LoggerFileConstant.SESSIONID.toString(), LoggerFileConstant.REFERENCEID.toString(),
-				manualVerificationDTO.getRequestId(), "VerificationServiceImpl::updatePacketStatus()::entry");
+				mvsResponseDTO.getRequestId(), "VerificationServiceImpl::updatePacketStatus()::entry");
 
-		VerificationEntity entity = validateRequestIdAndReturnRid(manualVerificationDTO.getRequestId());
-		String regId = entity != null ? entity.getRegId() : null;
+//		VerificationEntity entity = validateRequestIdAndReturnRid(mvsResponseDTO.getRequestId());
+		String regId = mvsResponseDTO.getRegId();
 
 		MessageDTO messageDTO = new MessageDTO();
 		InternalRegistrationStatusDto registrationStatusDto = null;
 		try {
 			registrationStatusDto = registrationStatusService.getRegistrationStatus(
-					(entity != null ? entity.getRegId() : null), null, null,
-					(entity != null ? (entity.getId() != null ? entity.getId().getWorkflowInstanceId() : null) : null));
-			registrationStatusDto.setLatestTransactionTypeCode(RegistrationTransactionTypeCode.VERIFICATION.name());
+					regId, null, null,
+					 null);
+			registrationStatusDto.setLatestTransactionTypeCode(RegistrationTransactionTypeCode.MVS.name());
 			registrationStatusDto.setRegistrationStageName(stageName);
 			messageDTO.setInternalError(false);
-			messageDTO.setIsValid(false);
+            messageDTO.setIsValid(mvsResponseDTO.getReturnValue() == 0);
 			messageDTO.setRid(regId);
 			messageDTO.setReg_type(registrationStatusDto.getRegistrationType());
 
-			List<VerificationEntity> entities = retrieveInqueuedRecordsByRid(regId);
+//			List<VerificationEntity> entities = retrieveInqueuedRecordsByRid(regId);
 
-			// check if response is marked for resend
-			if (isResendFlow(registrationStatusDto, manualVerificationDTO, entity)) {
-				registrationStatusDto.setStatusComment(StatusUtil.VERIFICATION_RESEND.getMessage());
-				registrationStatusDto.setSubStatusCode(StatusUtil.VERIFICATION_RESEND.getCode());
-				registrationStatusDto.setStatusCode(RegistrationStatusCode.PROCESSING.toString());
-				registrationStatusDto
-						.setLatestTransactionStatusCode(RegistrationTransactionStatusCode.REPROCESS.toString());
-				description.setMessage(StatusUtil.VERIFICATION_RESEND.getMessage());
-				description.setCode(StatusUtil.VERIFICATION_RESEND.getCode());
-				messageDTO.setInternalError(true);
-				messageDTO.setIsValid(isTransactionSuccessful);
+			// call success flow and process the response received from manual verification
+			// system
+//			isTransactionSuccessful = successFlow(mvsResponseDTO, entity, registrationStatusDto, messageDTO,
+//					description);
 
-			} else {
-				// call success flow and process the response received from manual verification
-				// system
-				isTransactionSuccessful = successFlow(manualVerificationDTO, entity, registrationStatusDto, messageDTO,
-						description);
-
-				registrationStatusDto.setUpdatedBy(USER);
-				regProcLogger.info(LoggerFileConstant.SESSIONID.toString(),
-						LoggerFileConstant.REGISTRATIONID.toString(), regId, description.getMessage());
-			}
+			registrationStatusDto.setUpdatedBy(USER);
+			regProcLogger.info(LoggerFileConstant.SESSIONID.toString(),
+					LoggerFileConstant.REGISTRATIONID.toString(), regId, description.getMessage());
 
 		} catch (TablenotAccessibleException e) {
 			messageDTO.setInternalError(true);
@@ -399,11 +379,11 @@ public class MVSServiceImpl implements MVSService {
 		if (messageDTO.getInternalError()) {
 			updateErrorFlags(registrationStatusDto, messageDTO);
 		}
-		registrationStatusDto.setLatestTransactionTypeCode(RegistrationTransactionTypeCode.VERIFICATION.toString());
+		registrationStatusDto.setLatestTransactionTypeCode(RegistrationTransactionTypeCode.MVS.toString());
 		String regId = messageDTO.getRid();
 		/** Module-Id can be Both Success/Error code */
 		String moduleId = isTransactionSuccessful ? platformSuccessMessages.getCode() : description.getCode();
-		String moduleName = ModuleName.VERIFICATION.toString();
+		String moduleName = ModuleName.MVS.toString();
 		registrationStatusService.updateRegistrationStatus(registrationStatusDto, moduleId, moduleName);
 
 		String eventId = isTransactionSuccessful ? EventId.RPR_402.toString() : EventId.RPR_405.toString();
@@ -694,8 +674,8 @@ public class MVSServiceImpl implements MVSService {
 	 * @return boolean
 	 * @throws com.fasterxml.jackson.core.JsonProcessingException
 	 */
-	private boolean successFlow(VerificationResponseDTO manualVerificationDTO, VerificationEntity entity,
-			InternalRegistrationStatusDto registrationStatusDto, MessageDTO messageDTO, LogDescription description)
+	private boolean successFlow(MVSResponseDTO manualVerificationDTO, VerificationEntity entity,
+								InternalRegistrationStatusDto registrationStatusDto, MessageDTO messageDTO, LogDescription description)
 			throws JsonProcessingException {
 
 		boolean isTransactionSuccessful = false;
@@ -771,7 +751,7 @@ public class MVSServiceImpl implements MVSService {
 	 * @throws JsonProcessingException
 	 */
 	public boolean isResendFlow(InternalRegistrationStatusDto registrationStatusDto,
-			VerificationResponseDTO manualVerificationDTO, VerificationEntity entity) throws JsonProcessingException {
+								MVSResponseDTO manualVerificationDTO, VerificationEntity entity) throws JsonProcessingException {
 		boolean isResendFlow = false;
 		if (manualVerificationDTO.getReturnValue() == 2) {
 			regProcLogger.info(LoggerFileConstant.SESSIONID.toString(), LoggerFileConstant.REGISTRATIONID.toString(),

@@ -167,6 +167,20 @@ public class AnonymousProfileServiceImpl implements AnonymousProfileService {
 				MappingJsonConstants.VALUE);
 		if (fieldMap.get(genderValue) != null)
 			anonymousProfileDTO.setGender(getLanguageBasedValueForSimpleType(fieldMap.get(genderValue), language));
+		
+		//set District
+		String districtValue= JsonUtil.getJSONValue(
+				JsonUtil.getJSONObject(regProcessorIdentityJson, MappingJsonConstants.DISTRICT),
+				MappingJsonConstants.VALUE);
+		if (fieldMap.get(districtValue) != null)
+			anonymousProfileDTO.setDistrict(getLanguageBasedValueForSimpleType(fieldMap.get(districtValue), language));
+		
+		//set ServiceType
+		String serviceTypeValue= JsonUtil.getJSONValue(
+				JsonUtil.getJSONObject(regProcessorIdentityJson, MappingJsonConstants.SERVICE_TYPE),
+				MappingJsonConstants.VALUE);
+		if (fieldMap.get(serviceTypeValue) != null)
+			anonymousProfileDTO.setServiceType(getLanguageBasedValueForSimpleType(fieldMap.get(serviceTypeValue), language));
 
 		// set citizenshipType
 //		String citizenshipValue = JsonUtil.getJSONValue(

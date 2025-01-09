@@ -40,7 +40,7 @@ import io.mosip.registration.processor.rest.client.audit.builder.AuditLogRequest
 import io.mosip.registration.processor.status.dto.InternalRegistrationStatusDto;
 import io.mosip.registration.processor.status.dto.RegistrationStatusDto;
 import io.mosip.registration.processor.status.service.RegistrationStatusService;
-
+import org.springframework.util.ClassUtils;
 /**
  * This class sends message to next stage after successful completion of manual
  * verification.
@@ -194,9 +194,13 @@ public class ManualAdjudicationStage extends MosipVerticleAPIManager {
 
 	@Override
 	public MessageDTO process(MessageDTO object) {
-		return manualAdjudicationService.process(object, queue);
+		return manualAdjudicationService.process(object, queue, getStageName());
 	}
 
+	protected String getStageName() {
+		return ClassUtils.getUserClass(this.getClass()).getSimpleName();
+	}
+	
 	private MosipQueue getQueueConnection() {
 		String failOverBrokerUrl = FAIL_OVER + url + "," + url + RANDOMIZE_FALSE;
 		return mosipConnectionFactory.createConnection(typeOfQueue, username, password, failOverBrokerUrl,

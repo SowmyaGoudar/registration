@@ -34,6 +34,7 @@ import io.mosip.registration.processor.core.constant.AbisConstant;
 import io.mosip.registration.processor.core.constant.LoggerFileConstant;
 import io.mosip.registration.processor.core.constant.MappingJsonConstants;
 import io.mosip.registration.processor.core.constant.ProviderStageName;
+import io.mosip.registration.processor.core.constant.RegistrationType;
 import io.mosip.registration.processor.core.exception.ApisResourceAccessException;
 import io.mosip.registration.processor.core.exception.PacketDecryptionFailureException;
 import io.mosip.registration.processor.core.exception.PacketManagerException;
@@ -177,7 +178,10 @@ public class DemodedupeProcessor {
 			JSONObject regProcessorIdentityJson = utility.getRegistrationProcessorMappingJson(MappingJsonConstants.IDENTITY);
 			String nin= packetManagerService.getField(registrationId,
 					"NIN", registrationStatusDto.getRegistrationType(), ProviderStageName.DEMO_DEDUPE);
-			JSONObject jsonObject = utility.retrieveIdrepoJsonWithNIN(nin);
+			JSONObject jsonObject = null;
+			if (!registrationStatusDto.getRegistrationType().equalsIgnoreCase(RegistrationType.MIGRATOR.toString())) {
+				jsonObject = utility.retrieveIdrepoJsonWithNIN(nin);
+			}
 			
 //			String uinFieldCheck = utility.getUIn(registrationId, registrationStatusDto.getRegistrationType(), ProviderStageName.DEMO_DEDUPE);
 //			JSONObject jsonObject = utility.retrieveIdrepoJson(uinFieldCheck);

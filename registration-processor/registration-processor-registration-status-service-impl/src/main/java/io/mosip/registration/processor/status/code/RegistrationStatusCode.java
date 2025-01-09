@@ -28,6 +28,8 @@ public enum RegistrationStatusCode {
 
 	REPROCESS,
 
-	PAUSED_FOR_ADDITIONAL_INFO
+	PAUSED_FOR_ADDITIONAL_INFO,
+
+	MERGED
 
 }

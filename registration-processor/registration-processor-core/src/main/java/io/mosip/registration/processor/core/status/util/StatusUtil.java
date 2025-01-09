@@ -407,9 +407,29 @@ public enum StatusUtil {
 	CITIZENSHIP_VERIFICATION_UNEXPECTED_LIVING_STATUS(StatusConstants.CITIZENSHIP_VERIFICATION + "021", "Unexpected living status"),
 	CITIZENSHIP_VERIFICATION_STATUS_INVALID(StatusConstants.CITIZENSHIP_VERIFICATION + "022", "Invalid status provided"),
 	CITIZENSHIP_VERIFICATION_ALIVE_UIN_DEACTIVATED(StatusConstants.CITIZENSHIP_VERIFICATION + "023", "Operation failed: Living status is alive but UIN status is deactivated"),
-	CITIZENSHIP_VERIFICATION_UNEXPECTED_UIN_STATUS(StatusConstants.CITIZENSHIP_VERIFICATION + "024", "Unexpected UIN status for alive individual");
-	
-	
+	CITIZENSHIP_VERIFICATION_UNEXPECTED_UIN_STATUS(StatusConstants.CITIZENSHIP_VERIFICATION + "024",
+			"Unexpected UIN status for alive individual"),
+	// Legacy data validation stage
+	LEGACY_DATA_VALIDATION_SUCCESS(StatusConstants.LEGACY_DATA_VALIDATION_SUCCESS + "001",
+			"Legacy data validation  success"),
+	LEGACY_DATA_VALIDATION_FAILED(StatusConstants.LEGACY_DATA_VALIDATION_FAILED + "002",
+			"Legacy data validation failed"),
+	ON_DEMAND_PACKET_CREATION_SUCCESS(StatusConstants.LEGACY_DATA_VALIDATION_SUCCESS + "003",
+			"OnDemand Packet created"),
+	ON_DEMAND_PACKET_CREATION_FAILED(StatusConstants.LEGACY_DATA_VALIDATION_FAILED + "004",
+			"OnDemand Packet creattion failed"),
+	DATA_MIGRATION_API_FAILED(StatusConstants.LEGACY_DATA_VALIDATION_FAILED + "005",
+			"Data Migration api failed"),
+	LEGACY_DATA_SUCCESS(StatusConstants.LEGACY_DATA_SUCCESS + "001",
+			"Legacy data validation  success"),
+	LEGACY_DATA_FAILED(StatusConstants.LEGACY_DATA_FAILED + "002",
+			"Legacy data validation failed"),
+	LEGACY_DATA_ON_DEMAND_PACKET_CREATION_SUCCESS(StatusConstants.LEGACY_DATA_SUCCESS + "003",
+			"OnDemand Packet created"),
+	LEGACY_DATA_ON_DEMAND_PACKET_CREATION_FAILED(StatusConstants.LEGACY_DATA_FAILED + "004",
+			"OnDemand Packet creattion failed"),
+	LEGACY_DATA_DATA_MIGRATION_API_FAILED(StatusConstants.LEGACY_DATA_FAILED + "005",
+			"Data Migration api failed");
 
 	private final String statusComment;
 	private final String statusCode;

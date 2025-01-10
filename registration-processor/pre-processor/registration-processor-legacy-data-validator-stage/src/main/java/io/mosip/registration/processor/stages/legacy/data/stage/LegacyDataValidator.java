@@ -56,8 +56,6 @@ import io.mosip.registration.processor.core.http.ResponseWrapper;
 import io.mosip.registration.processor.core.idrepo.dto.Documents;
 import io.mosip.registration.processor.core.logger.LogDescription;
 import io.mosip.registration.processor.core.logger.RegProcessorLogger;
-import io.mosip.registration.processor.core.migration.dto.DemographicsDto;
-import io.mosip.registration.processor.core.migration.dto.DocumentsDTO;
 import io.mosip.registration.processor.core.migration.dto.MigrationRequestDto;
 import io.mosip.registration.processor.core.migration.dto.MigrationResponse;
 import io.mosip.registration.processor.core.packet.dto.DocumentDto;
@@ -184,7 +182,7 @@ public class LegacyDataValidator {
 								registrationStatusDto.getRegistrationStageName());
 						if (syncRegistrationEntityForOndemand != null) {
 							registrationStatusDto.setLatestTransactionStatusCode(
-									RegistrationTransactionStatusCode.SUCCESS.toString());
+									RegistrationTransactionStatusCode.MERGED.toString());
 							registrationStatusDto
 									.setStatusComment(StatusUtil.ON_DEMAND_PACKET_CREATION_SUCCESS.getMessage());
 							registrationStatusDto
@@ -265,7 +263,7 @@ public class LegacyDataValidator {
 		return syncRegistrationEntity;
 	}
 
-	private PacketDto createOnDemandPacket(DemographicsDto demographics, DocumentsDTO documents,
+	private PacketDto createOnDemandPacket(Map<String, String> demographics, Map<String, DocumentDto> documents,
 			InternalRegistrationStatusDto registrationStatusDto) throws ApisResourceAccessException,
 			PacketManagerException,
 			JsonProcessingException, IOException, NumberFormatException, JSONException {
@@ -298,10 +296,10 @@ public class LegacyDataValidator {
 		packetDto.setRefId(regEntity.getReferenceId());
 		packetDto.setSchemaVersion(schemaVersion);
 		packetDto.setSchemaJson(idSchemaUtil.getIdSchema(Double.parseDouble(schemaVersion)));
-		packetDto.setFields(demographics.getFields());
+		packetDto.setFields(demographics);
 		packetDto.setAudits(auditList);
 		packetDto.setMetaInfo(metaInfo);
-		packetDto.setDocuments(documents.getDocuments());
+		packetDto.setDocuments(documents);
 		packetDto.setBiometrics(biometrics);
 		RequestWrapper<PacketDto> request = new RequestWrapper<>();
 		request.setId(ID);

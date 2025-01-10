@@ -1,7 +1,9 @@
 package io.mosip.registration.processor.core.migration.dto;
 
 import java.io.Serializable;
+import java.util.Map;
 
+import io.mosip.registration.processor.core.packet.dto.DocumentDto;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -9,7 +11,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode
 public class MigrationResponse implements Serializable {
 
-	private DemographicsDto demographics;
+	private Map<String, String> demographics;
 	
-	private DocumentsDTO documents;
+	private Map<String, DocumentDto> documents;
 }

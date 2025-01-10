@@ -151,7 +151,7 @@ public class LegacyDataVal {
 					RequestWrapper<MigrationRequestDto> requestWrapper = new RequestWrapper();
 					requestWrapper.setRequest(migrationRequestDto);
 					ResponseWrapper responseWrapper = (ResponseWrapper<?>) restApi
-							.putApi(ApiName.MIGARTION_PACKET_CREATION, null, "", "", requestWrapper,
+							.postApi(ApiName.MIGARTION_PACKET_CREATION, "", "", requestWrapper,
 									ResponseWrapper.class,
 									null);
 					regProcLogger.info("Response from migration api : {}{}", registrationId,

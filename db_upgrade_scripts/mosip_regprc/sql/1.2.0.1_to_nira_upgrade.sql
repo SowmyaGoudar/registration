@@ -26,5 +26,7 @@ INSERT INTO regprc.transaction_type (code,descr,lang_code,is_active,cr_by,cr_dti
 	 ('LEGACY_DATA_VALIDATE','transaction_done','eng',true,'MOSIP_SYSTEM',now(),NULL,NULL,false,NULL);
 INSERT INTO regprc.transaction_type (code,descr,lang_code,is_active,cr_by,cr_dtimes,upd_by,upd_dtimes,is_deleted,del_dtimes) VALUES
 	 ('LEGACY_DATA','transaction_done','eng',true,'MOSIP_SYSTEM',now(),NULL,NULL,false,NULL);
+INSERT INTO regprc.transaction_type (code,descr,lang_code,is_active,cr_by,cr_dtimes,upd_by,upd_dtimes,is_deleted,del_dtimes) VALUES
+	 ('MVS','transaction_done','eng',true,'MOSIP_SYSTEM',now(),NULL,NULL,false,NULL);
 
 

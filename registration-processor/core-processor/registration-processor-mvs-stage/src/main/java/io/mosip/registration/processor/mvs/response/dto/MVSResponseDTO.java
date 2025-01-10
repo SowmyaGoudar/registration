@@ -16,19 +16,19 @@ public class MVSResponseDTO {
 //	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
 	private String responsetime ;//= LocalDateTime.now(ZoneId.of("UTC"));
 	
-	private Integer returnValue;
+	private String status;
 
 	public MVSResponseDTO()
 	{
 		super();
 	}
 
-	public MVSResponseDTO(String id, String requestId, String responsetime, String regId, Integer returnValue) {
+	public MVSResponseDTO(String id, String requestId, String responsetime, String regId, String status) {
 		super();
 		this.id = id;
 		this.requestId = requestId;
 		this.regId = regId;
-		this.returnValue = returnValue;
+		this.status = status;
 	//	this.analytics = analytics;
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 		String  dateTime= DateUtils.getCurrentDateTimeString();
@@ -68,12 +68,12 @@ public class MVSResponseDTO {
 		this.responsetime = responsetime;
 	}
 
-	public Integer getReturnValue() {
-		return returnValue;
+	public String getStatus() {
+		return status;
 	}
 
-	public void setReturnValue(Integer returnValue) {
-		this.returnValue = returnValue;
+	public void setStatus(String status) {
+		this.status = status;
 	}
 	
 }

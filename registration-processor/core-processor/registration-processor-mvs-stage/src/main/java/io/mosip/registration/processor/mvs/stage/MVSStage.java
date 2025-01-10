@@ -175,7 +175,7 @@ public class MVSStage extends MosipVerticleAPIManager {
 		}
 
 //		MessageDTO message = new MessageDTO();
-//		message.setRid("10040100250000320240830073508");
+//		message.setRid("10040100290000220241107093633");
 //		message.setReg_type("NEW");
 //		message.setWorkflowInstanceId("1a50e167-c822-4bbb-8948-744c449f5380");
 //		message.setIteration(1);
@@ -218,18 +218,15 @@ public class MVSStage extends MosipVerticleAPIManager {
 				response = textMessage.getText();
 			}
 			regProcLogger.info(LoggerFileConstant.SESSIONID.toString(), LoggerFileConstant.REFERENCEID.toString(),
-					"Response received from mv system", response);
+					"Response received from mvs system", response);
 			if (response == null) {
 				regProcLogger.error(LoggerFileConstant.SESSIONID.toString(), LoggerFileConstant.APPLICATIONID.toString(),
 						PlatformErrorMessages.RPR_INVALID_MESSSAGE.getCode(), PlatformErrorMessages.RPR_INVALID_MESSSAGE.getMessage());
 				throw new InvalidMessageException(PlatformErrorMessages.RPR_INVALID_MESSSAGE.getCode(), PlatformErrorMessages.RPR_INVALID_MESSSAGE.getMessage());
 			}
-//			DocumentDTO resp = JsonUtil.readValueWithUnknownProperties(response, DocumentDTO.class);
-//			packetManagerService.createPacket("10002100340000120241115101214", resp.getDocuments(), "REGISTRATION_CLIENT", "MVS_DOC");
-
+			
 			MVSResponseDTO resp = JsonUtil.readValueWithUnknownProperties(response, MVSResponseDTO.class);
 			if (resp != null) {
-//				packetManagerService.createPacket("",null,"","");
 				boolean isProcessingSuccessful = mVSService.updatePacketStatus(resp, CLASS_NAME, queue);
 
 				if (isProcessingSuccessful)

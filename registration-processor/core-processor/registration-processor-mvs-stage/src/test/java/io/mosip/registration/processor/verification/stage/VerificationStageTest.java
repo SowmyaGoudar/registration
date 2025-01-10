@@ -174,7 +174,7 @@ public class VerificationStageTest {
 		resp.setId("verification");
 		resp.setRequestId("e2e59a9b-ce7c-41ae-a953-effb854d1205");
 		resp.setResponsetime(DateUtils.getCurrentDateTimeString());
-		resp.setReturnValue(1);
+		resp.setStatus("APPROVED");
 
 		String response = JsonUtils.javaObjectToJsonString(resp);
 

@@ -295,10 +295,10 @@ public class MVSServiceImpl implements MVSService {
 
 		TrimExceptionMessage trimExceptionMessage = new TrimExceptionMessage();
 		LogDescription description = new LogDescription();
-		boolean isTransactionSuccessful = false;
+		boolean isTransactionSuccessful = true;
 
 		regProcLogger.debug(LoggerFileConstant.SESSIONID.toString(), LoggerFileConstant.REFERENCEID.toString(),
-				mvsResponseDTO.getRequestId(), "VerificationServiceImpl::updatePacketStatus()::entry");
+				mvsResponseDTO.getRequestId(), "MVSServiceImpl::updatePacketStatus()::entry");
 
 //		VerificationEntity entity = validateRequestIdAndReturnRid(mvsResponseDTO.getRequestId());
 		String regId = mvsResponseDTO.getRegId();
@@ -312,16 +312,9 @@ public class MVSServiceImpl implements MVSService {
 			registrationStatusDto.setLatestTransactionTypeCode(RegistrationTransactionTypeCode.MVS.name());
 			registrationStatusDto.setRegistrationStageName(stageName);
 			messageDTO.setInternalError(false);
-			messageDTO.setIsValid(false);
+            messageDTO.setIsValid("APPROVED".equals(mvsResponseDTO.getStatus()));
 			messageDTO.setRid(regId);
-//			messageDTO.setReg_type(registrationStatusDto.getRegistrationType());
-
-//			List<VerificationEntity> entities = retrieveInqueuedRecordsByRid(regId);
-
-			// call success flow and process the response received from manual verification
-			// system
-//			isTransactionSuccessful = successFlow(mvsResponseDTO, entity, registrationStatusDto, messageDTO,
-//					description);
+			messageDTO.setReg_type(registrationStatusDto.getRegistrationType());
 
 			registrationStatusDto.setUpdatedBy(USER);
 			regProcLogger.info(LoggerFileConstant.SESSIONID.toString(),
@@ -365,9 +358,8 @@ public class MVSServiceImpl implements MVSService {
 			regProcLogger.error(LoggerFileConstant.SESSIONID.toString(), LoggerFileConstant.REGISTRATIONID.toString(),
 					regId, e.getMessage() + ExceptionUtils.getStackTrace(e));
 		} finally {
-			// TODO structure to not return in finally,ignore for sonar
 			updateStatus(messageDTO, registrationStatusDto, isTransactionSuccessful, description,
-					PlatformSuccessMessages.RPR_VERIFICATION_SUCCESS);
+					PlatformSuccessMessages.RPR_MVS_SUCCESS);
 			mVSStage.sendMessage(messageDTO);
 		}
 		return isTransactionSuccessful;
@@ -396,7 +388,7 @@ public class MVSServiceImpl implements MVSService {
 				moduleId, moduleName, regId);
 
 		regProcLogger.debug(LoggerFileConstant.SESSIONID.toString(), LoggerFileConstant.REGISTRATIONID.toString(),
-				regId, "VerificationServiceImpl::updatePacketStatus()::exit");
+				regId, "MVSServiceImpl::updatePacketStatus()::exit");
 
 	}
 
@@ -663,73 +655,73 @@ public class MVSServiceImpl implements MVSService {
 		return req;
 	}
 
-	/**
-	 * Process response for success flow.
-	 *
-	 * @param entity
-	 * @param manualVerificationDTO
-	 * @param registrationStatusDto
-	 * @param messageDTO
-	 * @param description
-	 * @return boolean
-	 * @throws com.fasterxml.jackson.core.JsonProcessingException
-	 */
-	private boolean successFlow(MVSResponseDTO manualVerificationDTO, VerificationEntity entity,
-								InternalRegistrationStatusDto registrationStatusDto, MessageDTO messageDTO, LogDescription description)
-			throws JsonProcessingException {
-
-		boolean isTransactionSuccessful = false;
-		String statusCode = manualVerificationDTO.getReturnValue() == 1 ? ManualVerificationStatus.APPROVED.name()
-				: ManualVerificationStatus.REJECTED.name();
-
-		String responsetext = JsonUtils.javaObjectToJsonString(manualVerificationDTO);
-		responsetext = StringUtils.isNotEmpty(responsetext) ? responsetext.replaceAll("\\s+", "") : responsetext;
-
-		entity.setStatusCode(statusCode);
-		entity.setReponseText(responsetext);
-		entity.setStatusComment(statusCode.equalsIgnoreCase(ManualVerificationStatus.APPROVED.name())
-				? StatusUtil.VERIFICATION_SUCCESS.getMessage()
-				: StatusUtil.VERIFICATION_FAILED.getMessage());
-
-		isTransactionSuccessful = true;
-		registrationStatusDto.setLatestTransactionTypeCode(RegistrationTransactionTypeCode.VERIFICATION.toString());
-		registrationStatusDto.setRegistrationStageName(registrationStatusDto.getRegistrationStageName());
-
-		if (statusCode.equalsIgnoreCase(ManualVerificationStatus.APPROVED.name())) {
-			messageDTO.setIsValid(isTransactionSuccessful);
-			registrationStatusDto.setStatusComment(StatusUtil.VERIFICATION_SUCCESS.getMessage());
-			registrationStatusDto.setSubStatusCode(StatusUtil.VERIFICATION_SUCCESS.getCode());
-			registrationStatusDto.setStatusCode(RegistrationStatusCode.PROCESSING.toString());
-			registrationStatusDto.setLatestTransactionStatusCode(RegistrationTransactionStatusCode.SUCCESS.toString());
-
-			description.setMessage(PlatformSuccessMessages.RPR_VERIFICATION_SUCCESS.getMessage());
-			description.setCode(PlatformSuccessMessages.RPR_VERIFICATION_SUCCESS.getCode());
-
-		} else if (statusCode.equalsIgnoreCase(ManualVerificationStatus.REJECTED.name())) {
-			registrationStatusDto.setStatusCode(RegistrationStatusCode.REJECTED.toString());
-			registrationStatusDto.setStatusComment(StatusUtil.VERIFICATION_FAILED.getMessage());
-			registrationStatusDto.setSubStatusCode(StatusUtil.VERIFICATION_FAILED.getCode());
-			registrationStatusDto.setLatestTransactionStatusCode(RegistrationTransactionStatusCode.FAILED.toString());
-
-			description.setMessage(PlatformErrorMessages.RPR_MANUAL_VERIFICATION_REJECTED.getMessage());
-			description.setCode(PlatformErrorMessages.RPR_MANUAL_VERIFICATION_REJECTED.getCode());
-			messageDTO.setIsValid(Boolean.FALSE);
-			messageDTO.setInternalError(Boolean.FALSE);
-		} else {
-			registrationStatusDto.setStatusCode(RegistrationStatusCode.PROCESSING.toString());
-			registrationStatusDto.setStatusComment(StatusUtil.VERIFICATION_RESEND.getMessage());
-			registrationStatusDto.setSubStatusCode(StatusUtil.VERIFICATION_RESEND.getCode());
-			registrationStatusDto
-					.setLatestTransactionStatusCode(RegistrationTransactionStatusCode.IN_PROGRESS.toString());
-
-			description.setMessage(PlatformErrorMessages.RPR_MANUAL_VERIFICATION_RESEND.getMessage());
-			description.setCode(PlatformErrorMessages.RPR_MANUAL_VERIFICATION_RESEND.getCode());
-			messageDTO.setIsValid(Boolean.FALSE);
-		}
-		basePacketRepository.update(entity);
-
-		return isTransactionSuccessful;
-	}
+//	/**
+//	 * Process response for success flow.
+//	 *
+//	 * @param entity
+//	 * @param manualVerificationDTO
+//	 * @param registrationStatusDto
+//	 * @param messageDTO
+//	 * @param description
+//	 * @return boolean
+//	 * @throws com.fasterxml.jackson.core.JsonProcessingException
+//	 */
+//	private boolean successFlow(MVSResponseDTO manualVerificationDTO, VerificationEntity entity,
+//								InternalRegistrationStatusDto registrationStatusDto, MessageDTO messageDTO, LogDescription description)
+//			throws JsonProcessingException {
+//
+//		boolean isTransactionSuccessful = false;
+//		String statusCode = manualVerificationDTO.getReturnValue() == 1 ? ManualVerificationStatus.APPROVED.name()
+//				: ManualVerificationStatus.REJECTED.name();
+//
+//		String responsetext = JsonUtils.javaObjectToJsonString(manualVerificationDTO);
+//		responsetext = StringUtils.isNotEmpty(responsetext) ? responsetext.replaceAll("\\s+", "") : responsetext;
+//
+//		entity.setStatusCode(statusCode);
+//		entity.setReponseText(responsetext);
+//		entity.setStatusComment(statusCode.equalsIgnoreCase(ManualVerificationStatus.APPROVED.name())
+//				? StatusUtil.VERIFICATION_SUCCESS.getMessage()
+//				: StatusUtil.VERIFICATION_FAILED.getMessage());
+//
+//		isTransactionSuccessful = true;
+//		registrationStatusDto.setLatestTransactionTypeCode(RegistrationTransactionTypeCode.VERIFICATION.toString());
+//		registrationStatusDto.setRegistrationStageName(registrationStatusDto.getRegistrationStageName());
+//
+//		if (statusCode.equalsIgnoreCase(ManualVerificationStatus.APPROVED.name())) {
+//			messageDTO.setIsValid(isTransactionSuccessful);
+//			registrationStatusDto.setStatusComment(StatusUtil.VERIFICATION_SUCCESS.getMessage());
+//			registrationStatusDto.setSubStatusCode(StatusUtil.VERIFICATION_SUCCESS.getCode());
+//			registrationStatusDto.setStatusCode(RegistrationStatusCode.PROCESSING.toString());
+//			registrationStatusDto.setLatestTransactionStatusCode(RegistrationTransactionStatusCode.SUCCESS.toString());
+//
+//			description.setMessage(PlatformSuccessMessages.RPR_VERIFICATION_SUCCESS.getMessage());
+//			description.setCode(PlatformSuccessMessages.RPR_VERIFICATION_SUCCESS.getCode());
+//
+//		} else if (statusCode.equalsIgnoreCase(ManualVerificationStatus.REJECTED.name())) {
+//			registrationStatusDto.setStatusCode(RegistrationStatusCode.REJECTED.toString());
+//			registrationStatusDto.setStatusComment(StatusUtil.VERIFICATION_FAILED.getMessage());
+//			registrationStatusDto.setSubStatusCode(StatusUtil.VERIFICATION_FAILED.getCode());
+//			registrationStatusDto.setLatestTransactionStatusCode(RegistrationTransactionStatusCode.FAILED.toString());
+//
+//			description.setMessage(PlatformErrorMessages.RPR_MANUAL_VERIFICATION_REJECTED.getMessage());
+//			description.setCode(PlatformErrorMessages.RPR_MANUAL_VERIFICATION_REJECTED.getCode());
+//			messageDTO.setIsValid(Boolean.FALSE);
+//			messageDTO.setInternalError(Boolean.FALSE);
+//		} else {
+//			registrationStatusDto.setStatusCode(RegistrationStatusCode.PROCESSING.toString());
+//			registrationStatusDto.setStatusComment(StatusUtil.VERIFICATION_RESEND.getMessage());
+//			registrationStatusDto.setSubStatusCode(StatusUtil.VERIFICATION_RESEND.getCode());
+//			registrationStatusDto
+//					.setLatestTransactionStatusCode(RegistrationTransactionStatusCode.IN_PROGRESS.toString());
+//
+//			description.setMessage(PlatformErrorMessages.RPR_MANUAL_VERIFICATION_RESEND.getMessage());
+//			description.setCode(PlatformErrorMessages.RPR_MANUAL_VERIFICATION_RESEND.getCode());
+//			messageDTO.setIsValid(Boolean.FALSE);
+//		}
+//		basePacketRepository.update(entity);
+//
+//		return isTransactionSuccessful;
+//	}
 
 	private void updateErrorFlags(InternalRegistrationStatusDto registrationStatusDto, MessageDTO object) {
 		object.setInternalError(true);
@@ -741,32 +733,32 @@ public class MVSServiceImpl implements MVSService {
 		}
 	}
 
-	/**
-	 * This method would validate response and on failure it will mark the response
-	 * for reprocessing.
-	 *
-	 * @param registrationStatusDto
-	 * @param manualVerificationDTO
-	 * @return boolean
-	 * @throws JsonProcessingException
-	 */
-	public boolean isResendFlow(InternalRegistrationStatusDto registrationStatusDto,
-								MVSResponseDTO manualVerificationDTO, VerificationEntity entity) throws JsonProcessingException {
-		boolean isResendFlow = false;
-		if (manualVerificationDTO.getReturnValue() == 2) {
-			regProcLogger.info(LoggerFileConstant.SESSIONID.toString(), LoggerFileConstant.REGISTRATIONID.toString(),
-					registrationStatusDto.getRegistrationId(),
-					"Received resend request from manual verification application. This will be marked for reprocessing.");
-
-			// updating status code to pending so that it can be marked for manual
-			// verification again
-			registrationStatusDto.setLatestTransactionStatusCode(RegistrationTransactionStatusCode.REPROCESS.name());
-			registrationStatusService.updateRegistrationStatus(registrationStatusDto, ModuleName.VERIFICATION.name(),
-					ModuleName.VERIFICATION.name());
-			isResendFlow = true;
-		}
-		return isResendFlow;
-	}
+//	/**
+//	 * This method would validate response and on failure it will mark the response
+//	 * for reprocessing.
+//	 *
+//	 * @param registrationStatusDto
+//	 * @param manualVerificationDTO
+//	 * @return boolean
+//	 * @throws JsonProcessingException
+//	 */
+//	public boolean isResendFlow(InternalRegistrationStatusDto registrationStatusDto,
+//								MVSResponseDTO manualVerificationDTO, VerificationEntity entity) throws JsonProcessingException {
+//		boolean isResendFlow = false;
+//		if (manualVerificationDTO.getReturnValue() == 2) {
+//			regProcLogger.info(LoggerFileConstant.SESSIONID.toString(), LoggerFileConstant.REGISTRATIONID.toString(),
+//					registrationStatusDto.getRegistrationId(),
+//					"Received resend request from manual verification application. This will be marked for reprocessing.");
+//
+//			// updating status code to pending so that it can be marked for manual
+//			// verification again
+//			registrationStatusDto.setLatestTransactionStatusCode(RegistrationTransactionStatusCode.REPROCESS.name());
+//			registrationStatusService.updateRegistrationStatus(registrationStatusDto, ModuleName.VERIFICATION.name(),
+//					ModuleName.VERIFICATION.name());
+//			isResendFlow = true;
+//		}
+//		return isResendFlow;
+//	}
 
 
 }

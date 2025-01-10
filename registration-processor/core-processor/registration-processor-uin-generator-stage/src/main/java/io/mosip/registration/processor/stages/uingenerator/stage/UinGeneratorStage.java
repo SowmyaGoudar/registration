@@ -1,11 +1,9 @@
 package io.mosip.registration.processor.stages.uingenerator.stage;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.json.JSONArray;
@@ -524,7 +522,28 @@ public class UinGeneratorStage extends MosipVerticleAPIManager {
 	private IdResponseDTO sendIdRepoWithUin(String id, String process, JSONObject demographicIdentity, String uin)
 			throws Exception {
 
-		List<Documents> documentInfo = getAllDocumentsByRegId(id, process, demographicIdentity);
+		List<Documents> processDocumentInfo = getAllDocumentsByRegId(id, process, demographicIdentity);
+		List<Documents> mvsDocumentInfo = getAllDocumentsByRegId(id, "MVS_DOC", demographicIdentity);
+		List<Documents> documentInfo;
+
+		if (!mvsDocumentInfo.isEmpty()) {
+			documentInfo = Stream.concat(processDocumentInfo.stream(), mvsDocumentInfo.stream())
+					.filter(Objects::nonNull)
+					.filter(doc -> doc.getCategory() != null && doc.getValue() != null)
+					.collect(Collectors.toMap(
+							Documents::getCategory,
+							Documents::getValue,
+							(value1, value2) -> value2,
+							LinkedHashMap::new
+					))
+					.entrySet().stream()
+					.map(entry -> new Documents(entry.getKey(), entry.getValue()))
+					.collect(Collectors.toList());
+		}
+		else {
+			documentInfo = processDocumentInfo;
+		}
+
 		RequestDto requestDto = new RequestDto();
 		requestDto.setIdentity(demographicIdentity);
 		requestDto.setDocuments(documentInfo);

@@ -184,7 +184,7 @@ public class VerificationServiceTest {
 		resp.setId("verification");
 		resp.setRequestId("e2e59a9b-ce7c-41ae-a953-effb854d1205");
 		resp.setResponsetime(DateUtils.getCurrentDateTimeString());
-		resp.setReturnValue(1);
+		resp.setStatus("APPROVED");
 
 		object = new MessageDTO();
 		object.setReg_type("NEW");
@@ -265,7 +265,7 @@ public class VerificationServiceTest {
 		verificationDecisionDto.setReasonCode("test");
 		verificationDecisionDto.setRegId("RegID");
 		verificationDecisionDto.setStatusCode("APPROVED");
-		MVSResponseDTO.setReturnValue(1);
+		MVSResponseDTO.setStatus("APPROVED");
 		MVSResponseDTO.setResponsetime(DateUtils.getCurrentDateTimeString());
 		MVSResponseDTO.setId("mosip.manual.adjudication.adjudicate");
 		MVSResponseDTO.setRequestId("4d4f27d3-ec73-41c4-a384-bf87fce4969e");
@@ -518,7 +518,7 @@ public class VerificationServiceTest {
 		amq.setContent(byteSeq);
 
 		// for rejected
-		resp.setReturnValue(3);
+		resp.setStatus("REJECTED");
 
 		boolean result = verificationService.updatePacketStatus(resp, stageName, queue);
 

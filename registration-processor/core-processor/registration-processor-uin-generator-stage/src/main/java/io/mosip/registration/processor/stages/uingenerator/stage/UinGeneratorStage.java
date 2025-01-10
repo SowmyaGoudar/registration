@@ -1,7 +1,12 @@
 package io.mosip.registration.processor.stages.uingenerator.stage;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -610,9 +615,12 @@ public class UinGeneratorStage extends MosipVerticleAPIManager {
 			Map docMap = (LinkedHashMap) doc;
 			String docValue = docMap.values().iterator().next().toString();
 			HashMap<String, String> docInIdentityJson = (HashMap<String, String>) idJSON.get(docValue);
-			if (docInIdentityJson != null)
-				applicantDocuments
-						.add(getIdDocumnet(regId, docValue, process));
+			if (docInIdentityJson != null) {
+				Documents documentsInfoDto = getIdDocumnet(regId, docValue, process);
+				if (documentsInfoDto != null) {
+					applicantDocuments.add(documentsInfoDto);
+				}
+			}
 		}
 
 		if (applicantBiometric != null) {

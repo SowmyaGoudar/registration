@@ -182,7 +182,8 @@ public class LegacyDataValidator {
 							registrationStatusDto.setLatestTransactionStatusCode(
 									RegistrationTransactionStatusCode.MERGED.toString());
 							registrationStatusDto
-									.setStatusComment(StatusUtil.ON_DEMAND_PACKET_CREATION_SUCCESS.getMessage());
+									.setStatusComment(StatusUtil.ON_DEMAND_PACKET_CREATION_SUCCESS.getMessage()
+											+ " and rid is " + syncRegistrationEntityForOndemand.getRegistrationId());
 							registrationStatusDto
 									.setSubStatusCode(StatusUtil.ON_DEMAND_PACKET_CREATION_SUCCESS.getCode());
 							registrationStatusDto.setStatusCode(RegistrationStatusCode.MERGED.toString());

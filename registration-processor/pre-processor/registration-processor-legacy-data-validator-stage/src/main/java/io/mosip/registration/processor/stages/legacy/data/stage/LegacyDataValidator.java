@@ -19,9 +19,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONTokener;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -176,7 +174,7 @@ public class LegacyDataValidator {
 							JsonUtils.javaObjectToJsonString(responseWrapper.getResponse()),
 							MigrationResponse.class);
 					PacketDto packetDto = createOnDemandPacket(
-							migrationResponse.getDemographics(), migrationResponse.getDocuments(),registrationStatusDto);
+							migrationResponse, registrationStatusDto);
 					if (packetDto != null) {
 						SyncRegistrationEntity syncRegistrationEntityForOndemand = createSyncAndRegistration(packetDto,
 								registrationStatusDto.getRegistrationStageName());
@@ -263,7 +261,7 @@ public class LegacyDataValidator {
 		return syncRegistrationEntity;
 	}
 
-	private PacketDto createOnDemandPacket(Map<String, String> demographics, Map<String, DocumentDto> documents,
+	private PacketDto createOnDemandPacket(MigrationResponse migrationResponse,
 			InternalRegistrationStatusDto registrationStatusDto) throws ApisResourceAccessException,
 			PacketManagerException,
 			JsonProcessingException, IOException, NumberFormatException, JSONException {
@@ -273,9 +271,6 @@ public class LegacyDataValidator {
 		regProcLogger.info("Getting details to create ondemand packet : {}", registrationId);
 		String schemaVersion = packetManagerService.getFieldByMappingJsonKey(registrationStatusDto.getRegistrationId(),
 				MappingJsonConstants.IDSCHEMA_VERSION, registrationType, ProviderStageName.LEGACY_DATA_VALIDATOR);
-
-		Map<String, String> fieldMap = packetManagerService.getFields(registrationId,
-				idSchemaUtil.getDefaultFields(Double.valueOf(schemaVersion)),registrationType, ProviderStageName.LEGACY_DATA_VALIDATOR);
 
 		Map<String, BiometricRecord> biometrics = getBiometrics(registrationId, registrationType);
 		List<FieldResponseDto> audits = packetManagerService.getAudits(registrationId, registrationType,
@@ -290,16 +285,16 @@ public class LegacyDataValidator {
 		SyncRegistrationEntity regEntity = syncRegistrationService
 				.findByWorkflowInstanceId(registrationStatusDto.getWorkflowInstanceId());
 		PacketDto packetDto = new PacketDto();
-		packetDto.setId(registrationId);
+		packetDto.setId(migrationResponse.getRid());
 		packetDto.setSource("DATAMIGRATOR");
 		packetDto.setProcess("MIGRATOR");
 		packetDto.setRefId(regEntity.getReferenceId());
 		packetDto.setSchemaVersion(schemaVersion);
 		packetDto.setSchemaJson(idSchemaUtil.getIdSchema(Double.parseDouble(schemaVersion)));
-		packetDto.setFields(demographics);
+		packetDto.setFields(migrationResponse.getDemographics());
 		packetDto.setAudits(auditList);
 		packetDto.setMetaInfo(metaInfo);
-		packetDto.setDocuments(documents);
+		packetDto.setDocuments(migrationResponse.getDocuments());
 		packetDto.setBiometrics(biometrics);
 		RequestWrapper<PacketDto> request = new RequestWrapper<>();
 		request.setId(ID);
@@ -497,33 +492,6 @@ public class LegacyDataValidator {
 			return documentDto;
 		}
 		return null;
-	}
-
-	private void loadDemographicIdentity(Map<String, String> fieldMap, JSONObject demographicIdentity)
-			throws IOException, JSONException {
-		for (Map.Entry e : fieldMap.entrySet()) {
-			if (e.getValue() != null) {
-				String value = e.getValue().toString();
-				if (value != null) {
-					Object json = new JSONTokener(value).nextValue();
-					if (json instanceof org.json.JSONObject) {
-						HashMap<String, Object> hashMap = objectMapper.readValue(value, HashMap.class);
-						demographicIdentity.putIfAbsent(e.getKey(), hashMap);
-					} else if (json instanceof JSONArray) {
-						List jsonList = new ArrayList<>();
-						JSONArray jsonArray = new JSONArray(value);
-						for (int i = 0; i < jsonArray.length(); i++) {
-							Object obj = jsonArray.get(i);
-							HashMap<String, Object> hashMap = objectMapper.readValue(obj.toString(), HashMap.class);
-							jsonList.add(hashMap);
-						}
-						demographicIdentity.putIfAbsent(e.getKey(), jsonList);
-					} else
-						demographicIdentity.putIfAbsent(e.getKey(), value);
-				} else
-					demographicIdentity.putIfAbsent(e.getKey(), value);
-			}
-		}
 	}
 
 	private Map<String, BiometricRecord> getBiometrics(String registrationId, String registrationType)

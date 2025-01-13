@@ -11,6 +11,8 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode
 public class MigrationResponse implements Serializable {
 
+	String rid;
+
 	private Map<String, String> demographics;
 	
 	private Map<String, DocumentDto> documents;

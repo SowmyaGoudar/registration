@@ -157,13 +157,7 @@ public class LegacyDataProcessor {
 			/** Module-Id can be Both Success/Error code */
 			String moduleId = description.getCode();
 			String moduleName = ModuleName.LEGACY_DATA.toString();
-			if (registrationStatusDto.getStatusCode().equals(RegistrationStatusCode.REJECTED.name())) {
-				registrationStatusService.updateRegistrationStatusForWorkflowEngine(registrationStatusDto, moduleId,
-						moduleName);
-			} else {
-				registrationStatusService.updateRegistrationStatus(registrationStatusDto, moduleId, moduleName);
-			}
-
+			registrationStatusService.updateRegistrationStatus(registrationStatusDto, moduleId, moduleName);
 			updateAudit(description, isTransactionSuccessful, moduleId, moduleName, registrationId);
 		}
 

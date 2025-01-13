@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.json.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -68,7 +69,7 @@ import io.mosip.registration.processor.core.util.JsonUtil;
 import io.mosip.registration.processor.core.util.RegistrationExceptionMapperUtil;
 import io.mosip.registration.processor.mvs.constants.VerificationConstants;
 import io.mosip.registration.processor.mvs.dto.DataShareRequestDto;
-import io.mosip.registration.processor.mvs.dto.ManualVerificationStatus;
+import io.mosip.registration.processor.mvs.dto.MVSStatus;
 import io.mosip.registration.processor.mvs.exception.DataShareException;
 import io.mosip.registration.processor.mvs.exception.InvalidFileNameException;
 import io.mosip.registration.processor.mvs.exception.InvalidRidException;
@@ -91,8 +92,12 @@ import io.mosip.registration.processor.rest.client.audit.builder.AuditLogRequest
 import io.mosip.registration.processor.status.code.RegistrationStatusCode;
 import io.mosip.registration.processor.status.dto.InternalRegistrationStatusDto;
 import io.mosip.registration.processor.status.dto.RegistrationStatusDto;
+import io.mosip.registration.processor.status.dto.SyncRegistrationDto;
+import io.mosip.registration.processor.status.dto.SyncResponseDto;
+import io.mosip.registration.processor.status.entity.SyncRegistrationEntity;
 import io.mosip.registration.processor.status.exception.TablenotAccessibleException;
 import io.mosip.registration.processor.status.service.RegistrationStatusService;
+import io.mosip.registration.processor.status.service.SyncRegistrationService;
 
 @Component
 @Transactional
@@ -164,6 +169,10 @@ public class MVSServiceImpl implements MVSService {
 	/** The registration status service. */
 	@Autowired
 	private RegistrationStatusService<String, InternalRegistrationStatusDto, RegistrationStatusDto> registrationStatusService;
+	
+	@Autowired
+    private SyncRegistrationService<SyncResponseDto, SyncRegistrationDto> syncRegistrationService;
+	
 	/** The base packet repository. */
 	@Autowired
 	private BasePacketRepository<VerificationEntity, String> basePacketRepository;
@@ -207,6 +216,7 @@ public class MVSServiceImpl implements MVSService {
 		boolean isTransactionSuccessful = true;
 		LogDescription description = new LogDescription();
 
+		SyncRegistrationEntity regEntity = syncRegistrationService.findByWorkflowInstanceId(messageDTO.getWorkflowInstanceId());
 		InternalRegistrationStatusDto registrationStatusDto = registrationStatusService.getRegistrationStatus(
 				messageDTO.getRid(), messageDTO.getReg_type(), messageDTO.getIteration(),
 				messageDTO.getWorkflowInstanceId());
@@ -214,8 +224,8 @@ public class MVSServiceImpl implements MVSService {
 			if (null == messageDTO.getRid() || messageDTO.getRid().isEmpty())
 				throw new InvalidRidException(PlatformErrorMessages.RPR_MVS_NO_RID_SHOULD_NOT_EMPTY_OR_NULL.getCode(),
 						PlatformErrorMessages.RPR_MVS_NO_RID_SHOULD_NOT_EMPTY_OR_NULL.getMessage());
-			VerificationRequestDTO mar = prepareVerificationRequest(messageDTO, registrationStatusDto);
-			saveVerificationRecordUtility.saveVerificationRecord(messageDTO, mar.getRequestId(), description);
+			VerificationRequestDTO mar = prepareVerificationRequest(messageDTO, registrationStatusDto, regEntity.getReferenceId());
+			//saveVerificationRecordUtility.saveVerificationRecord(messageDTO, mar.getRequestId(), description);
 			regProcLogger.debug("Request : " + JsonUtils.javaObjectToJsonString(mar));
 
 			if (messageFormat.equalsIgnoreCase(TEXT_MESSAGE))
@@ -225,7 +235,7 @@ public class MVSServiceImpl implements MVSService {
 				mosipQueueManager.send(queue, JsonUtils.javaObjectToJsonString(mar).getBytes(), mvRequestAddress,
 						mvRequestMessageTTL);
 
-			regProcLogger.info("ID : " + messageDTO.getRid() + " has been successfully sent for verification.");
+			regProcLogger.info("ID : " + messageDTO.getRid() + " has been successfully sent to mvs.");
 
 			if (isTransactionSuccessful) {
 				registrationStatusDto.setStatusCode(RegistrationStatusCode.PROCESSING.toString());
@@ -268,8 +278,8 @@ public class MVSServiceImpl implements MVSService {
 		} finally {
 			if (isTransactionSuccessful) {
 				messageDTO.setIsValid(true);
-				description.setCode(PlatformSuccessMessages.RPR_VERIFICATION_SUCCESS.getCode());
-				description.setMessage(PlatformSuccessMessages.RPR_VERIFICATION_SUCCESS.getMessage());
+				description.setCode(PlatformSuccessMessages.RPR_MVS_SUCCESS.getCode());
+				description.setMessage(PlatformSuccessMessages.RPR_MVS_SUCCESS.getMessage());
 			} else
 				registrationStatusDto.setSubStatusCode(StatusUtil.VERIFICATION_FAILED.getCode());
 			updateStatus(messageDTO, registrationStatusDto, isTransactionSuccessful, description,
@@ -312,10 +322,11 @@ public class MVSServiceImpl implements MVSService {
 			registrationStatusDto.setLatestTransactionTypeCode(RegistrationTransactionTypeCode.MVS.name());
 			registrationStatusDto.setRegistrationStageName(stageName);
 			messageDTO.setInternalError(false);
-            messageDTO.setIsValid("APPROVED".equals(mvsResponseDTO.getStatus()));
 			messageDTO.setRid(regId);
 			messageDTO.setReg_type(registrationStatusDto.getRegistrationType());
 
+			isTransactionSuccessful = successFlow(mvsResponseDTO, registrationStatusDto, messageDTO,
+					description);
 			registrationStatusDto.setUpdatedBy(USER);
 			regProcLogger.info(LoggerFileConstant.SESSIONID.toString(),
 					LoggerFileConstant.REGISTRATIONID.toString(), regId, description.getMessage());
@@ -426,7 +437,7 @@ public class MVSServiceImpl implements MVSService {
 	private List<VerificationEntity> retrieveInqueuedRecordsByRid(String regId) {
 
 		List<VerificationEntity> entities = basePacketRepository.getAssignedVerificationRecord(regId,
-				ManualVerificationStatus.INQUEUE.name());
+				MVSStatus.INQUEUE.name());
 
 		if (CollectionUtils.isEmpty(entities)) {
 			regProcLogger.error(LoggerFileConstant.SESSIONID.toString(), LoggerFileConstant.REGISTRATIONID.toString(),
@@ -439,7 +450,7 @@ public class MVSServiceImpl implements MVSService {
 		return entities;
 	}
 
-	private String getDataShareUrl(String id, String process) throws Exception {
+	private String getDataShareUrl(String id, String process, VerificationRequestDTO verReq) throws Exception {
 		DataShareRequestDto requestDto = new DataShareRequestDto();
 
 		LinkedHashMap<String, Object> policy = getPolicy();
@@ -453,8 +464,14 @@ public class MVSServiceImpl implements MVSService {
 				.collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
 		requestDto.setIdentity(
 				packetManagerService.getFields(id, demographicMap.values().stream().collect(Collectors.toList()),
-						process, ProviderStageName.VERIFICATION));
+						process, ProviderStageName.MVS));
 
+		JSONArray userServiceTypeArray = new JSONArray(requestDto.getIdentity().get("userServiceType"));
+		String userServiceTypeValue = userServiceTypeArray.getJSONObject(0).getString("value");
+		
+		verReq.setServiceType(userServiceTypeValue);
+		verReq.setSchemaVersion(requestDto.getIdentity().get("IDSchemaVersion"));
+		
 		// set documents
 		JSONObject docJson = utility.getRegistrationProcessorMappingJson(MappingJsonConstants.DOCUMENT);
 		for (Object doc : docJson.keySet()) {
@@ -465,7 +482,7 @@ public class MVSServiceImpl implements MVSService {
 						: null;
 				if (policyMap.containsValue(docName)) {
 					Document document = packetManagerService.getDocument(id, docName, process,
-							ProviderStageName.VERIFICATION);
+							ProviderStageName.MVS);
 					if (document != null) {
 						if (requestDto.getDocuments() != null)
 							requestDto.getDocuments().put(docmap.get(MappingJsonConstants.VALUE).toString(),
@@ -484,12 +501,12 @@ public class MVSServiceImpl implements MVSService {
 		// set audits
 		if (policyMap.containsValue(AUDITS))
 			requestDto.setAudits(JsonUtils.javaObjectToJsonString(
-					packetManagerService.getAudits(id, process, ProviderStageName.VERIFICATION)));
+					packetManagerService.getAudits(id, process, ProviderStageName.MVS)));
 
 		// set metainfo
 		if (policyMap.containsValue(META_INFO))
 			requestDto.setMetaInfo(JsonUtils.javaObjectToJsonString(
-					packetManagerService.getMetaInfo(id, process, ProviderStageName.VERIFICATION)));
+					packetManagerService.getMetaInfo(id, process, ProviderStageName.MVS)));
 
 		// set biometrics
 		JSONObject regProcessorIdentityJson = utility
@@ -501,7 +518,7 @@ public class MVSServiceImpl implements MVSService {
 		if (policyMap.containsValue(individualBiometricsLabel)) {
 			List<String> modalities = getModalities(policy);
 			BiometricRecord biometricRecord = packetManagerService.getBiometrics(id, individualBiometricsLabel,
-					modalities, process, ProviderStageName.VERIFICATION);
+					modalities, process, ProviderStageName.MVS);
 			byte[] content = cbeffutil.createXML(biometricRecord.getSegments());
 			requestDto.setBiometrics(content != null ? CryptoUtil.encodeToURLSafeBase64(content) : null);
 		}
@@ -617,31 +634,29 @@ public class MVSServiceImpl implements MVSService {
 	 * Form manual adjudication request
 	 */
 	private VerificationRequestDTO prepareVerificationRequest(MessageDTO messageDTO,
-			InternalRegistrationStatusDto registrationStatusDto) throws Exception {
+			InternalRegistrationStatusDto registrationStatusDto, String refId) throws Exception {
 		regProcLogger.debug(LoggerFileConstant.SESSIONID.toString(), LoggerFileConstant.REGISTRATIONID.toString(), "",
-				"VerificationServiceImpl::formAdjudicationRequest()::entry");
+				"MVSServiceImpl::prepareVerificationRequest()::entry");
 
 		VerificationRequestDTO req = new VerificationRequestDTO();
-		List<VerificationEntity> entities = basePacketRepository
-				.getVerificationRecordByWorkflowInstanceId(messageDTO.getWorkflowInstanceId());
-		if (!CollectionUtils.isEmpty(entities))
-			req.setRequestId(entities.get(0).getRequestId());
-		else
-			req.setRequestId(UUID.randomUUID().toString());
-
-		req.setId(VerificationConstants.MANUAL_ADJUDICATION_ID);
+//		List<VerificationEntity> entities = basePacketRepository
+//				.getVerificationRecordByWorkflowInstanceId(messageDTO.getWorkflowInstanceId());
+//		if (!CollectionUtils.isEmpty(entities))
+//			req.setRequestId(entities.get(0).getRequestId());
+//		else
+			
+		req.setRequestId(UUID.randomUUID().toString());
+		req.setId(VerificationConstants.MVS_ID);
 		req.setVersion(VerificationConstants.VERSION);
 		req.setRequesttime(DateUtils.getUTCCurrentDateTimeString(env.getProperty(DATETIME_PATTERN)));
 		req.setRegId(messageDTO.getRid());
 		//new fields
 		req.setService(registrationStatusDto.getRegistrationType());
-		req.setServiceType("");
-		req.setSource(registrationStatusDto.getSource());
-		req.setRefId(registrationStatusDto.getRefId());
-		req.setSchemaVersion("");
+		req.setSource(messageDTO.getSource());
+		req.setRefId(refId);
 		
 		try {
-			req.setReferenceURL(getDataShareUrl(messageDTO.getRid(), registrationStatusDto.getRegistrationType()));
+			req.setReferenceURL(getDataShareUrl(messageDTO.getRid(), registrationStatusDto.getRegistrationType(), req));
 
 		} catch (PacketManagerException | ApisResourceAccessException ex) {
 			regProcLogger.error(LoggerFileConstant.SESSIONID.toString(), LoggerFileConstant.REGISTRATIONID.toString(),
@@ -650,78 +665,55 @@ public class MVSServiceImpl implements MVSService {
 		}
 
 		regProcLogger.debug(LoggerFileConstant.SESSIONID.toString(), LoggerFileConstant.REGISTRATIONID.toString(), "",
-				"VerificationServiceImpl::formAdjudicationRequest()::entry");
+				"MVSServiceImpl::prepareVerificationRequest()::entry");
 
 		return req;
 	}
 
-//	/**
-//	 * Process response for success flow.
-//	 *
-//	 * @param entity
-//	 * @param manualVerificationDTO
-//	 * @param registrationStatusDto
-//	 * @param messageDTO
-//	 * @param description
-//	 * @return boolean
-//	 * @throws com.fasterxml.jackson.core.JsonProcessingException
-//	 */
-//	private boolean successFlow(MVSResponseDTO manualVerificationDTO, VerificationEntity entity,
-//								InternalRegistrationStatusDto registrationStatusDto, MessageDTO messageDTO, LogDescription description)
-//			throws JsonProcessingException {
-//
-//		boolean isTransactionSuccessful = false;
-//		String statusCode = manualVerificationDTO.getReturnValue() == 1 ? ManualVerificationStatus.APPROVED.name()
-//				: ManualVerificationStatus.REJECTED.name();
-//
-//		String responsetext = JsonUtils.javaObjectToJsonString(manualVerificationDTO);
-//		responsetext = StringUtils.isNotEmpty(responsetext) ? responsetext.replaceAll("\\s+", "") : responsetext;
-//
-//		entity.setStatusCode(statusCode);
-//		entity.setReponseText(responsetext);
-//		entity.setStatusComment(statusCode.equalsIgnoreCase(ManualVerificationStatus.APPROVED.name())
-//				? StatusUtil.VERIFICATION_SUCCESS.getMessage()
-//				: StatusUtil.VERIFICATION_FAILED.getMessage());
-//
-//		isTransactionSuccessful = true;
-//		registrationStatusDto.setLatestTransactionTypeCode(RegistrationTransactionTypeCode.VERIFICATION.toString());
-//		registrationStatusDto.setRegistrationStageName(registrationStatusDto.getRegistrationStageName());
-//
-//		if (statusCode.equalsIgnoreCase(ManualVerificationStatus.APPROVED.name())) {
-//			messageDTO.setIsValid(isTransactionSuccessful);
-//			registrationStatusDto.setStatusComment(StatusUtil.VERIFICATION_SUCCESS.getMessage());
-//			registrationStatusDto.setSubStatusCode(StatusUtil.VERIFICATION_SUCCESS.getCode());
-//			registrationStatusDto.setStatusCode(RegistrationStatusCode.PROCESSING.toString());
-//			registrationStatusDto.setLatestTransactionStatusCode(RegistrationTransactionStatusCode.SUCCESS.toString());
-//
-//			description.setMessage(PlatformSuccessMessages.RPR_VERIFICATION_SUCCESS.getMessage());
-//			description.setCode(PlatformSuccessMessages.RPR_VERIFICATION_SUCCESS.getCode());
-//
-//		} else if (statusCode.equalsIgnoreCase(ManualVerificationStatus.REJECTED.name())) {
-//			registrationStatusDto.setStatusCode(RegistrationStatusCode.REJECTED.toString());
-//			registrationStatusDto.setStatusComment(StatusUtil.VERIFICATION_FAILED.getMessage());
-//			registrationStatusDto.setSubStatusCode(StatusUtil.VERIFICATION_FAILED.getCode());
-//			registrationStatusDto.setLatestTransactionStatusCode(RegistrationTransactionStatusCode.FAILED.toString());
-//
-//			description.setMessage(PlatformErrorMessages.RPR_MANUAL_VERIFICATION_REJECTED.getMessage());
-//			description.setCode(PlatformErrorMessages.RPR_MANUAL_VERIFICATION_REJECTED.getCode());
-//			messageDTO.setIsValid(Boolean.FALSE);
-//			messageDTO.setInternalError(Boolean.FALSE);
-//		} else {
-//			registrationStatusDto.setStatusCode(RegistrationStatusCode.PROCESSING.toString());
-//			registrationStatusDto.setStatusComment(StatusUtil.VERIFICATION_RESEND.getMessage());
-//			registrationStatusDto.setSubStatusCode(StatusUtil.VERIFICATION_RESEND.getCode());
-//			registrationStatusDto
-//					.setLatestTransactionStatusCode(RegistrationTransactionStatusCode.IN_PROGRESS.toString());
-//
-//			description.setMessage(PlatformErrorMessages.RPR_MANUAL_VERIFICATION_RESEND.getMessage());
-//			description.setCode(PlatformErrorMessages.RPR_MANUAL_VERIFICATION_RESEND.getCode());
-//			messageDTO.setIsValid(Boolean.FALSE);
-//		}
-//		basePacketRepository.update(entity);
-//
-//		return isTransactionSuccessful;
-//	}
+	/**
+	 * Process response for success flow.
+	 *
+	 * @param responseDTO
+	 * @param registrationStatusDto
+	 * @param messageDTO
+	 * @param description
+	 * @return boolean
+	 * @throws com.fasterxml.jackson.core.JsonProcessingException
+	 */
+	private boolean successFlow(MVSResponseDTO responseDTO, 
+								InternalRegistrationStatusDto registrationStatusDto, MessageDTO messageDTO, LogDescription description)
+			throws JsonProcessingException {
+
+		boolean isTransactionSuccessful = true;
+		String statusCode = responseDTO.getStatus();
+
+		registrationStatusDto.setLatestTransactionTypeCode(RegistrationTransactionTypeCode.MVS.toString());
+		registrationStatusDto.setRegistrationStageName(registrationStatusDto.getRegistrationStageName());
+
+		if (statusCode.equalsIgnoreCase(MVSStatus.APPROVED.name())) {
+			messageDTO.setIsValid(isTransactionSuccessful);
+			registrationStatusDto.setStatusComment(StatusUtil.VERIFICATION_SUCCESS.getMessage());
+			registrationStatusDto.setSubStatusCode(StatusUtil.VERIFICATION_SUCCESS.getCode());
+			registrationStatusDto.setStatusCode(RegistrationStatusCode.PROCESSING.toString());
+			registrationStatusDto.setLatestTransactionStatusCode(RegistrationTransactionStatusCode.SUCCESS.toString());
+
+			description.setMessage(PlatformSuccessMessages.RPR_VERIFICATION_SUCCESS.getMessage());
+			description.setCode(PlatformSuccessMessages.RPR_VERIFICATION_SUCCESS.getCode());
+
+		} else if (statusCode.equalsIgnoreCase(MVSStatus.REJECTED.name())) {
+			registrationStatusDto.setStatusCode(RegistrationStatusCode.REJECTED.toString());
+			registrationStatusDto.setStatusComment(StatusUtil.VERIFICATION_FAILED.getMessage());
+			registrationStatusDto.setSubStatusCode(StatusUtil.VERIFICATION_FAILED.getCode());
+			registrationStatusDto.setLatestTransactionStatusCode(RegistrationTransactionStatusCode.FAILED.toString());
+
+			description.setMessage(PlatformErrorMessages.RPR_MANUAL_VERIFICATION_REJECTED.getMessage());
+			description.setCode(PlatformErrorMessages.RPR_MANUAL_VERIFICATION_REJECTED.getCode());
+			messageDTO.setIsValid(Boolean.FALSE);
+			messageDTO.setInternalError(Boolean.FALSE);
+		}
+
+		return isTransactionSuccessful;
+	}
 
 	private void updateErrorFlags(InternalRegistrationStatusDto registrationStatusDto, MessageDTO object) {
 		object.setInternalError(true);

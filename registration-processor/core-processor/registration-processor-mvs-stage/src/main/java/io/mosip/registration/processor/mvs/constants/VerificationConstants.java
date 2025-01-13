@@ -30,7 +30,7 @@ public class VerificationConstants {
 	public static final String USERS = "users";
 	public static final String TIME_FORMAT = "yyyy-MM-dd'T'hh:mm:ss.000'Z'";
 	public static final String ACT ="ACT";
-	public static final String MANUAL_ADJUDICATION_ID = "mosip.verification.adjudicate";
+	public static final String MVS_ID = "mosip.mvs";
 	public static final String VERSION="1.0";
 	public static final String POLICY_ID = "policyId";
 	public static final String POLICIES = "policies";

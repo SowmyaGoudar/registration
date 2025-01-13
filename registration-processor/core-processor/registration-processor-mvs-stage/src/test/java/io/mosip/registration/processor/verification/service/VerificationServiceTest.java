@@ -64,7 +64,7 @@ import io.mosip.registration.processor.core.spi.restclient.RegistrationProcessor
 import io.mosip.registration.processor.core.util.JsonUtil;
 import io.mosip.registration.processor.core.util.RegistrationExceptionMapperUtil;
 import io.mosip.registration.processor.mvs.dto.ManualVerificationDTO;
-import io.mosip.registration.processor.mvs.dto.ManualVerificationStatus;
+import io.mosip.registration.processor.mvs.dto.MVSStatus;
 import io.mosip.registration.processor.mvs.dto.MatchDetail;
 import io.mosip.registration.processor.mvs.dto.UserDto;
 import io.mosip.registration.processor.mvs.dto.VerificationDecisionDto;
@@ -83,7 +83,11 @@ import io.mosip.registration.processor.packet.storage.utils.Utilities;
 import io.mosip.registration.processor.rest.client.audit.builder.AuditLogRequestBuilder;
 import io.mosip.registration.processor.status.dto.InternalRegistrationStatusDto;
 import io.mosip.registration.processor.status.dto.RegistrationStatusDto;
+import io.mosip.registration.processor.status.dto.SyncRegistrationDto;
+import io.mosip.registration.processor.status.dto.SyncResponseDto;
+import io.mosip.registration.processor.status.entity.SyncRegistrationEntity;
 import io.mosip.registration.processor.status.service.RegistrationStatusService;
+import io.mosip.registration.processor.status.service.SyncRegistrationService;
 
 @RunWith(PowerMockRunner.class)
 @PowerMockIgnore({ "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*","javax.management.*", "javax.net.ssl.*" })
@@ -117,6 +121,9 @@ public class VerificationServiceTest {
 	RegistrationStatusService<String, InternalRegistrationStatusDto, RegistrationStatusDto> registrationStatusService;
 
 	@Mock
+	private SyncRegistrationService<SyncResponseDto, SyncRegistrationDto> syncRegistrationService;
+	
+	@Mock
 	private Utilities utility;
 
 	@Mock
@@ -142,6 +149,7 @@ public class VerificationServiceTest {
 
 
 	private InternalRegistrationStatusDto registrationStatusDto;
+	private SyncRegistrationEntity regEntity;
 	private VerificationPKEntity PKId;
 	private ManualVerificationDTO manualVerificationDTO;
 	private MatchDetail matchDetail=new MatchDetail();
@@ -215,6 +223,8 @@ public class VerificationServiceTest {
 
 		manualVerificationDTO = new ManualVerificationDTO();
 		registrationStatusDto = new InternalRegistrationStatusDto();
+		regEntity = new SyncRegistrationEntity();
+		regEntity.setReferenceId("1234");
 		dto = new UserDto();
 
 		PKId = new VerificationPKEntity();
@@ -229,7 +239,7 @@ public class VerificationServiceTest {
 		Date date = new Date();
 		manualVerificationEntity.setDelDtimes(new Timestamp(date.getTime()));
 		manualVerificationEntity.setStatusComment("test");
-		manualVerificationEntity.setStatusCode(ManualVerificationStatus.PENDING.name());
+		manualVerificationEntity.setStatusCode(MVSStatus.PENDING.name());
 		manualVerificationEntity.setReasonCode("test");
 		manualVerificationEntity.setId(PKId);
 		entities.add(manualVerificationEntity);
@@ -241,7 +251,7 @@ public class VerificationServiceTest {
 		manualVerificationDTO.setRegId("RegID");
 
 		manualVerificationDTO.setMvUsrId("test");
-		registrationStatusDto.setStatusCode(ManualVerificationStatus.PENDING.name());
+		registrationStatusDto.setStatusCode(MVSStatus.PENDING.name());
 		registrationStatusDto.setStatusComment("test");
 		registrationStatusDto.setRegistrationType("LOST");
 		registrationStatusDto.setRegistrationId("10002100741000320210107125533");
@@ -252,7 +262,7 @@ public class VerificationServiceTest {
 		manualVerificationDTO.setGallery(list);
 		manualVerificationDTO.setStatusCode("PENDING");
 
-		Mockito.when(basePacketRepository.getFirstApplicantDetails(ManualVerificationStatus.PENDING.name(), "DEMO"))
+		Mockito.when(basePacketRepository.getFirstApplicantDetails(MVSStatus.PENDING.name(), "DEMO"))
 				.thenReturn(entities);
 		Mockito.when(basePacketRepository.getAssignedApplicantDetails(any(), any())).thenReturn(entities);
 		Mockito.doNothing().when(description).setMessage(any());
@@ -306,6 +316,10 @@ public class VerificationServiceTest {
 
 		Map<String, String> identity = new HashMap<String, String>();
 		identity.put("fullName", "Satish");
+		identity.put("userServiceType", "[ {\r\n"
+				+ "  \"language\" : \"eng\",\r\n"
+				+ "  \"value\" : \"By Registration\"\r\n"
+				+ "} ]");
 
 		Map<String, String> metaInfo = new HashMap<String, String>();
 		metaInfo.put("registrationId", "92379526572940");
@@ -319,6 +333,8 @@ public class VerificationServiceTest {
 		Mockito.when(env.getProperty(ApiName.DATASHARECREATEURL.name())).thenReturn("/v1/datashare/create");
 		Mockito.when(registrationStatusService.getRegistrationStatus(anyString(), any(), any(), any()))
 				.thenReturn(registrationStatusDto);
+		Mockito.when(syncRegistrationService.findByWorkflowInstanceId(anyString()))
+		.thenReturn(regEntity);
 
 		Mockito.when(packetManagerService.getFields(anyString(), any(), anyString(), any())).thenReturn(identity);
 		Mockito.when(packetManagerService.getBiometrics(anyString(), anyString(), any(), anyString(), any()))

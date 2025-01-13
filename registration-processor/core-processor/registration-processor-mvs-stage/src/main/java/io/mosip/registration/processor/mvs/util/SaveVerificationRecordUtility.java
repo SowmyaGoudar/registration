@@ -20,7 +20,7 @@ import io.mosip.registration.processor.core.constant.LoggerFileConstant;
 import io.mosip.registration.processor.core.exception.util.PlatformErrorMessages;
 import io.mosip.registration.processor.core.logger.LogDescription;
 import io.mosip.registration.processor.core.logger.RegProcessorLogger;
-import io.mosip.registration.processor.mvs.dto.ManualVerificationStatus;
+import io.mosip.registration.processor.mvs.dto.MVSStatus;
 import io.mosip.registration.processor.packet.storage.entity.VerificationEntity;
 import io.mosip.registration.processor.packet.storage.entity.VerificationPKEntity;
 import io.mosip.registration.processor.packet.storage.exception.UnableToInsertData;
@@ -60,7 +60,7 @@ public class SaveVerificationRecordUtility {
 				verificationEntity.setVerificationUsrId(null);
 				verificationEntity.setReasonCode(VERIFICATION_COMMENT);
 				verificationEntity.setStatusComment(VERIFICATION_COMMENT);
-				verificationEntity.setStatusCode(ManualVerificationStatus.INQUEUE.name());
+				verificationEntity.setStatusCode(MVSStatus.INQUEUE.name());
 				verificationEntity.setActive(true);
 				verificationEntity.setDeleted(false);
 				verificationEntity.setCrBy("SYSTEM");
@@ -73,7 +73,7 @@ public class SaveVerificationRecordUtility {
 				existingRecord.setVerificationUsrId(null);
 				existingRecord.setReasonCode(VERIFICATION_COMMENT);
 				existingRecord.setStatusComment(VERIFICATION_COMMENT);
-				existingRecord.setStatusCode(ManualVerificationStatus.INQUEUE.name());
+				existingRecord.setStatusCode(MVSStatus.INQUEUE.name());
 				existingRecord.setUpdDtimes(Timestamp.valueOf(LocalDateTime.now(ZoneId.of("UTC"))));
 				basePacketRepository.update(existingRecord);
 			}

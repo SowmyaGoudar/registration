@@ -1,12 +1,6 @@
 package io.mosip.registration.processor.mvs.dto;
 
-/**
- * Constants for Manual Verification Status.
- *
- * @author Pranav Kumar
- * @since 0.0.1
- */
-public enum ManualVerificationStatus {
+public enum MVSStatus {
 
 	/** The pending. */
 	PENDING, /** The assigned. */

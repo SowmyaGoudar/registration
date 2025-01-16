@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -51,18 +50,15 @@ import io.mosip.registration.processor.core.exception.ValidationFailedException;
 import io.mosip.registration.processor.core.exception.util.PlatformSuccessMessages;
 import io.mosip.registration.processor.core.http.RequestWrapper;
 import io.mosip.registration.processor.core.http.ResponseWrapper;
-import io.mosip.registration.processor.core.idrepo.dto.Documents;
 import io.mosip.registration.processor.core.logger.LogDescription;
 import io.mosip.registration.processor.core.logger.RegProcessorLogger;
 import io.mosip.registration.processor.core.migration.dto.MigrationRequestDto;
 import io.mosip.registration.processor.core.migration.dto.MigrationResponse;
-import io.mosip.registration.processor.core.packet.dto.DocumentDto;
 import io.mosip.registration.processor.core.packet.dto.PacketDto;
 import io.mosip.registration.processor.core.spi.restclient.RegistrationProcessorRestClientService;
 import io.mosip.registration.processor.core.status.util.StatusUtil;
 import io.mosip.registration.processor.core.util.JsonUtil;
 import io.mosip.registration.processor.core.util.RegistrationExceptionMapperUtil;
-import io.mosip.registration.processor.packet.storage.dto.Document;
 import io.mosip.registration.processor.packet.storage.dto.FieldResponseDto;
 import io.mosip.registration.processor.packet.storage.utils.FingrePrintConvertor;
 import io.mosip.registration.processor.packet.storage.utils.IdSchemaUtil;
@@ -132,10 +128,6 @@ public class LegacyDataValidator {
 
 	@Value("${mosip.regproc.legacydata.validator.tpi.username}")
 	private String username;
-
-	@Value("${mosip.regproc.legacydata.validator.tpi.password}")
-	private String password;
-
 
 	public void validate(String registrationId, InternalRegistrationStatusDto registrationStatusDto,
 			LogDescription description, MessageDTO object)
@@ -407,7 +399,7 @@ public class LegacyDataValidator {
 		String timestampForRequest = timestamp;
 		byte[] createdDigestBytes = timestampForDigest.getBytes(StandardCharsets.UTF_8);
 
-		byte[] passwordHashBytes = legacyDataApiUtility.hashPassword(password);
+		byte[] passwordHashBytes = legacyDataApiUtility.hashPassword(false);
 		String passwordDigest = legacyDataApiUtility.generateDigest(nonceBytes, createdDigestBytes, passwordHashBytes);
 		Envelope envelope = new Envelope();
 		// Header
@@ -453,48 +445,6 @@ public class LegacyDataValidator {
 		marshaller.marshal(envelope, sw);
 		return sw.toString();
 	}
-
-	private Map<String, DocumentDto> getAllDocumentsByRegId(String regId, String process,
-			JSONObject demographicIdentity)
-			throws IOException, ApisResourceAccessException, PacketManagerException, JsonProcessingException
-	{
-		JSONObject idJSON = demographicIdentity;
-		List<Documents> applicantDocuments = new ArrayList<>();
-		JSONObject docJson = utility.getRegistrationProcessorMappingJson(MappingJsonConstants.DOCUMENT);
-		Map<String, DocumentDto> documents = new HashMap<String, DocumentDto>();
-		for (Object doc : docJson.values()) {
-			Map docMap = (LinkedHashMap) doc;
-			String docValue = docMap.values().iterator().next().toString();
-			HashMap<String, String> docInIdentityJson = (HashMap<String, String>) idJSON.get(docValue);
-			if (docInIdentityJson != null) {
-				DocumentDto documentDto = getIdDocument(regId, docValue, process);
-				if (documentDto != null) {
-					documents.put(docValue, documentDto);
-				}
-			}
-
-		}
-
-		return documents;
-	}
-
-	private DocumentDto getIdDocument(String registrationId, String dockey, String process)
-			throws IOException, ApisResourceAccessException, PacketManagerException,
-			io.mosip.kernel.core.util.exception.JsonProcessingException {
-
-		Document document = packetManagerService.getDocument(registrationId, dockey, process,
-				ProviderStageName.UIN_GENERATOR);
-		if (document != null) {
-			DocumentDto documentDto = new DocumentDto();
-			documentDto.setDocument(document.getDocument());
-			documentDto.setFormat(document.getFormat());
-			documentDto.setType(document.getFormat());
-			documentDto.setValue(document.getValue());
-			return documentDto;
-		}
-		return null;
-	}
-
 	private Map<String, BiometricRecord> getBiometrics(String registrationId, String registrationType)
 			throws IOException, ApisResourceAccessException, PacketManagerException, JsonProcessingException
 	{

@@ -8,6 +8,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import io.mosip.kernel.core.util.CryptoUtil;
@@ -16,6 +17,9 @@ import lombok.Data;
 @Component
 @Data
 public class LegacyDataApiUtility {
+
+	@Value("${mosip.regproc.legacydata.validator.tpi.password}")
+	private String password;
 
 	public byte[] generateNonce() {
 		SecureRandom random = new SecureRandom();
@@ -53,8 +57,14 @@ public class LegacyDataApiUtility {
 		return truncatedTimestamp + "+0300";
 	}
 
-	public byte[] hashPassword(String password) throws NoSuchAlgorithmException, UnsupportedEncodingException {
-		MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
-		return sha1.digest(password.getBytes("UTF-8"));
+	public byte[] hashPassword(boolean generateNew) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+		if (generateNew) {
+			// TODO need to add code generating new password
+			return null;
+		} else {
+			MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
+			return sha1.digest(password.getBytes("UTF-8"));
+		}
+
 	}
 }

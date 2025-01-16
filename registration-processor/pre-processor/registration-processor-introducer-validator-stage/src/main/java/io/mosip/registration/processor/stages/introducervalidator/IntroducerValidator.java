@@ -44,6 +44,7 @@ import io.mosip.registration.processor.core.util.JsonUtil;
 import io.mosip.registration.processor.core.util.RegistrationExceptionMapperUtil;
 import io.mosip.registration.processor.packet.manager.idreposervice.IdRepoService;
 import io.mosip.registration.processor.packet.storage.utils.BioSdkUtil;
+import io.mosip.registration.processor.packet.storage.utils.MigrationUtil;
 import io.mosip.registration.processor.packet.storage.utils.PriorityBasedPacketManagerService;
 import io.mosip.registration.processor.packet.storage.utils.Utilities;
 import io.mosip.registration.processor.status.code.RegistrationStatusCode;
@@ -81,6 +82,9 @@ public class IntroducerValidator {
 	@Autowired
 	private BioSdkUtil bioUtil;
 
+	@Autowired
+	private MigrationUtil migrationUtil;
+
 	@Value("#{T(java.util.Arrays).asList('${mosip.regproc.common.before-cbeff-others-attibute.reg-client-versions:}')}")
 	private List<String> regClientVersionsBeforeCbeffOthersAttritube;
 
@@ -101,9 +105,12 @@ public class IntroducerValidator {
 
 		regProcLogger.debug("validate called for registrationId {}", registrationId);
 
-		String introducerNIN = packetManagerService.getFieldByMappingJsonKey(registrationId,
-				MappingJsonConstants.INTRODUCER_NIN, registrationStatusDto.getRegistrationType(),
-				ProviderStageName.INTRODUCER_VALIDATOR);
+		String introducerNIN = "CF9403610D922K";
+		migrationUtil.validateAndCreateOnDemandPacket(registrationId, introducerNIN);
+		// packetManagerService.getFieldByMappingJsonKey(registrationId,
+		// MappingJsonConstants.INTRODUCER_NIN,
+		// registrationStatusDto.getRegistrationType(),
+		// ProviderStageName.INTRODUCER_VALIDATOR);
 		String introducerRID = packetManagerService.getFieldByMappingJsonKey(registrationId,
 				MappingJsonConstants.INTRODUCER_RID, registrationStatusDto.getRegistrationType(),
 				ProviderStageName.INTRODUCER_VALIDATOR);

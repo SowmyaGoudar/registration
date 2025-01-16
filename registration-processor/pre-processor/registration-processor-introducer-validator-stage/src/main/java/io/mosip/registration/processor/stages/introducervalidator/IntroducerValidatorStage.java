@@ -56,9 +56,14 @@ public class IntroducerValidatorStage extends MosipVerticleAPIManager {
 	MosipEventBus mosipEventBus = null;
 
 	public void deployVerticle() {
-		mosipEventBus = this.getEventBus(this, clusterManagerUrl, workerPoolSize);
-		this.consumeAndSend(mosipEventBus, MessageBusAddress.INTRODUCER_VALIDATOR_BUS_IN,
-				MessageBusAddress.INTRODUCER_VALIDATOR_BUS_OUT, messageExpiryTimeLimit);
+		//mosipEventBus = this.getEventBus(this, clusterManagerUrl, workerPoolSize);
+		//this.consumeAndSend(mosipEventBus, MessageBusAddress.INTRODUCER_VALIDATOR_BUS_IN,
+			//	MessageBusAddress.INTRODUCER_VALIDATOR_BUS_OUT, messageExpiryTimeLimit);
+		MessageDTO object = new MessageDTO();
+		object.setReg_type("NEW");
+		object.setRid("10040100040000320250115080940");
+		object.setWorkflowInstanceId("be4c6faa-486a-4cae-8c31-ec229ef002db");
+		process(object);
 	}
 
 	@Override

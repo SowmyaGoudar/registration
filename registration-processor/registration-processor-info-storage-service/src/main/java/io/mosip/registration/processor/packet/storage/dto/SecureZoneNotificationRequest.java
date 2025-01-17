@@ -6,7 +6,7 @@ import lombok.Data;
 public class SecureZoneNotificationRequest {
 
 
-	    private String regType;
+	private String reg_type;
 
 
 	    private String rid;

@@ -116,7 +116,7 @@ public class MigrationUtil {
 							.getRegistrationStatus(migratedRegistrationId, "MIGRATOR", 1, null);
 					if(internalRegistrationStatusDto!=null) {
 						SecureZoneNotificationRequest secureZoneNotificationRequest = new SecureZoneNotificationRequest();
-						secureZoneNotificationRequest.setRegType("MIGRATOR");
+						secureZoneNotificationRequest.setReg_type("MIGRATOR");
 						secureZoneNotificationRequest.setRid(migratedRegistrationId);
 						secureZoneNotificationRequest
 								.setWorkflowInstanceId(internalRegistrationStatusDto.getWorkflowInstanceId());
@@ -125,7 +125,8 @@ public class MigrationUtil {
 						secureZoneNotificationRequest.setInternalError(false);
 						String secureZoneResponse = (String) restApi.postApi(ApiName.SECURE_ZONE_URL, "", "",
 								secureZoneNotificationRequest,
-								String.class, null);
+								String.class, MediaType.APPLICATION_JSON);
+						regProcLogger.info("ondemand migration packet status  : {}", secureZoneResponse);
 					}
 				}
 

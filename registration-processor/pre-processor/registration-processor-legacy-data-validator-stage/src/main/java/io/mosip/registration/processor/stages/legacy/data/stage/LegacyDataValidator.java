@@ -251,6 +251,7 @@ public class LegacyDataValidator {
 		syncRegistrationEntity.setCreatedBy("MOSIP");
 		syncRegistrationEntity.setCreateDateTime(LocalDateTime.now(ZoneId.of("UTC")));
 		syncRegistrationEntity.setWorkflowInstanceId(RegistrationUtility.generateId());
+		syncRegistrationEntity.setIsDeleted(false);
 		return syncRegistrationEntity;
 	}
 

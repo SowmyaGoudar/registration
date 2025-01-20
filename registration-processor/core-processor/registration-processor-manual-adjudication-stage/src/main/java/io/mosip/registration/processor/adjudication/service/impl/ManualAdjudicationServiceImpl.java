@@ -244,7 +244,8 @@ public class ManualAdjudicationServiceImpl implements ManualAdjudicationService 
 			messageDTO.setIsValid(false);
 			messageDTO.setRid(regId);
 			messageDTO.setReg_type(registrationStatusDto.getRegistrationType());
-
+			messageDTO.setWorkflowInstanceId(registrationStatusDto.getWorkflowInstanceId());
+			
 			List<ManualVerificationEntity> entities = retrieveInqueuedRecordsByRid(regId);
 
 			// check if response is marked for resend

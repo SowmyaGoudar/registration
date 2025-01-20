@@ -21,7 +21,7 @@ import io.mosip.registration.processor.packet.storage.utils.Utilities;
 		"io.mosip.registration.processor.rest.client.config", "io.mosip.registration.processor.status.config", "io.mosip.registration.processor.core.kernel.beans",
 		"io.mosip.registration.processor.core.config", "io.mosip.registration.processor.packet.storage.config","io.mosip.registration.processor.packet.manager.config",
 		"io.mosip.registration.processor.citizenship.verification.stage", "io.mosip.registration.processor.citizenship.verification.service","io.mosip.registration.processor.stages.config",
-		"io.mosip.registration.processor.citizenship.verification.util", "io.mosip.registration.processor.message.sender.template", "io.mosip.registration.processor.core.util" })
+		"io.mosip.registration.processor.message.sender.template", "io.mosip.registration.processor.core.util" })
 public class CitizenshipVerificationStage extends MosipVerticleAPIManager{
 
 	private static final String STAGE_PROPERTY_PREFIX = "mosip.regproc.citizenshipverification.";

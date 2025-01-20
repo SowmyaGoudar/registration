@@ -239,14 +239,14 @@ public class MVSServiceImpl implements MVSService {
 
 			if (isTransactionSuccessful) {
 				registrationStatusDto.setStatusCode(RegistrationStatusCode.PROCESSING.toString());
-				registrationStatusDto.setSubStatusCode(StatusUtil.VERIFICATION_SENT.getCode());
-				registrationStatusDto.setStatusComment(StatusUtil.VERIFICATION_SENT.getMessage());
+				registrationStatusDto.setSubStatusCode(StatusUtil.MVS_SENT.getCode());
+				registrationStatusDto.setStatusComment(StatusUtil.MVS_SENT.getMessage());
 				registrationStatusDto
 						.setLatestTransactionStatusCode(RegistrationTransactionStatusCode.IN_PROGRESS.toString());
 			} else {
 				registrationStatusDto.setStatusCode(RegistrationStatusCode.FAILED.toString());
-				registrationStatusDto.setSubStatusCode(StatusUtil.VERIFICATION_FAILED.getCode());
-				registrationStatusDto.setStatusComment(StatusUtil.VERIFICATION_FAILED.getMessage());
+				registrationStatusDto.setSubStatusCode(StatusUtil.MVS_FAILED.getCode());
+				registrationStatusDto.setStatusComment(StatusUtil.MVS_FAILED.getMessage());
 				registrationStatusDto
 						.setLatestTransactionStatusCode(RegistrationTransactionStatusCode.ERROR.toString());
 			}
@@ -269,7 +269,7 @@ public class MVSServiceImpl implements MVSService {
 
 		} catch (Exception e) {
 			isTransactionSuccessful = false;
-			description.setCode(PlatformSuccessMessages.RPR_VERIFICATION_SENT.getCode());
+			description.setCode(PlatformSuccessMessages.RPR_MVS_SENT.getCode());
 			description.setMessage(e.getMessage());
 			messageDTO.setInternalError(true);
 			regProcLogger.error(ExceptionUtils.getStackTrace(e));
@@ -281,9 +281,9 @@ public class MVSServiceImpl implements MVSService {
 				description.setCode(PlatformSuccessMessages.RPR_MVS_SUCCESS.getCode());
 				description.setMessage(PlatformSuccessMessages.RPR_MVS_SUCCESS.getMessage());
 			} else
-				registrationStatusDto.setSubStatusCode(StatusUtil.VERIFICATION_FAILED.getCode());
+				registrationStatusDto.setSubStatusCode(StatusUtil.MVS_FAILED.getCode());
 			updateStatus(messageDTO, registrationStatusDto, isTransactionSuccessful, description,
-					PlatformSuccessMessages.RPR_VERIFICATION_SENT);
+					PlatformSuccessMessages.RPR_MVS_SENT);
 		}
 
 		regProcLogger.debug(LoggerFileConstant.SESSIONID.toString(), LoggerFileConstant.REGISTRATIONID.toString(),
@@ -692,22 +692,22 @@ public class MVSServiceImpl implements MVSService {
 
 		if (statusCode.equalsIgnoreCase(MVSStatus.APPROVED.name())) {
 			messageDTO.setIsValid(isTransactionSuccessful);
-			registrationStatusDto.setStatusComment(StatusUtil.VERIFICATION_SUCCESS.getMessage());
-			registrationStatusDto.setSubStatusCode(StatusUtil.VERIFICATION_SUCCESS.getCode());
+			registrationStatusDto.setStatusComment(StatusUtil.MVS_SUCCESS.getMessage());
+			registrationStatusDto.setSubStatusCode(StatusUtil.MVS_SUCCESS.getCode());
 			registrationStatusDto.setStatusCode(RegistrationStatusCode.PROCESSING.toString());
 			registrationStatusDto.setLatestTransactionStatusCode(RegistrationTransactionStatusCode.SUCCESS.toString());
 
-			description.setMessage(PlatformSuccessMessages.RPR_VERIFICATION_SUCCESS.getMessage());
-			description.setCode(PlatformSuccessMessages.RPR_VERIFICATION_SUCCESS.getCode());
+			description.setMessage(PlatformSuccessMessages.RPR_MVS_SUCCESS.getMessage());
+			description.setCode(PlatformSuccessMessages.RPR_MVS_SUCCESS.getCode());
 
 		} else if (statusCode.equalsIgnoreCase(MVSStatus.REJECTED.name())) {
 			registrationStatusDto.setStatusCode(RegistrationStatusCode.REJECTED.toString());
-			registrationStatusDto.setStatusComment(StatusUtil.VERIFICATION_FAILED.getMessage());
-			registrationStatusDto.setSubStatusCode(StatusUtil.VERIFICATION_FAILED.getCode());
+			registrationStatusDto.setStatusComment(StatusUtil.MVS_FAILED.getMessage());
+			registrationStatusDto.setSubStatusCode(StatusUtil.MVS_FAILED.getCode());
 			registrationStatusDto.setLatestTransactionStatusCode(RegistrationTransactionStatusCode.FAILED.toString());
 
-			description.setMessage(PlatformErrorMessages.RPR_MANUAL_VERIFICATION_REJECTED.getMessage());
-			description.setCode(PlatformErrorMessages.RPR_MANUAL_VERIFICATION_REJECTED.getCode());
+			description.setMessage(PlatformErrorMessages.RPR_MVS_REJECTED.getMessage());
+			description.setCode(PlatformErrorMessages.RPR_MVS_REJECTED.getCode());
 			messageDTO.setIsValid(Boolean.FALSE);
 			messageDTO.setInternalError(Boolean.FALSE);
 		}

@@ -143,7 +143,10 @@ public enum PlatformSuccessMessages {
 			"Verification successful"),
 	
 	RPR_MVS_SUCCESS(PlatformConstants.RPR_MVS_MODULE + "000",
-			"MVS successful"),
+			"Manual verification from MVS successful"),
+	
+	RPR_MVS_SENT(PlatformConstants.RPR_MVS_MODULE + "002",
+			"Sent for Verification to MVS"),
 
 	RPR_DECRYPTION_SUCCESS(PlatformConstants.RPR_PACKET_DECRYPTION_MODULE + "000", "Decryption success"),
 	

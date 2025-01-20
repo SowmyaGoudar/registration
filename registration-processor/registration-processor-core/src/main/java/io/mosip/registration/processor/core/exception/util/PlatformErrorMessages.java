@@ -784,6 +784,9 @@ public enum PlatformErrorMessages {
 	/** The rpr manual verification rejected. */
 	RPR_MANUAL_VERIFICATION_RESEND(PlatformConstants.RPR_MANUAL_ADJUDICATION_MODULE + "025",
 			"Manual verification resend to queue."),
+	
+	RPR_MVS_REJECTED(PlatformConstants.RPR_MVS_MODULE + "001",
+			"Manual verification rejected from MVS"),
 
 	/** The rpr table not accessible. */
 	RPR_TABLE_NOT_ACCESSIBLE(PlatformConstants.RPR_MANUAL_ADJUDICATION_MODULE + "022",

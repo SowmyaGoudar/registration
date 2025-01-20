@@ -137,6 +137,8 @@ public final class StatusConstants {
 	public static final String WORKFLOW_ACTION_SERVICE = RPR_REGISTRATION_PROCESSOR_PREFIX + "WAS-";
 
 	public static final String VERIFICATION_STAGE = RPR_REGISTRATION_PROCESSOR_PREFIX + "VER-";
+	
+	public static final String MVS_STAGE = RPR_REGISTRATION_PROCESSOR_PREFIX + "MVS-";
 
 	// Payment Validator stage
 	public static final String PAYMENT_VALIDATOR_STAGE = RPR_REGISTRATION_PROCESSOR_PREFIX + "PV-";

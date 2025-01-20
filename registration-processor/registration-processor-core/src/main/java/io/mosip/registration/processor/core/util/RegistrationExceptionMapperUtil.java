@@ -198,9 +198,10 @@ public class RegistrationExceptionMapperUtil {
 		statusMap.put(RegistrationExceptionTypeCode.IDREPO_DRAFT_REPROCESSABLE_EXCEPTION,
 				RegistrationTransactionStatusCode.REPROCESS);
 		statusMap.put(RegistrationExceptionTypeCode.DATA_MIGRATION_EXCEPTION,
-				RegistrationTransactionStatusCode.REPROCESS);
+				RegistrationTransactionStatusCode.FAILED);
 		statusMap.put(RegistrationExceptionTypeCode.DATA_MIGRATION_PACKET_CREATION_EXCEPTION,
 				RegistrationTransactionStatusCode.FAILED);
+		statusMap.put(RegistrationExceptionTypeCode.ON_HOLD_CVS_PACKET, RegistrationTransactionStatusCode.REPROCESS);
 		return unmodifiableMap;
 
 	}

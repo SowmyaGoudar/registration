@@ -407,6 +407,8 @@ public enum StatusUtil {
 	CITIZENSHIP_VERIFICATION_GUARDIAN_NIN_MISSING(StatusConstants.CITIZENSHIP_VERIFICATION + "017", "GUARDIAN_NIN is missing"),
 	CITIZENSHIP_VERIFICATION_NOT_CITIZEN_BYBIRTH(StatusConstants.CITIZENSHIP_VERIFICATION + "018", "Not Citizen By Birth"), 
 	CITIZENSHIP_VERIFICATION_NOTIFICATION_FAILURE(StatusConstants.CITIZENSHIP_VERIFICATION + "019", "Send notification failed for rid"),
+	CITIZENSHIP_VERIFICATION_PACKET_ONHOLD(StatusConstants.CITIZENSHIP_VERIFICATION + "020",
+			"Citizenship Verification packet on hold as parent ondemand migration is in progress"),
 	// Legacy data validation stage
 	LEGACY_DATA_VALIDATION_SUCCESS(StatusConstants.LEGACY_DATA_VALIDATION_SUCCESS + "001",
 			"Legacy data validation  success"),

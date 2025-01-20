@@ -629,8 +629,20 @@ public class CitizenshipVerificationProcessor {
 			
 			if (guardianRelationValue.equalsIgnoreCase(Relationship.FIRST_COUSIN_FATHERS_SIDE.getRelationship()) 
 				    || guardianRelationValue.equalsIgnoreCase(Relationship.FIRST_COUSIN_MOTHERS_SIDE.getRelationship())) {
-				    return true; // validate NIN usage for 1st Cousin (Father's side or Mother's side)
+				 regProcLogger.info("Validating first cousin relationship: " + guardianRelationValue);
+				 object.setMessageBusAddress(MessageBusAddress.MVS_BUS_IN);
+		            return true; // Skip further validation for first cousins, only check NIN usage
 				}
+
+			// Validation for Uncle/Aunt Relationships
+	        if (guardianRelationValue.equalsIgnoreCase(Relationship.MATERNAL_AUNT.getRelationship())
+	                || guardianRelationValue.equalsIgnoreCase(Relationship.PATERNAL_AUNT.getRelationship())
+	                || guardianRelationValue.equalsIgnoreCase(Relationship.MATERNAL_UNCLE.getRelationship())
+	                || guardianRelationValue.equalsIgnoreCase(Relationship.PATERNAL_UNCLE.getRelationship())) {
+	            regProcLogger.info("Skipping detailed validation for uncle/aunt relationship.");
+	            object.setMessageBusAddress(MessageBusAddress.MVS_BUS_IN);
+	            return true;
+	        }
 
 
 			if (guardianRelationValue.equalsIgnoreCase(Relationship.GRAND_FATHER_ON_FATHERS_SIDE.getRelationship())
@@ -650,16 +662,7 @@ public class CitizenshipVerificationProcessor {
 				isValidGuardian = validateSiblingRelationship(applicantFields, guardianInfoJson, registrationStatusDto,
 						description);
 				object.setMessageBusAddress(MessageBusAddress.MVS_BUS_IN);
-
-			} else if (guardianRelationValue.equalsIgnoreCase(Relationship.MATERNAL_AUNT.getRelationship()) 
-			        || guardianRelationValue.equalsIgnoreCase(Relationship.PATERNAL_AUNT.getRelationship())
-			        || guardianRelationValue.equalsIgnoreCase(Relationship.MATERNAL_UNCLE.getRelationship())
-			        || guardianRelationValue.equalsIgnoreCase(Relationship.PATERNAL_UNCLE.getRelationship())) {
-			    isValidGuardian = validateUncleAuntRelationship(applicantFields, guardianInfoJson,
-			            registrationStatusDto, description);
-				object.setMessageBusAddress(MessageBusAddress.MVS_BUS_IN);
-			}
-
+				}
 
 			if (!isValidGuardian) {
 
@@ -953,53 +956,7 @@ public class CitizenshipVerificationProcessor {
 		return isValidGuardian;
 	}
 
-	private boolean validateUncleAuntRelationship(Map<String, String> applicantFields, JSONObject guardianInfoJson,
-			InternalRegistrationStatusDto registrationStatusDto, LogDescription description)
-			throws IdRepoAppException, ApisResourceAccessException {
 
-		String guardianNin = applicantFields.get(MappingJsonConstants.GUARDIAN_NIN);
-		if (guardianNin == null) {
-			regProcLogger.warn("GUARDIAN_NIN is missing. Stopping further processing.");
-			return false;
-		} else {
-			regProcLogger.info("GUARDIAN_NIN: " + guardianNin);
-		}
-
-
-		String guardianRelationToApplicantJson = applicantFields
-				.get(MappingJsonConstants.GUARDIAN_RELATION_TO_APPLICANT);
-		regProcLogger.info("GUARDIAN_RELATION_TO_APPLICANT: " + guardianRelationToApplicantJson);
-
-		ObjectMapper objectMapper = new ObjectMapper();
-
-		String guardianRelationValue = null;
-		try {
-			List<Map<String, String>> guardianRelations = objectMapper.readValue(guardianRelationToApplicantJson,
-					new TypeReference<List<Map<String, String>>>() {
-					});
-			guardianRelationValue = guardianRelations.get(0).get("value");
-			regProcLogger.info("GUARDIAN_RELATION_TO_APPLICANT: " + guardianRelationValue);
-		} catch (Exception e) {
-			regProcLogger.error("Error parsing GUARDIAN_RELATION_TO_APPLICANT JSON", e);
-			return false;
-		}
-
-
-		boolean isValidGuardian = true;
-
-		Map<String, String> guardian1Map = extractguardianDemographics(guardianRelationValue, guardianInfoJson);
-		regProcLogger.info("Extracted demographics for {}: {}", guardianRelationValue, guardian1Map);
-
-		Map<String, String> guardian2Map = extractguardianApplicantDemographics(applicantFields);
-		regProcLogger.info("Extracted demographics for applicant: {}", guardian2Map);
-
-		ValidateguardianTribeAndClan(guardian1Map, guardian2Map, registrationStatusDto, description,
-				applicantFields);
-
-		return isValidGuardian;
-	}
-	
-	
 	private boolean ValidateguardianTribeAndClan(Map<String, String> guardian1, Map<String, String> guardian2,
 			InternalRegistrationStatusDto registrationStatusDto, LogDescription description,
 			Map<String, String> applicantFields) {

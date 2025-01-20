@@ -129,7 +129,6 @@ public class MigrationUtil {
 						regProcLogger.info("ondemand migration packet status  : {}", secureZoneResponse);
 					}
 				}
-
 				} else {
 					regProcLogger.info("ondemand migration api response is null  for registration id : {}",
 							registrationId);

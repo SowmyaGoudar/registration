@@ -239,7 +239,7 @@ public class LegacyDataVal {
 		String NIN = null;
 		Envelope requestEnvelope = createIdentifyPersonRequest(positionAndWsqMap);
 		String request = marshalToXml(requestEnvelope);
-		regProcLogger.info("Request to legacy system : {}", request);
+		regProcLogger.debug("Request to legacy system : {}", request);
 		String response = (String) restApi.postApi(ApiName.LEGACYAPI, "", "", request, String.class,
 				MediaType.TEXT_XML);
 		regProcLogger.info("Response from legacy system : {}{}", registrationId,

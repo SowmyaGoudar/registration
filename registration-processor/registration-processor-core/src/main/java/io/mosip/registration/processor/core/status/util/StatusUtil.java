@@ -160,8 +160,10 @@ public enum StatusUtil {
 			"Packet is on Hold due to parent packet processing"),
 	INTRODUCER_BIOMETRIC_ALL_EXCEPTION_IN_PACKET(StatusConstants.IVM_VALIDAOR_MODULE_FAILED + "008",
 			"Introducer Biometrics all exceptions"),
-	INTRODUCER_UIN_NOT_FOUND_FOR_NIN(StatusConstants.IVM_VALIDAOR_MODULE_FAILED + "003",
+	INTRODUCER_UIN_NOT_FOUND_FOR_NIN(StatusConstants.IVM_VALIDAOR_MODULE_FAILED + "009",
 			"Introducer UIN not Found for the Given NIN"),
+	INTRODUCER_NIN_ONDEMAND_MIGRATION_FAILED(StatusConstants.IVM_VALIDAOR_MODULE_FAILED + "010",
+			"Introducer NIN Ondemand migration failed"),
 	// printing stage
 	PRINT_REQUEST_SUCCESS(StatusConstants.PRINT_STAGE_MODULE_SUCCESS + "001", "Print request submitted"),
 	PDF_ADDED_TO_QUEUE_FAILED(StatusConstants.PRINT_STAGE_MODULE_FAILED + "001",

@@ -368,7 +368,7 @@ public class CitizenshipVerificationProcessor {
 	    }
 		if (isParentNINFoundInMosip == false && isParentInfoValid == false) {
 			boolean isOnDemandValid = validateOnDemandMigration(registrationStatusDto, motherNIN, fatherNIN);
-			if (isOnDemandValid = true) {
+			if (isOnDemandValid == true) {
 				registrationStatusDto.setLatestTransactionStatusCode(
 						registrationStatusMapperUtil.getStatusCode(RegistrationExceptionTypeCode.ON_HOLD_CVS_PACKET));
 				registrationStatusDto.setStatusComment(StatusUtil.CITIZENSHIP_VERIFICATION_PACKET_ONHOLD.getMessage());

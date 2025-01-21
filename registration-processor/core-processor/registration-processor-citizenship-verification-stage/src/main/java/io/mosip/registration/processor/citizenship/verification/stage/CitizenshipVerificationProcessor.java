@@ -297,7 +297,7 @@ public class CitizenshipVerificationProcessor {
 						"Citizenship verification failed: Not Citizen By Birth for registrationId: " + registrationId,
 						StatusUtil.CITIZENSHIP_VERIFICATION_NOT_CITIZEN_BYBIRTH.getCode(),
 						StatusUtil.CITIZENSHIP_VERIFICATION_NOT_CITIZEN_BYBIRTH.getMessage(),
-						RegistrationStatusCode.PROCESSING.toString(), description, registrationId);
+						RegistrationStatusCode.FAILED.toString(), description, registrationId);
 
 				ifCitizenshipValid = false;
 
@@ -313,7 +313,7 @@ public class CitizenshipVerificationProcessor {
 							"Citizenship verification proceed: No parent has NIN for registrationId: " + registrationId,
 							StatusUtil.CITIZENSHIP_VERIFICATION_NO_PARENT_NIN.getCode(),
 							StatusUtil.CITIZENSHIP_VERIFICATION_NO_PARENT_NIN.getMessage(),
-							RegistrationStatusCode.PROCESSING.toString(), description, registrationId);
+							RegistrationStatusCode.FAILED.toString(), description, registrationId);
 					ifCitizenshipValid = handleValidationWithNoParentNinFound(applicantFields, registrationStatusDto,
 							description, object);
 				} else {
@@ -380,6 +380,11 @@ public class CitizenshipVerificationProcessor {
 				throw new PacketOnHoldException(StatusUtil.CITIZENSHIP_VERIFICATION_PACKET_ONHOLD.getCode(),
 						StatusUtil.CITIZENSHIP_VERIFICATION_PACKET_ONHOLD.getMessage());
 			} else {
+				logAndSetStatusError(registrationStatusDto,
+						StatusUtil.CITIZENSHIP_VERIFICATION_ONDEMAND_MIGRATION_FAILED.getMessage(),
+						StatusUtil.CITIZENSHIP_VERIFICATION_ONDEMAND_MIGRATION_FAILED.getCode(),
+						StatusUtil.CITIZENSHIP_VERIFICATION_ONDEMAND_MIGRATION_FAILED.getMessage(),
+						RegistrationStatusCode.FAILED.toString(), description, applicantFields.get("registrationId"));
 				isParentInfoValid = false;
 			}
 		}
@@ -428,7 +433,7 @@ public class CitizenshipVerificationProcessor {
 				logAndSetStatusError(registrationStatusDto, parentType + "'s NIN not found in repo data.",
 						StatusUtil.CITIZENSHIP_VERIFICATION_UIN_NOT_FOUND.getCode(),
 						StatusUtil.CITIZENSHIP_VERIFICATION_UIN_NOT_FOUND.getMessage(),
-						RegistrationStatusCode.PROCESSING.toString(), description,
+						RegistrationStatusCode.FAILED.toString(), description,
 						applicantFields.get("registrationId"));
 				return false;
 
@@ -438,7 +443,7 @@ public class CitizenshipVerificationProcessor {
 				logAndSetStatusError(registrationStatusDto, parentType + "'s NIN is used more than N times.",
 						StatusUtil.CITIZENSHIP_VERIFICATION_NIN_USAGE_EXCEEDED.getCode(),
 						StatusUtil.CITIZENSHIP_VERIFICATION_NIN_USAGE_EXCEEDED.getMessage(),
-						RegistrationStatusCode.PROCESSING.toString(), description,
+						RegistrationStatusCode.FAILED.toString(), description,
 						applicantFields.get("registrationId"));
 				return false;
 			}
@@ -563,7 +568,7 @@ public class CitizenshipVerificationProcessor {
 								+ " information.",
 					StatusUtil.CITIZENSHIP_VERIFICATION_CLAN_MISMATCH.getCode(),
 					StatusUtil.CITIZENSHIP_VERIFICATION_CLAN_MISMATCH.getMessage(),
-					RegistrationStatusCode.PROCESSING.toString(), description,
+						RegistrationStatusCode.FAILED.toString(), description,
 					applicantFields.get("registrationId"));
 			}
 		} else {
@@ -571,7 +576,7 @@ public class CitizenshipVerificationProcessor {
 					+ person2.get(MappingJsonConstants.PERSON) + "'s " + MappingJsonConstants.TRIBE + " information.",
 				StatusUtil.CITIZENSHIP_VERIFICATION_TRIBE_MISMATCH.getCode(),
 				StatusUtil.CITIZENSHIP_VERIFICATION_TRIBE_MISMATCH.getMessage(),
-				RegistrationStatusCode.PROCESSING.toString(), description, applicantFields.get("registrationId"));
+					RegistrationStatusCode.FAILED.toString(), description, applicantFields.get("registrationId"));
 		}
 
 		return isValid;
@@ -591,7 +596,7 @@ public class CitizenshipVerificationProcessor {
 			logAndSetStatusError(registrationStatusDto, "GUARDIAN_NIN is missing. Stopping further processing.",
 					StatusUtil.CITIZENSHIP_VERIFICATION_GUARDIAN_NIN_MISSING.getCode(),
 					StatusUtil.CITIZENSHIP_VERIFICATION_GUARDIAN_NIN_MISSING.getMessage(),
-					RegistrationStatusCode.PROCESSING.toString(), description, applicantFields.get("registrationId"));
+					RegistrationStatusCode.FAILED.toString(), description, applicantFields.get("registrationId"));
 			return false;
 		} else {
 			regProcLogger.info("GUARDIAN_NIN: " + guardianNin);
@@ -622,7 +627,7 @@ public class CitizenshipVerificationProcessor {
 								+ guardianRelationValue,
 						StatusUtil.CITIZENSHIP_VERIFICATION_NIN_USAGE_EXCEEDED.getCode(),
 						StatusUtil.CITIZENSHIP_VERIFICATION_NIN_USAGE_EXCEEDED.getMessage(),
-						RegistrationStatusCode.PROCESSING.toString(), description,
+						RegistrationStatusCode.FAILED.toString(), description,
 						applicantFields.get("registrationId"));
 				return false;
 			}
@@ -762,7 +767,7 @@ public class CitizenshipVerificationProcessor {
 	                        + applicantFields.get("registrationId"),
 	                StatusUtil.CITIZENSHIP_VERIFICATION_AGE_DIFFERENCE_FAILED.getCode(),
 	                StatusUtil.CITIZENSHIP_VERIFICATION_AGE_DIFFERENCE_FAILED.getMessage(),
-	                RegistrationStatusCode.PROCESSING.toString(), description, applicantFields.get("registrationId"));
+					RegistrationStatusCode.FAILED.toString(), description, applicantFields.get("registrationId"));
 	        return false;
 	    }
 
@@ -821,7 +826,7 @@ public class CitizenshipVerificationProcessor {
 							+ applicantFields.get("registrationId"),
 					StatusUtil.CITIZENSHIP_VERIFICATION_AGE_DIFFERENCE_FAILED.getCode(),
 					StatusUtil.CITIZENSHIP_VERIFICATION_AGE_DIFFERENCE_FAILED.getMessage(),
-					RegistrationStatusCode.PROCESSING.toString(), description, applicantFields.get("registrationId"));
+					RegistrationStatusCode.FAILED.toString(), description, applicantFields.get("registrationId"));
 			isValidGuardian = false;
 		}
 
@@ -977,7 +982,7 @@ public class CitizenshipVerificationProcessor {
 								+ " information.",
 						StatusUtil.CITIZENSHIP_VERIFICATION_CLAN_MISMATCH.getCode(),
 						StatusUtil.CITIZENSHIP_VERIFICATION_CLAN_MISMATCH.getMessage(),
-						RegistrationStatusCode.PROCESSING.toString(), description,
+						RegistrationStatusCode.FAILED.toString(), description,
 						applicantFields.get("registrationId"));
 			}
 		} else {
@@ -988,7 +993,7 @@ public class CitizenshipVerificationProcessor {
 							+ " information.",
 					StatusUtil.CITIZENSHIP_VERIFICATION_TRIBE_MISMATCH.getCode(),
 					StatusUtil.CITIZENSHIP_VERIFICATION_TRIBE_MISMATCH.getMessage(),
-					RegistrationStatusCode.PROCESSING.toString(), description, applicantFields.get("registrationId"));
+					RegistrationStatusCode.FAILED.toString(), description, applicantFields.get("registrationId"));
 		}
 
 		return isValid;

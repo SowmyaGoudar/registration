@@ -29,6 +29,7 @@ import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.kernel.core.util.exception.JsonProcessingException;
 import io.mosip.registration.processor.citizenship.verification.constants.CitizenshipType;
 import io.mosip.registration.processor.citizenship.verification.constants.Relationship;
+import io.mosip.registration.processor.citizenship.verification.dto.ParentFoundDTO;
 import io.mosip.registration.processor.citizenship.verification.service.NinUsageService;
 import io.mosip.registration.processor.core.abstractverticle.MessageBusAddress;
 import io.mosip.registration.processor.core.abstractverticle.MessageDTO;
@@ -356,17 +357,18 @@ public class CitizenshipVerificationProcessor {
 	    }
         
 	    boolean isParentInfoValid = false;
-		boolean isParentNINFoundInMosip = false;
+		ParentFoundDTO parentFoundDTO = new ParentFoundDTO();
+		parentFoundDTO.setParentNINFoundInMosip(false);
 	    if (fatherNIN != null) {
 	        isParentInfoValid = validateParentInfo(fatherNIN, "FATHER", applicantFields, applicantDob, formatter,
-					registrationStatusDto, description, isParentNINFoundInMosip);
+					registrationStatusDto, description, parentFoundDTO);
 	    }
 
 	    if (isParentInfoValid == false && motherNIN != null) {
 	        isParentInfoValid = validateParentInfo(motherNIN, "MOTHER", applicantFields, applicantDob, formatter,
-					registrationStatusDto, description, isParentNINFoundInMosip);
+					registrationStatusDto, description, parentFoundDTO);
 	    }
-		if (isParentNINFoundInMosip == false && isParentInfoValid == false) {
+		if (parentFoundDTO.isParentNINFoundInMosip() == false && isParentInfoValid == false) {
 			boolean isOnDemandValid = validateOnDemandMigration(registrationStatusDto, motherNIN, fatherNIN);
 			if (isOnDemandValid == true) {
 				registrationStatusDto.setLatestTransactionStatusCode(
@@ -418,7 +420,7 @@ public class CitizenshipVerificationProcessor {
 
 	private boolean validateParentInfo(String parentNin, String parentType, Map<String, String> applicantFields,
 			LocalDate applicantDob, DateTimeFormatter formatter, InternalRegistrationStatusDto registrationStatusDto,
-			LogDescription description, boolean isParentNINFoundInMosip) {
+			LogDescription description, ParentFoundDTO parentFoundDTO) {
 
 		regProcLogger.info("Citizenship verification proceed: Validating parent");
 		if (parentNin == null) {
@@ -426,9 +428,8 @@ public class CitizenshipVerificationProcessor {
 		}
 
 		try {
-			
-			JSONObject parentInfoJson = utility.getIdentityJSONObjectByHandle(parentNin);
 
+			JSONObject parentInfoJson = utility.getIdentityJSONObjectByHandle(parentNin);
 			if (parentInfoJson == null) {
 				logAndSetStatusError(registrationStatusDto, parentType + "'s NIN not found in repo data.",
 						StatusUtil.CITIZENSHIP_VERIFICATION_UIN_NOT_FOUND.getCode(),
@@ -438,7 +439,7 @@ public class CitizenshipVerificationProcessor {
 				return false;
 
 			}
-			isParentNINFoundInMosip = true;
+			parentFoundDTO.setParentNINFoundInMosip(true);
 			if (ninUsageService.isNinUsedMorethanNtimes(parentNin, parentType)) {
 				logAndSetStatusError(registrationStatusDto, parentType + "'s NIN is used more than N times.",
 						StatusUtil.CITIZENSHIP_VERIFICATION_NIN_USAGE_EXCEEDED.getCode(),
@@ -699,6 +700,13 @@ public class CitizenshipVerificationProcessor {
 							StatusUtil.CITIZENSHIP_VERIFICATION_PACKET_ONHOLD.getMessage());
 					throw new PacketOnHoldException(StatusUtil.CITIZENSHIP_VERIFICATION_PACKET_ONHOLD.getCode(),
 							StatusUtil.CITIZENSHIP_VERIFICATION_PACKET_ONHOLD.getMessage());
+				} else {
+					logAndSetStatusError(registrationStatusDto,
+							StatusUtil.CITIZENSHIP_VERIFICATION_ONDEMAND_MIGRATION_FAILED.getMessage(),
+							StatusUtil.CITIZENSHIP_VERIFICATION_ONDEMAND_MIGRATION_FAILED.getCode(),
+							StatusUtil.CITIZENSHIP_VERIFICATION_ONDEMAND_MIGRATION_FAILED.getMessage(),
+							RegistrationStatusCode.FAILED.toString(), description,
+							applicantFields.get("registrationId"));
 				}
 			}
 			return isValidGuardian;

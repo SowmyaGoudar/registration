@@ -448,6 +448,7 @@ public class CitizenshipVerificationProcessor {
 				return false;
 			}
 
+
 			String parentDobStr = (String) parentInfoJson.get(MappingJsonConstants.APPLICANT_DATEOFBIRTH);
 			LocalDate parentOrGuardianDob = parseDate(parentDobStr, formatter);
 			regProcLogger.info("Parsed parent date of birth from string '" + parentDobStr + "' to LocalDate: "

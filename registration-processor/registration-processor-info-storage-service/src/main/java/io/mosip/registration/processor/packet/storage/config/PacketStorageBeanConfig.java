@@ -36,6 +36,7 @@ import io.mosip.registration.processor.packet.storage.utils.IdSchemaUtil;
 import io.mosip.registration.processor.packet.storage.utils.LegacyDataApiUtility;
 import io.mosip.registration.processor.packet.storage.utils.MigrationUtil;
 import io.mosip.registration.processor.packet.storage.utils.PacketManagerService;
+import io.mosip.registration.processor.packet.storage.utils.PasswordChangeUtility;
 import io.mosip.registration.processor.packet.storage.utils.PriorityBasedPacketManagerService;
 import io.mosip.registration.processor.packet.storage.utils.Utilities;
 
@@ -136,5 +137,10 @@ public class PacketStorageBeanConfig {
 	@Bean
 	public LegacyDataApiUtility getLegacyDataApiUtility() {
 		return new LegacyDataApiUtility();
+	}
+
+	@Bean
+	public PasswordChangeUtility getPasswordChangeUtility() {
+		return new PasswordChangeUtility();
 	}
 }

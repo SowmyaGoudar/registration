@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.mosip.registration.processor.status.entity.RegistrationStatusEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -20,9 +19,11 @@ import io.mosip.registration.processor.packet.storage.entity.IndividualDemograph
 import io.mosip.registration.processor.packet.storage.entity.QcuserRegistrationIdEntity;
 import io.mosip.registration.processor.packet.storage.entity.RegBioRefEntity;
 import io.mosip.registration.processor.packet.storage.entity.RegDemoDedupeListEntity;
+import io.mosip.registration.processor.packet.storage.entity.TransactionTypeEntity;
 import io.mosip.registration.processor.packet.storage.mapper.PacketInfoMapper;
 import io.mosip.registration.processor.packet.storage.repository.BasePacketRepository;
 import io.mosip.registration.processor.status.entity.BaseRegistrationEntity;
+import io.mosip.registration.processor.status.entity.RegistrationStatusEntity;
 import io.mosip.registration.processor.status.repositary.RegistrationRepositary;
 
 /**
@@ -54,6 +55,9 @@ public class PacketInfoDao {
 	/** The registration repositary. */
 	@Autowired
 	private RegistrationRepositary<BaseRegistrationEntity, String> registrationRepositary;
+
+	@Autowired
+	private BasePacketRepository<TransactionTypeEntity, String> transactionTypeRepositary;
 
 	/** The applicant info. */
 	private List<Object[]> applicantInfo = new ArrayList<>();
@@ -698,5 +702,9 @@ public class PacketInfoDao {
 			demographicInfoDtos.add(convertEntityToDemographicDto(entity));
 		}
 		return demographicInfoDtos;
+	}
+
+	public List<TransactionTypeEntity> getTransactionType(String code) {
+		return transactionTypeRepositary.getTransactionTypeByCode(code);
 	}
 }

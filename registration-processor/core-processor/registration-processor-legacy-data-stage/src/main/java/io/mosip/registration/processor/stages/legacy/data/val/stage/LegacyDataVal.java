@@ -289,7 +289,7 @@ public class LegacyDataVal {
 		byte[] createdDigestBytes = timestampForDigest.getBytes(StandardCharsets.UTF_8);
 		regProcLogger.info("timestamp  timestampForDigest timestampForRequest  registration id : {} {} {}", timestamp,
 				timestampForDigest, timestampForRequest);
-		byte[] passwordHashBytes = legacyDataApiUtility.hashPassword(false);
+		byte[] passwordHashBytes = legacyDataApiUtility.hashPassword();
 		String passwordDigest = legacyDataApiUtility.generateDigest(nonceBytes, createdDigestBytes, passwordHashBytes);
 		Envelope envelope = new Envelope();
 		// Header

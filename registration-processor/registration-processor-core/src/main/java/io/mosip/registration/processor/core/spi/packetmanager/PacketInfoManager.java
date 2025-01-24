@@ -8,7 +8,7 @@ import io.mosip.registration.processor.core.abstractverticle.MessageDTO;
 import io.mosip.registration.processor.core.code.DedupeSourceName;
 import io.mosip.registration.processor.core.constant.ProviderStageName;
 import io.mosip.registration.processor.core.exception.PacketDecryptionFailureException;
-import io.mosip.registration.processor.core.packet.dto.RegAbisRefDto;
+import io.mosip.registration.processor.core.packet.dto.TransactionTypeDto;
 import io.mosip.registration.processor.core.packet.dto.abis.AbisApplicationDto;
 import io.mosip.registration.processor.core.packet.dto.abis.AbisRequestDto;
 import io.mosip.registration.processor.core.packet.dto.abis.AbisResponseDetDto;
@@ -358,5 +358,8 @@ public interface PacketInfoManager<T, /** D, M, */
 	
 	public void saveRegLostUinDet(String regId, String workflowInstanceId, String latestRegId, String moduleId, String moduleName);
 
+	public List<TransactionTypeDto> getTransactionType(String Code);
+
+	public void saveTransactionType(TransactionTypeDto transactionTypeDto, String moduleId, String moduleName);
 
 }

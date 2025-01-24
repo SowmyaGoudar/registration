@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,6 +38,7 @@ import io.mosip.registration.processor.core.exception.util.PlatformErrorMessages
 import io.mosip.registration.processor.core.logger.LogDescription;
 import io.mosip.registration.processor.core.logger.RegProcessorLogger;
 import io.mosip.registration.processor.core.packet.dto.Identity;
+import io.mosip.registration.processor.core.packet.dto.TransactionTypeDto;
 import io.mosip.registration.processor.core.packet.dto.abis.AbisApplicationDto;
 import io.mosip.registration.processor.core.packet.dto.abis.AbisRequestDto;
 import io.mosip.registration.processor.core.packet.dto.abis.AbisResponseDetDto;
@@ -61,6 +61,7 @@ import io.mosip.registration.processor.packet.storage.entity.RegBioRefEntity;
 import io.mosip.registration.processor.packet.storage.entity.RegDemoDedupeListEntity;
 import io.mosip.registration.processor.packet.storage.entity.RegLostUinDetEntity;
 import io.mosip.registration.processor.packet.storage.entity.RegLostUinDetPKEntity;
+import io.mosip.registration.processor.packet.storage.entity.TransactionTypeEntity;
 import io.mosip.registration.processor.packet.storage.exception.MappingJsonException;
 import io.mosip.registration.processor.packet.storage.exception.ParsingException;
 import io.mosip.registration.processor.packet.storage.exception.TablenotAccessibleException;
@@ -119,6 +120,9 @@ public class PacketInfoManagerImpl implements PacketInfoManager<Identity, Applic
 
 	@Autowired
 	private BasePacketRepository<RegLostUinDetEntity, String> regLostUinDetRepository;
+
+	@Autowired
+	private BasePacketRepository<TransactionTypeEntity, String> transactionTypeRepositary;
 
 	/** The core audit request builder. */
 	@Autowired
@@ -1013,5 +1017,50 @@ public class PacketInfoManagerImpl implements PacketInfoManager<Identity, Applic
 		return PacketInfoMapper.convertRegBioRefEntityListToDto(regBioRefList);
 	}
 
+	@Override
+	public List<TransactionTypeDto> getTransactionType(String Code) {
+		List<TransactionTypeEntity> transactionTypeEntityList =packetInfoDao.getTransactionType(Code);
+		return PacketInfoMapper.convertTransactionTypeEntityListToDto(transactionTypeEntityList);
+
+	}
+
+	@Override
+	public void saveTransactionType(TransactionTypeDto transactionTypeDto, String moduleId, String moduleName) {
+		boolean isTransactionSuccessful = false;
+		LogDescription description = new LogDescription();
+		String code = transactionTypeDto.getCode();
+		try {
+			if (code != null) {
+				regProcLogger.debug(LoggerFileConstant.SESSIONID.toString(), LoggerFileConstant.USERID.toString(),
+						code, "PacketInfoManagerImpl::saveTransactionType()::entry");
+
+				TransactionTypeEntity transactionTypeEntity = PacketInfoMapper
+						.convertTransactionTypeDtoToEntity(transactionTypeDto);
+				transactionTypeRepositary.save(transactionTypeEntity);
+				isTransactionSuccessful = true;
+				description.setMessage("Transaction type data updated successfully");
+			}
+		} catch (DataAccessLayerException e) {
+			description.setMessage("DataAccessLayerException while saving the ABIS data" + "::" + e.getMessage());
+			regProcLogger.error(LoggerFileConstant.SESSIONID.toString(), LoggerFileConstant.REGISTRATIONID.toString(),
+					"", e.getMessage() + ExceptionUtils.getStackTrace(e));
+			throw new UnableToInsertData(PlatformErrorMessages.RPR_PIS_UNABLE_TO_INSERT_DATA.getMessage() + code, e);
+		} finally {
+
+			String eventId = isTransactionSuccessful ? EventId.RPR_407.toString() : EventId.RPR_405.toString();
+			String eventName = eventId.equalsIgnoreCase(EventId.RPR_407.toString()) ? EventName.ADD.toString()
+					: EventName.EXCEPTION.toString();
+			String eventType = eventId.equalsIgnoreCase(EventId.RPR_407.toString()) ? EventType.BUSINESS.toString()
+					: EventType.SYSTEM.toString();
+
+			auditLogRequestBuilder.createAuditRequestBuilder(description.getMessage(), eventId, eventName, eventType,
+					moduleId, moduleName, AuditLogConstant.NO_ID.toString());
+
+		}
+
+		regProcLogger.debug(LoggerFileConstant.SESSIONID.toString(), LoggerFileConstant.USERID.toString(), code,
+				"PacketInfoManagerImpl::saveAbisRef()::exit");
+
+	}
 
 }

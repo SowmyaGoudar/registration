@@ -154,7 +154,7 @@ public class MigrationUtil {
 		String timestampForRequest = timestamp;
 		byte[] createdDigestBytes = timestampForDigest.getBytes(StandardCharsets.UTF_8);
 
-		byte[] passwordHashBytes = legacyDataApiUtility.hashPassword(false);
+		byte[] passwordHashBytes = legacyDataApiUtility.hashPassword();
 		String passwordDigest = legacyDataApiUtility.generateDigest(nonceBytes, createdDigestBytes, passwordHashBytes);
 		GetPersonEnvelope envelope = new GetPersonEnvelope();
 		// Header

@@ -34,6 +34,13 @@ public class PasswordChangeScheduler {
 		regProcLogger.info("Initialized with interval of " + days + " days");
 		if (lastExecuted == null) {
 			this.lastExecuted = LocalDate.now().minusDays(days);
+			try{
+				regProcLogger.info("PasswordChange scheduler started in postconstructor");
+				passwordChangeUtility.updatePassword();
+				regProcLogger.info("PasswordChange scheduler ended in postconstructor");
+			} catch (Exception e) {
+				regProcLogger.error("Error while processing password change scheduler ", e);
+			}
 		}
 		regProcLogger.info("Last executed date: " + lastExecuted);
 	}

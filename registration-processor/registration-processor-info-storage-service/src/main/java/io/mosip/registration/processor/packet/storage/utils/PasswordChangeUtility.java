@@ -89,7 +89,6 @@ public class PasswordChangeUtility {
 			TransactionTypeDto transactionTypeDto = transactionTypeDtoList.get(0);
 			String oldPassword = transactionTypeDto.getDescription();
 			String newPassword = generatePassword();
-			System.out.println("newPassword-------------" + newPassword);
 			boolean isChanged = changePassword(newPassword, oldPassword);
 			if (isChanged) {
 				transactionTypeDto.setDescription(newPassword);
@@ -156,7 +155,7 @@ public class PasswordChangeUtility {
 
 	private ChangePasswordEnvelope createChangePasswordRequest(String encryptedPassword, String oldPassword)
 			throws NoSuchAlgorithmException, UnsupportedEncodingException {
-		// TODO get password from DB
+
 		byte[] nonceBytes = legacyDataApiUtility.generateNonce();
 		String nonce = CryptoUtil.encodeToPlainBase64(nonceBytes);
 
@@ -257,9 +256,7 @@ public class PasswordChangeUtility {
 	}
 
 	private RSAPublicKey loadPublicKeyFromCertificate(String certificate) throws CertificateException {
-		// Read the certificate
-		// FileInputStream fis = new
-		// FileInputStream("E:\\migrationregproc\\niragoug.crt");
+
 		InputStream inputStream = new ByteArrayInputStream(certificate.getBytes());
 		// Get the CertificateFactory instance
 		CertificateFactory certFactory = CertificateFactory.getInstance("X.509");

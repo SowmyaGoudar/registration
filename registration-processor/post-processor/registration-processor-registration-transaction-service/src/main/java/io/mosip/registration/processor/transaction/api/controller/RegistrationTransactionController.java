@@ -65,7 +65,7 @@ public class RegistrationTransactionController {
 	
 	@Autowired
 	ObjectMapper objMp;
-	
+
 	private static final String INVALIDTOKENMESSAGE = "Authorization Token Not Available In The Header";
 	private static final String REG_TRANSACTION_SERVICE_ID = "mosip.registration.processor.registration.transaction.id";
 	private static final String REG_TRANSACTION_APPLICATION_VERSION = "mosip.registration.processor.transaction.version";

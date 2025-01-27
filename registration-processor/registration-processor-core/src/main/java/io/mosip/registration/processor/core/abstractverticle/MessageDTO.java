@@ -41,6 +41,8 @@ public class MessageDTO implements Serializable {
 	private int iteration;
 
 	private String workflowInstanceId;
+	
+	private Map<String, String> notificationAttributes;
 
 	/**
 	 * Instantiates a new message DTO.
@@ -213,6 +215,14 @@ public class MessageDTO implements Serializable {
 
 	public void setWorkflowInstanceId(String workflowInstanceId) {
 		this.workflowInstanceId = workflowInstanceId;
+	}
+	
+	public Map<String, String> getNotificationAttributes() {
+		return notificationAttributes;
+	}
+
+	public void setNotificationAttributes(Map<String, String> notificationAttributes) {
+		this.notificationAttributes = notificationAttributes;
 	}
 
 	@Override

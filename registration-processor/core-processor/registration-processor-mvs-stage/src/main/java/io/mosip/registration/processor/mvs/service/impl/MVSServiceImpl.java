@@ -710,6 +710,10 @@ public class MVSServiceImpl implements MVSService {
 			description.setCode(PlatformErrorMessages.RPR_MVS_REJECTED.getCode());
 			messageDTO.setIsValid(Boolean.FALSE);
 			messageDTO.setInternalError(Boolean.FALSE);
+			
+			Map<String, String> attributes = new HashMap<>();
+			attributes.put("rejectionComment", responseDTO.getComment());
+			messageDTO.setNotificationAttributes(attributes);
 		}
 
 		return isTransactionSuccessful;

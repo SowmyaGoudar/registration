@@ -90,6 +90,7 @@ public class NotificationServiceImpl implements NotificationService {
 	private static final String UIN_UPDATE=NOTIFICATION_TEMPLATE_CODE+"uin.update.";
 	private static final String DUPLICATE_UIN=NOTIFICATION_TEMPLATE_CODE+"duplicate.uin.";
 	private static final String TECHNICAL_ISSUE=NOTIFICATION_TEMPLATE_CODE+"technical.issue.";
+	private static final String MVS_PACKET_REJECTED=NOTIFICATION_TEMPLATE_CODE+"mvs.packet.rejected.";
 	private static final String PAUSED_FOR_ADDITIONAL_INFO=NOTIFICATION_TEMPLATE_CODE+"paused.for.additional.info.";
 	private static final String UIN_RENEWAL = NOTIFICATION_TEMPLATE_CODE + "uin.renewal.";
 
@@ -198,6 +199,11 @@ public class NotificationServiceImpl implements NotificationService {
 				}
 
 				Map<String, Object> attributes = new HashMap<>();
+				
+				if (object.getNotificationAttributes() != null && !object.getNotificationAttributes().isEmpty()) {
+					attributes.putAll(object.getNotificationAttributes());
+				}
+				
 				String[] ccEMailList = null;
 
 				if (isNotificationTypesEmpty()) {
@@ -505,6 +511,12 @@ public class NotificationServiceImpl implements NotificationService {
 			messageSenderDto.setEmailTemplateCode(env.getProperty(TECHNICAL_ISSUE+EMAIL));
 			messageSenderDto.setIdType(IdType.RID);
 			messageSenderDto.setSubjectCode(env.getProperty(TECHNICAL_ISSUE+SUB));
+			break;
+		case MVS_PACKET_REJECTED:
+			messageSenderDto.setSmsTemplateCode(env.getProperty(MVS_PACKET_REJECTED+SMS));
+			messageSenderDto.setEmailTemplateCode(env.getProperty(MVS_PACKET_REJECTED+EMAIL));
+			messageSenderDto.setIdType(IdType.RID);
+			messageSenderDto.setSubjectCode(env.getProperty(MVS_PACKET_REJECTED+SUB));
 			break;
 		default:
 			break;

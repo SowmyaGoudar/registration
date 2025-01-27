@@ -17,18 +17,21 @@ public class MVSResponseDTO {
 	private String responsetime ;//= LocalDateTime.now(ZoneId.of("UTC"));
 	
 	private String status;
+	
+	private String comment;
 
 	public MVSResponseDTO()
 	{
 		super();
 	}
 
-	public MVSResponseDTO(String id, String requestId, String responsetime, String regId, String status) {
+	public MVSResponseDTO(String id, String requestId, String responsetime, String regId, String status, String comment) {
 		super();
 		this.id = id;
 		this.requestId = requestId;
 		this.regId = regId;
 		this.status = status;
+		this.comment = comment;
 	//	this.analytics = analytics;
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 		String  dateTime= DateUtils.getCurrentDateTimeString();
@@ -76,4 +79,11 @@ public class MVSResponseDTO {
 		this.status = status;
 	}
 	
+	public String getComment() {
+		return comment;
+	}
+
+	public void setComment(String comment) {
+		this.comment = comment;
+	}
 }

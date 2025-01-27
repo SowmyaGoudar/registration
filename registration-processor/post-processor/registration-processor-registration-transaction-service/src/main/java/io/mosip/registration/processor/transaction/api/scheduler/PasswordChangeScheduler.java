@@ -7,7 +7,6 @@ import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +15,6 @@ import io.mosip.registration.processor.core.logger.RegProcessorLogger;
 import io.mosip.registration.processor.packet.storage.utils.PasswordChangeUtility;
 
 @Component
-@EnableScheduling
 public class PasswordChangeScheduler {
 
 	private static Logger regProcLogger = RegProcessorLogger.getLogger(PasswordChangeScheduler.class);
@@ -33,7 +31,7 @@ public class PasswordChangeScheduler {
 	public void init() {
 		regProcLogger.info("Initialized with interval of " + days + " days");
 		if (lastExecuted == null) {
-			this.lastExecuted = LocalDate.now().minusDays(days);
+			this.lastExecuted = LocalDate.now();
 			try{
 				regProcLogger.info("PasswordChange scheduler started in postconstructor");
 				passwordChangeUtility.updatePassword();

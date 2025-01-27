@@ -8,7 +8,7 @@
 		<version>1.2.0.1</version>
 	</parent>
 	<artifactId>registration-processor-registration-transaction-service</artifactId>
-	 <version>1.2.0.1</version>
+	 <version>1.2.0.1-SNAPSHOT</version>
 	<name>registration-processor-registration-transaction-service</name>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -72,6 +72,16 @@
 			<groupId>io.mosip.registrationprocessor</groupId>
 			<artifactId>registration-processor-info-storage-service</artifactId>
 			<version>${packet.info.storage.service.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>io.springfox</groupId>
+					<artifactId>springfox-swagger-ui</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>io.springfox</groupId>
+					<artifactId>springfox-swagger2</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 	</dependencies>
 	<build>

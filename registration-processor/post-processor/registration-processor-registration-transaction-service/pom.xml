@@ -8,7 +8,7 @@
 		<version>1.2.0.1</version>
 	</parent>
 	<artifactId>registration-processor-registration-transaction-service</artifactId>
-	 <version>1.2.0.1-SNAPSHOT</version>
+	 <version>1.2.0.1</version>
 	<name>registration-processor-registration-transaction-service</name>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -81,6 +81,12 @@
 					<groupId>io.springfox</groupId>
 					<artifactId>springfox-swagger2</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>io.mosip.registrationprocessor</groupId>
+					<artifactId>
+						registration-processor-registration-status-service-impl
+					</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 	</dependencies>
@@ -91,6 +97,7 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<version>${spring.boot.version}</version>
 				<configuration>
+				    <mainClass>io.mosip.registration.processor.transaction.api.RegistrationTransactionServiceApplication</mainClass>
 					<executable>true</executable>
 					<layout>ZIP</layout>
 				</configuration>
@@ -123,6 +130,7 @@
 						<artifactId>spring-boot-maven-plugin</artifactId>
 						<version>${spring.boot.version}</version>
 						<configuration>
+						 <mainClass>io.mosip.registration.processor.transaction.api.RegistrationTransactionServiceApplication</mainClass>
 							<executable>true</executable>
 							<layout>ZIP</layout>
 						</configuration>

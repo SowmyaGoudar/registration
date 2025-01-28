@@ -87,14 +87,6 @@
 						registration-processor-registration-status-service-impl
 					</artifactId>
 				</exclusion>
-				<exclusion>
-					<groupId>io.mosip.kernel</groupId>
-					<artifactId>kernel-keymanager-service</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>io.mosip.kernel</groupId>
-					<artifactId>kernel-biosdk-provider</artifactId>
-				</exclusion>
 			</exclusions>
 		</dependency>
 	</dependencies>
@@ -105,7 +97,6 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<version>${spring.boot.version}</version>
 				<configuration>
-				    <mainClass>io.mosip.registration.processor.transaction.api.RegistrationTransactionServiceApplication</mainClass>
 					<executable>true</executable>
 					<layout>ZIP</layout>
 				</configuration>
@@ -138,7 +129,6 @@
 						<artifactId>spring-boot-maven-plugin</artifactId>
 						<version>${spring.boot.version}</version>
 						<configuration>
-						 <mainClass>io.mosip.registration.processor.transaction.api.RegistrationTransactionServiceApplication</mainClass>
 							<executable>true</executable>
 							<layout>ZIP</layout>
 						</configuration>

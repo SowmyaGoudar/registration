@@ -61,7 +61,6 @@ import io.mosip.registration.processor.core.util.JsonUtil;
 import io.mosip.registration.processor.core.util.RegistrationExceptionMapperUtil;
 import io.mosip.registration.processor.packet.storage.dto.Document;
 import io.mosip.registration.processor.packet.storage.utils.FingrePrintConvertor;
-import io.mosip.registration.processor.packet.storage.utils.IdSchemaUtil;
 import io.mosip.registration.processor.packet.storage.utils.LegacyDataApiUtility;
 import io.mosip.registration.processor.packet.storage.utils.PriorityBasedPacketManagerService;
 import io.mosip.registration.processor.packet.storage.utils.Utilities;
@@ -121,17 +120,10 @@ public class LegacyDataVal {
 	private SyncRegistrationService<SyncResponseDto, SyncRegistrationDto> syncRegistrationService;
 
 	@Autowired
-	private IdSchemaUtil idSchemaUtil;
-
-	@Autowired
 	private ObjectMapper objectMapper;
 
 	@Value("${mosip.regproc.legacydata.validator.tpi.username}")
 	private String username;
-
-	@Value("${mosip.regproc.legacydata.validator.tpi.password}")
-	private String password;
-
 
 	public void validate(String registrationId, InternalRegistrationStatusDto registrationStatusDto,
 			LogDescription description, MessageDTO object)
@@ -151,7 +143,7 @@ public class LegacyDataVal {
 					RequestWrapper<MigrationRequestDto> requestWrapper = new RequestWrapper();
 					requestWrapper.setRequest(migrationRequestDto);
 					ResponseWrapper responseWrapper = (ResponseWrapper<?>) restApi
-							.putApi(ApiName.MIGARTION_PACKET_CREATION, null, "", "", requestWrapper,
+							.postApi(ApiName.MIGARTION_PACKET_CREATION, "", "", requestWrapper,
 									ResponseWrapper.class,
 									null);
 					regProcLogger.info("Response from migration api : {}{}", registrationId,
@@ -247,7 +239,7 @@ public class LegacyDataVal {
 		String NIN = null;
 		Envelope requestEnvelope = createIdentifyPersonRequest(positionAndWsqMap);
 		String request = marshalToXml(requestEnvelope);
-		regProcLogger.info("Request to legacy system : {}", request);
+		regProcLogger.debug("Request to legacy system : {}", request);
 		String response = (String) restApi.postApi(ApiName.LEGACYAPI, "", "", request, String.class,
 				MediaType.TEXT_XML);
 		regProcLogger.info("Response from legacy system : {}{}", registrationId,
@@ -297,7 +289,7 @@ public class LegacyDataVal {
 		byte[] createdDigestBytes = timestampForDigest.getBytes(StandardCharsets.UTF_8);
 		regProcLogger.info("timestamp  timestampForDigest timestampForRequest  registration id : {} {} {}", timestamp,
 				timestampForDigest, timestampForRequest);
-		byte[] passwordHashBytes = legacyDataApiUtility.hashPassword(password);
+		byte[] passwordHashBytes = legacyDataApiUtility.hashPassword();
 		String passwordDigest = legacyDataApiUtility.generateDigest(nonceBytes, createdDigestBytes, passwordHashBytes);
 		Envelope envelope = new Envelope();
 		// Header

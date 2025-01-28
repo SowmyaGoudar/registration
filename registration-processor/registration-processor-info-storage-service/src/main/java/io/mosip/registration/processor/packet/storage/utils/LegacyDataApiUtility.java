@@ -7,15 +7,24 @@ import java.security.SecureRandom;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.mosip.kernel.core.util.CryptoUtil;
+import io.mosip.registration.processor.core.packet.dto.Identity;
+import io.mosip.registration.processor.core.packet.dto.TransactionTypeDto;
+import io.mosip.registration.processor.core.spi.packetmanager.PacketInfoManager;
+import io.mosip.registration.processor.packet.storage.dto.ApplicantInfoDto;
 import lombok.Data;
 
 @Component
 @Data
 public class LegacyDataApiUtility {
+
+	@Autowired
+	private PacketInfoManager<Identity, ApplicantInfoDto> packetInfoManager;
 
 	public byte[] generateNonce() {
 		SecureRandom random = new SecureRandom();
@@ -53,8 +62,10 @@ public class LegacyDataApiUtility {
 		return truncatedTimestamp + "+0300";
 	}
 
-	public byte[] hashPassword(String password) throws NoSuchAlgorithmException, UnsupportedEncodingException {
-		MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
-		return sha1.digest(password.getBytes("UTF-8"));
+	public byte[] hashPassword() throws NoSuchAlgorithmException, UnsupportedEncodingException {
+		List<TransactionTypeDto> transactionTypeDtoList = packetInfoManager.getTransactionType("LEGACY");
+		String password = transactionTypeDtoList.get(0).getDescription();
+			MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
+			return sha1.digest(password.getBytes("UTF-8"));
 	}
 }

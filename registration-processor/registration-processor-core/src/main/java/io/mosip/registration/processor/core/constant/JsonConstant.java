@@ -251,6 +251,8 @@ public class JsonConstant {
 	public static final String ADDITIONAL_INFO_PROCESS = "ADDITIONAL_INFO_PROCESS";
 
 	public static final String WORKFLOW_INSTANCE_ID = "workflowInstanceId";
+	
+	public static final String NOTIFICATION_ATTRIBUTES = "notificationAttributes";
 
 	/** The Constant for registration client version label. */
 	public static final String REGCLIENTVERSION = "Registration Client Version Number";

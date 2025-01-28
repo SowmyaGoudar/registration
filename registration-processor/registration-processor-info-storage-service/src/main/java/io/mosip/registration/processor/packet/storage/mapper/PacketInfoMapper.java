@@ -17,7 +17,7 @@ import io.mosip.kernel.core.util.HMACUtils2;
 import io.mosip.registration.processor.core.constant.LoggerFileConstant;
 import io.mosip.registration.processor.core.exception.util.PlatformErrorMessages;
 import io.mosip.registration.processor.core.logger.RegProcessorLogger;
-import io.mosip.registration.processor.core.packet.dto.RegAbisRefDto;
+import io.mosip.registration.processor.core.packet.dto.TransactionTypeDto;
 import io.mosip.registration.processor.core.packet.dto.abis.AbisApplicationDto;
 import io.mosip.registration.processor.core.packet.dto.abis.AbisRequestDto;
 import io.mosip.registration.processor.core.packet.dto.abis.AbisResponseDetDto;
@@ -39,6 +39,8 @@ import io.mosip.registration.processor.packet.storage.entity.RegBioRefEntity;
 import io.mosip.registration.processor.packet.storage.entity.RegBioRefPKEntity;
 import io.mosip.registration.processor.packet.storage.entity.RegDemoDedupeListEntity;
 import io.mosip.registration.processor.packet.storage.entity.RegDemoDedupeListPKEntity;
+import io.mosip.registration.processor.packet.storage.entity.TransactionTypeEntity;
+import io.mosip.registration.processor.packet.storage.entity.TransactionTypePKEntity;
 import io.mosip.registration.processor.packet.storage.exception.DateParseException;
 
 /**
@@ -493,4 +495,43 @@ public class PacketInfoMapper {
 		return abisResponseDetDtoList;
 	}
 
+	public static List<TransactionTypeDto> convertTransactionTypeEntityListToDto(
+			List<TransactionTypeEntity> transactionTypeEntityList) {
+		List<TransactionTypeDto> transactionTypeDtoList = new ArrayList<>();
+		for (TransactionTypeEntity entity : transactionTypeEntityList) {
+			transactionTypeDtoList.add(convertTransactionTypeEntityToDto(entity));
+		}
+		return transactionTypeDtoList;
+	}
+
+	private static TransactionTypeDto convertTransactionTypeEntityToDto(TransactionTypeEntity entity) {
+		TransactionTypeDto transactionTypeDto = new TransactionTypeDto();
+		transactionTypeDto.setCode(entity.getId().getCode());
+		transactionTypeDto.setDescription(entity.getDescription());
+		transactionTypeDto.setLangCode(entity.getId().getLangCode());
+		transactionTypeDto.setIsActive(entity.getIsActive());
+		transactionTypeDto.setIsDeleted(entity.getIsDeleted());
+		transactionTypeDto.setCrBy(entity.getCrBy());
+		transactionTypeDto.setCrDtimes(entity.getCrDtimes());
+		transactionTypeDto.setUpdBy(entity.getUpdBy());
+		transactionTypeDto.setUpdDtimes(entity.getUpdDtimes());
+		transactionTypeDto.setDelDtimes(entity.getDelDtimes());
+
+		return transactionTypeDto;
+	}
+
+	public static TransactionTypeEntity convertTransactionTypeDtoToEntity(TransactionTypeDto transactionTypeDto) {
+		TransactionTypePKEntity trnPKEntity = new TransactionTypePKEntity();
+		trnPKEntity.setCode(transactionTypeDto.getCode());
+		trnPKEntity.setLangCode(transactionTypeDto.getLangCode());
+		TransactionTypeEntity entity = new TransactionTypeEntity();
+		entity.setId(trnPKEntity);
+		entity.setDescription(transactionTypeDto.getDescription());
+		entity.setCrBy(transactionTypeDto.getCrBy());
+		entity.setIsActive(transactionTypeDto.getIsActive());
+		entity.setUpdBy(transactionTypeDto.getUpdBy());
+		entity.setUpdDtimes(DateUtils.getUTCCurrentDateTime());
+		entity.setCrDtimes(transactionTypeDto.getCrDtimes());
+		return entity;
+	}
 }

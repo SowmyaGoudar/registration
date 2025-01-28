@@ -17,6 +17,7 @@ public enum  ProviderStageName {
     BIO_AUTH("bioauth"),
     MANUAL_ADJUDICATION("manualadjudication"),
     VERIFICATION("verification"),
+    MVS("MVS"),
     UIN_GENERATOR("uingenerator"),
     WORKFLOW_MANAGER("workflowmanager"),
     MESSAGE_SENDER("messagesender"),

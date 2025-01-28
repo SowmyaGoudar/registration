@@ -1,5 +1,7 @@
 package io.mosip.registration.processor.core.workflow.dto;
 
+import java.util.Map;
+
 import lombok.Data;
 
 @Data
@@ -19,4 +21,5 @@ public class WorkflowCompletedEventDTO {
 	private String resultCode;
 	private String workflowType;
 	private String errorCode;
+	private Map<String, String> notificationAttributes;
 }

@@ -2,7 +2,6 @@ package io.mosip.registration.processor.packet.storage.repository;
 
 import java.util.List;
 
-import io.mosip.registration.processor.packet.storage.entity.VerificationEntity;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,6 +16,8 @@ import io.mosip.registration.processor.packet.storage.entity.BasePacketEntity;
 import io.mosip.registration.processor.packet.storage.entity.ManualVerificationEntity;
 import io.mosip.registration.processor.packet.storage.entity.RegBioRefEntity;
 import io.mosip.registration.processor.packet.storage.entity.RegDemoDedupeListEntity;
+import io.mosip.registration.processor.packet.storage.entity.TransactionTypeEntity;
+import io.mosip.registration.processor.packet.storage.entity.VerificationEntity;
 
 /**
  * The Interface BasePacketRepository.
@@ -481,4 +482,8 @@ public interface BasePacketRepository<E extends BasePacketEntity<?>, T> extends 
 
 	@Query(value ="SELECT m FROM VerificationEntity m WHERE m.id.workflowInstanceId =:workflowInstanceId")
 	public List<VerificationEntity> getVerificationRecordByWorkflowInstanceId(@Param("workflowInstanceId") String workflowInstanceId);
+
+	@Query(value = "SELECT t FROM TransactionTypeEntity t WHERE t.id.code =:code")
+	public List<TransactionTypeEntity> getTransactionTypeByCode(@Param("code") String code);
+
 }

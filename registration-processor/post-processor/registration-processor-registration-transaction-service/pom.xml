@@ -68,6 +68,27 @@
 			<version>${spring.boot.version}</version>
 			<optional>true</optional>
 		</dependency>
+			<dependency>
+			<groupId>io.mosip.registrationprocessor</groupId>
+			<artifactId>registration-processor-info-storage-service</artifactId>
+			<version>${packet.info.storage.service.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>io.springfox</groupId>
+					<artifactId>springfox-swagger-ui</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>io.springfox</groupId>
+					<artifactId>springfox-swagger2</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>io.mosip.registrationprocessor</groupId>
+					<artifactId>
+						registration-processor-registration-status-service-impl
+					</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
@@ -76,6 +97,7 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<version>${spring.boot.version}</version>
 				<configuration>
+				    <mainClass>io.mosip.registration.processor.transaction.api.RegistrationTransactionServiceApplication</mainClass>
 					<executable>true</executable>
 					<layout>ZIP</layout>
 				</configuration>
@@ -108,6 +130,7 @@
 						<artifactId>spring-boot-maven-plugin</artifactId>
 						<version>${spring.boot.version}</version>
 						<configuration>
+						 <mainClass>io.mosip.registration.processor.transaction.api.RegistrationTransactionServiceApplication</mainClass>
 							<executable>true</executable>
 							<layout>ZIP</layout>
 						</configuration>

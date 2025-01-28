@@ -30,6 +30,8 @@ public enum RegistrationTransactionStatusCode {
 	PROCESSING,
 
 	/** The reprocess failed*/
-	REPROCESS_FAILED
+	REPROCESS_FAILED,
+
+	MERGED;
 	
 }

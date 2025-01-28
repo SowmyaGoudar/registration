@@ -4,11 +4,23 @@ package io.mosip.registration.processor.citizenship.verification.constants;
 public enum FamilyNINUsageLimitConstant {
 	FATHER(Relationship.FATHER, 20),
     MOTHER(Relationship.MOTHER, 20),
-    GRAND_MOTHER_ON_FATHERS_SIDE(Relationship.GRAND_MOTHER_ON_FATHERS_SIDE, 40),
-    BROTHER_OR_SISTER(Relationship.BROTHER_OR_SISTER, 20),
-    MATERNAL_UNCLE_OR_AUNT(Relationship.MATERNAL_UCLE_OR_AUNT, 20),
-    PATERNAL_UCLE_OR_AUNT(Relationship.PATERNAL_UCLE_OR_AUNT,20),
-    GRAND_FATHER_ON_FATHERS_SIDE(Relationship.GRAND_FATHER_ON_FATHERS_SIDE, 40);
+    
+    BROTHER(Relationship.BROTHER, 20),
+    SISTER(Relationship.SISTER, 20),
+    
+    MATERNAL_AUNT(Relationship.MATERNAL_AUNT, 20),
+    PATERNAL_AUNT(Relationship.PATERNAL_AUNT, 20),
+    MATERNAL_UNCLE(Relationship.MATERNAL_UNCLE, 20),
+    PATERNAL_UNCLE(Relationship.PATERNAL_UNCLE, 20),
+    
+	FIRST_COUSIN_FATHERS_SIDE (Relationship.FIRST_COUSIN_FATHERS_SIDE, 20),
+	FIRST_COUSIN_MOTHERS_SIDE(Relationship.FIRST_COUSIN_MOTHERS_SIDE, 20),
+    
+    GRAND_FATHER_ON_FATHERS_SIDE(Relationship.GRAND_FATHER_ON_FATHERS_SIDE, 40),
+    GRAND_FATHER_ON_MOTHERS_SIDE (Relationship.GRAND_FATHER_ON_MOTHERS_SIDE,40),
+    
+    GRAND_MOTHER_ON_FATHERS_SIDE(Relationship.GRAND_MOTHER_ON_FATHERS_SIDE, 20),
+    GRAND_MOTHER_ON_MOTHERS_SIDE(Relationship.GRAND_MOTHER_ON_MOTHERS_SIDE,20);
 
     private final Relationship  relation;
     private final int limit;

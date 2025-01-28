@@ -87,14 +87,6 @@
 						registration-processor-registration-status-service-impl
 					</artifactId>
 				</exclusion>
-				<exclusion>
-					<groupId>io.mosip.kernel</groupId>
-					<artifactId>kernel-keymanager-service</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>io.mosip.kernel</groupId>
-					<artifactId>kernel-biosdk-provider</artifactId>
-				</exclusion>
 			</exclusions>
 		</dependency>
 	</dependencies>

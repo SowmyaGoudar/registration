@@ -19,19 +19,26 @@ public class MVSResponseDTO {
 	private String status;
 	
 	private String comment;
+	
+	private String category;
+	
+	private String actionDate;
 
 	public MVSResponseDTO()
 	{
 		super();
 	}
 
-	public MVSResponseDTO(String id, String requestId, String responsetime, String regId, String status, String comment) {
+	public MVSResponseDTO(String id, String requestId, String responsetime, String regId, String status, String comment,
+			String category, String actionDate) {
 		super();
 		this.id = id;
 		this.requestId = requestId;
 		this.regId = regId;
 		this.status = status;
 		this.comment = comment;
+		this.category = category;
+		this.actionDate = actionDate;
 	//	this.analytics = analytics;
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 		String  dateTime= DateUtils.getCurrentDateTimeString();
@@ -85,5 +92,21 @@ public class MVSResponseDTO {
 
 	public void setComment(String comment) {
 		this.comment = comment;
+	}
+	
+	public String getCategory() {
+		return category;
+	}
+
+	public void setCategory(String category) {
+		this.category = category;
+	}
+	
+	public String getActionDate() {
+		return actionDate;
+	}
+
+	public void setActionDate(String actionDate) {
+		this.actionDate = actionDate;
 	}
 }

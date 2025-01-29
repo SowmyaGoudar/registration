@@ -654,6 +654,7 @@ public class MVSServiceImpl implements MVSService {
 		req.setService(registrationStatusDto.getRegistrationType());
 		req.setSource(messageDTO.getSource());
 		req.setRefId(refId);
+		req.setStatusComment(registrationStatusDto.getStatusComment());
 		
 		try {
 			req.setReferenceURL(getDataShareUrl(messageDTO.getRid(), registrationStatusDto.getRegistrationType(), req));
@@ -712,7 +713,10 @@ public class MVSServiceImpl implements MVSService {
 			messageDTO.setInternalError(Boolean.FALSE);
 			
 			Map<String, String> attributes = new HashMap<>();
-			attributes.put("rejectionComment", responseDTO.getComment());
+			attributes.put("APPLICATION_ID", responseDTO.getRegId());
+			attributes.put("MVS_REJ_DATE", responseDTO.getActionDate());
+			attributes.put("REJECTION_CATEGORY", responseDTO.getCategory());
+			attributes.put("REJECTION_COMMENT", responseDTO.getComment());
 			messageDTO.setNotificationAttributes(attributes);
 		}
 

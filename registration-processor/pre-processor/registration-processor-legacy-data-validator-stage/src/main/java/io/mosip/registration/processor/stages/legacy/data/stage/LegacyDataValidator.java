@@ -63,6 +63,7 @@ import io.mosip.registration.processor.packet.storage.dto.FieldResponseDto;
 import io.mosip.registration.processor.packet.storage.utils.FingrePrintConvertor;
 import io.mosip.registration.processor.packet.storage.utils.IdSchemaUtil;
 import io.mosip.registration.processor.packet.storage.utils.LegacyDataApiUtility;
+import io.mosip.registration.processor.packet.storage.utils.PacketManagerService;
 import io.mosip.registration.processor.packet.storage.utils.PriorityBasedPacketManagerService;
 import io.mosip.registration.processor.packet.storage.utils.Utilities;
 import io.mosip.registration.processor.stages.legacy.data.dto.Body;
@@ -99,7 +100,10 @@ public class LegacyDataValidator {
 	RegistrationExceptionMapperUtil registrationExceptionMapperUtil;
 
 	@Autowired
-	private PriorityBasedPacketManagerService packetManagerService;
+	private PriorityBasedPacketManagerService priorityBasedPacketManagerService;
+
+	@Autowired
+	private PacketManagerService packetManagerService;
 
 
 	@Autowired
@@ -137,7 +141,7 @@ public class LegacyDataValidator {
 
 		regProcLogger.debug("validate called for registrationId {}", registrationId);
 
-		String NIN =  packetManagerService.getFieldByMappingJsonKey(registrationId,
+		String NIN =  priorityBasedPacketManagerService.getFieldByMappingJsonKey(registrationId,
 				MappingJsonConstants.NIN, registrationStatusDto.getRegistrationType(),
 		ProviderStageName.LEGACY_DATA_VALIDATOR);
 
@@ -166,7 +170,7 @@ public class LegacyDataValidator {
 							JsonUtils.javaObjectToJsonString(responseWrapper.getResponse()),
 							MigrationResponse.class);
 					PacketDto packetDto = createOnDemandPacket(
-							migrationResponse, registrationStatusDto);
+							migrationResponse, registrationStatusDto, object.getTags());
 					if (packetDto != null) {
 						SyncRegistrationEntity syncRegistrationEntityForOndemand = createSyncAndRegistration(packetDto,
 								registrationStatusDto.getRegistrationStageName());
@@ -256,24 +260,25 @@ public class LegacyDataValidator {
 	}
 
 	private PacketDto createOnDemandPacket(MigrationResponse migrationResponse,
-			InternalRegistrationStatusDto registrationStatusDto) throws ApisResourceAccessException,
+			InternalRegistrationStatusDto registrationStatusDto, Map<String, String> tags)
+			throws ApisResourceAccessException,
 			PacketManagerException,
 			JsonProcessingException, IOException, NumberFormatException, JSONException {
 
 		String registrationId = registrationStatusDto.getRegistrationId();
 		String registrationType = registrationStatusDto.getRegistrationType();
 		regProcLogger.info("Getting details to create ondemand packet : {}", registrationId);
-		String schemaVersion = packetManagerService.getFieldByMappingJsonKey(registrationStatusDto.getRegistrationId(),
+		String schemaVersion = priorityBasedPacketManagerService.getFieldByMappingJsonKey(registrationStatusDto.getRegistrationId(),
 				MappingJsonConstants.IDSCHEMA_VERSION, registrationType, ProviderStageName.LEGACY_DATA_VALIDATOR);
 
 		Map<String, BiometricRecord> biometrics = getBiometrics(registrationId, registrationType);
-		List<FieldResponseDto> audits = packetManagerService.getAudits(registrationId, registrationType,
+		List<FieldResponseDto> audits = priorityBasedPacketManagerService.getAudits(registrationId, registrationType,
 				ProviderStageName.LEGACY_DATA_VALIDATOR);
 		List<Map<String, String>> auditList = new ArrayList<>();
 		for (FieldResponseDto dto : audits) {
 			auditList.add(dto.getFields());
 		}
-		Map<String, String> metaInfo = packetManagerService.getMetaInfo(registrationId, registrationType,
+		Map<String, String> metaInfo = priorityBasedPacketManagerService.getMetaInfo(registrationId, registrationType,
 				ProviderStageName.LEGACY_DATA_VALIDATOR);
 		regProcLogger.info("successfully got  details to create ondemand packet : {}", registrationId);
 		SyncRegistrationEntity regEntity = syncRegistrationService
@@ -304,6 +309,7 @@ public class LegacyDataValidator {
 			regProcLogger.info("Error while creating packet through to packet manager : {} {}", registrationId,
 					error.getMessage());
 		} else {
+			packetManagerService.addOrUpdateTags(migrationResponse.getRid(), tags);
 			regProcLogger.info("Successfully created packet through to packet manager : {}", registrationId);
 			return packetDto;
 		}
@@ -323,7 +329,7 @@ public class LegacyDataValidator {
 				MappingJsonConstants.VALUE);
 		List<String> modalities = new ArrayList<>();
 		modalities.add("Finger");
-		BiometricRecord biometricRecord = packetManagerService.getBiometrics(registrationId,
+		BiometricRecord biometricRecord = priorityBasedPacketManagerService.getBiometrics(registrationId,
 				individualBiometricsLabel,
 				modalities, registrationStatusDto.getRegistrationType(),
 				ProviderStageName.LEGACY_DATA_VALIDATOR);
@@ -455,7 +461,7 @@ public class LegacyDataValidator {
 		String individualBiometricsLabel = JsonUtil.getJSONValue(
 				JsonUtil.getJSONObject(regProcessorIdentityJson, MappingJsonConstants.INDIVIDUAL_BIOMETRICS),
 				MappingJsonConstants.VALUE);
-		BiometricRecord biometricRecord = packetManagerService.getBiometrics(registrationId, individualBiometricsLabel,
+		BiometricRecord biometricRecord = priorityBasedPacketManagerService.getBiometrics(registrationId, individualBiometricsLabel,
 				registrationType,
 					ProviderStageName.LEGACY_DATA_VALIDATOR);
 			if (biometricRecord != null) {

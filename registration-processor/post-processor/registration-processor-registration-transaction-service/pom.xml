@@ -97,7 +97,6 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<version>${spring.boot.version}</version>
 				<configuration>
-				    <mainClass>io.mosip.registration.processor.transaction.api.RegistrationTransactionServiceApplication</mainClass>
 					<executable>true</executable>
 					<layout>ZIP</layout>
 				</configuration>
@@ -130,7 +129,6 @@
 						<artifactId>spring-boot-maven-plugin</artifactId>
 						<version>${spring.boot.version}</version>
 						<configuration>
-						 <mainClass>io.mosip.registration.processor.transaction.api.RegistrationTransactionServiceApplication</mainClass>
 							<executable>true</executable>
 							<layout>ZIP</layout>
 						</configuration>

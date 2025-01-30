@@ -17,7 +17,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.io.IOUtils;
 import org.assertj.core.util.Lists;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,10 +28,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.powermock.api.mockito.PowerMockito;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -57,7 +56,6 @@ import io.mosip.registration.processor.core.packet.dto.applicantcategory.Applica
 import io.mosip.registration.processor.core.packet.dto.idjson.Document;
 import io.mosip.registration.processor.core.packet.dto.packetvalidator.PacketValidationDto;
 import io.mosip.registration.processor.core.spi.restclient.RegistrationProcessorRestClientService;
-import io.mosip.registration.processor.core.util.JsonUtil;
 import io.mosip.registration.processor.core.util.RegistrationExceptionMapperUtil;
 import io.mosip.registration.processor.packet.manager.idreposervice.IdRepoService;
 import io.mosip.registration.processor.packet.storage.dto.ValidatePacketResponse;
@@ -238,6 +236,7 @@ public class PacketValidatorImplTest {
 		Mockito.when(packetManagerService.getMetaInfo(anyString(), any(), any())).thenReturn(metamap);
 		Mockito.when(mapper.readValue(anyString(), any(Class.class)))
 				.thenReturn(new FieldValue(MappingJsonConstants.OFFICERBIOMETRICFILENAME, "officerBiometricFilename"));
+		ReflectionTestUtils.setField(PacketValidator, "isEnabled", true);
 	}
 
 

@@ -293,7 +293,12 @@ public class LegacyDataValidator {
 					idSchemaUtil.getDefaultFields(Double.valueOf(schemaVersion)), registrationType,
 					ProviderStageName.LEGACY_DATA_VALIDATOR);
 			Map<String, DocumentDto> packetDocuments = getAllDocumentsByRegId(registrationId, registrationType);
-			demographics.putAll(packetDemographics);
+			for (Map.Entry<String, String> entry : packetDemographics.entrySet()) {
+				// Check if the value is not null
+				if (entry.getValue() != null) {
+					demographics.put(entry.getKey(), entry.getValue());
+				}
+			}
 			documents.putAll(packetDocuments);
 		}
 		PacketDto packetDto = new PacketDto();

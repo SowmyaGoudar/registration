@@ -10,6 +10,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
@@ -76,6 +77,9 @@ public class PacketValidatorImpl implements PacketValidator {
 	@Autowired
 	private ApplicantDocumentValidation applicantDocumentValidation;
 
+	@Value("${mosip.regproc.packet.validator.validate-update-renewal-nin:false}")
+	private boolean isEnabled;
+
 	@Override
 	public boolean validate(String id, String process, PacketValidationDto packetValidationDto)
 			throws ApisResourceAccessException, RegistrationProcessorCheckedException, IOException,
@@ -108,10 +112,11 @@ public class PacketValidatorImpl implements PacketValidator {
 				return false;
 			}
 			
-			
+			if (isEnabled) {
 
 			if (process.equalsIgnoreCase(RegistrationType.UPDATE.toString())
-					|| process.equalsIgnoreCase(RegistrationType.RES_UPDATE.toString())) {
+					|| process.equalsIgnoreCase(RegistrationType.RES_UPDATE.toString())
+					|| process.equalsIgnoreCase(RegistrationType.RENEWAL.toString())) {
 				uin = utility.getUINByHandle(id, process, ProviderStageName.PACKET_VALIDATOR);
 				if (uin == null) {
 					regProcLogger.error(LoggerFileConstant.SESSIONID.toString(),
@@ -136,18 +141,10 @@ public class PacketValidatorImpl implements PacketValidator {
 							PlatformErrorMessages.RPR_PVM_UPDATE_DEACTIVATED.getCode(), "UIN is Deactivated");
 				}
 			}
-
-			// document validation
-			if (!applicantDocumentValidation(id, process, packetValidationDto)) {
-				regProcLogger.error(LoggerFileConstant.SESSIONID.toString(),
-						LoggerFileConstant.REGISTRATIONID.toString(), id,
-						"ERROR =======>" + StatusUtil.APPLICANT_DOCUMENT_VALIDATION_FAILED.getMessage());
-				return false;
-			}
-
 			// check if uin is in idrepisitory
 			if (RegistrationType.UPDATE.name().equalsIgnoreCase(process)
-					|| RegistrationType.RES_UPDATE.name().equalsIgnoreCase(process)) {
+					|| RegistrationType.RES_UPDATE.name().equalsIgnoreCase(process)
+					|| process.equalsIgnoreCase(RegistrationType.RENEWAL.toString())) {
 
 				if (!utility.uinPresentInIdRepo(String.valueOf(uin))) {
 					regProcLogger.error(LoggerFileConstant.SESSIONID.toString(),
@@ -158,6 +155,16 @@ public class PacketValidatorImpl implements PacketValidator {
 					return false;
 				}
 			}
+		}
+			// document validation
+			if (!applicantDocumentValidation(id, process, packetValidationDto)) {
+				regProcLogger.error(LoggerFileConstant.SESSIONID.toString(),
+						LoggerFileConstant.REGISTRATIONID.toString(), id,
+						"ERROR =======>" + StatusUtil.APPLICANT_DOCUMENT_VALIDATION_FAILED.getMessage());
+				return false;
+			}
+
+
 
 			if (!biometricsXSDValidation(id, process, packetValidationDto)) {
 				return false;

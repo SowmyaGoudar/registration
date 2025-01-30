@@ -654,7 +654,10 @@ public class MVSServiceImpl implements MVSService {
 		req.setService(registrationStatusDto.getRegistrationType());
 		req.setSource(messageDTO.getSource());
 		req.setRefId(refId);
-		req.setStatusComment(registrationStatusDto.getStatusComment());
+		
+		if ("CITIZENSHIP_VERIFICATION".equals(registrationStatusDto.getRegistrationStageName())) {
+			req.setStatusComment(registrationStatusDto.getStatusComment());
+		}
 		
 		try {
 			req.setReferenceURL(getDataShareUrl(messageDTO.getRid(), registrationStatusDto.getRegistrationType(), req));

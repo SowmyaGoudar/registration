@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -54,11 +55,13 @@ import io.mosip.registration.processor.core.logger.LogDescription;
 import io.mosip.registration.processor.core.logger.RegProcessorLogger;
 import io.mosip.registration.processor.core.migration.dto.MigrationRequestDto;
 import io.mosip.registration.processor.core.migration.dto.MigrationResponse;
+import io.mosip.registration.processor.core.packet.dto.DocumentDto;
 import io.mosip.registration.processor.core.packet.dto.PacketDto;
 import io.mosip.registration.processor.core.spi.restclient.RegistrationProcessorRestClientService;
 import io.mosip.registration.processor.core.status.util.StatusUtil;
 import io.mosip.registration.processor.core.util.JsonUtil;
 import io.mosip.registration.processor.core.util.RegistrationExceptionMapperUtil;
+import io.mosip.registration.processor.packet.storage.dto.Document;
 import io.mosip.registration.processor.packet.storage.dto.FieldResponseDto;
 import io.mosip.registration.processor.packet.storage.utils.FingrePrintConvertor;
 import io.mosip.registration.processor.packet.storage.utils.IdSchemaUtil;
@@ -283,6 +286,16 @@ public class LegacyDataValidator {
 		regProcLogger.info("successfully got  details to create ondemand packet : {}", registrationId);
 		SyncRegistrationEntity regEntity = syncRegistrationService
 				.findByWorkflowInstanceId(registrationStatusDto.getWorkflowInstanceId());
+		Map<String, String> demographics = migrationResponse.getDemographics();
+		Map<String, DocumentDto> documents = migrationResponse.getDocuments();
+		if (registrationType.equals("UPDATE")) {
+			Map<String, String> packetDemographics = priorityBasedPacketManagerService.getFields(registrationId,
+					idSchemaUtil.getDefaultFields(Double.valueOf(schemaVersion)), registrationType,
+					ProviderStageName.LEGACY_DATA_VALIDATOR);
+			Map<String, DocumentDto> packetDocuments = getAllDocumentsByRegId(registrationId, registrationType);
+			demographics.putAll(packetDemographics);
+			documents.putAll(packetDocuments);
+		}
 		PacketDto packetDto = new PacketDto();
 		packetDto.setId(migrationResponse.getRid());
 		packetDto.setSource("DATAMIGRATOR");
@@ -290,10 +303,10 @@ public class LegacyDataValidator {
 		packetDto.setRefId(regEntity.getReferenceId());
 		packetDto.setSchemaVersion(schemaVersion);
 		packetDto.setSchemaJson(idSchemaUtil.getIdSchema(Double.parseDouble(schemaVersion)));
-		packetDto.setFields(migrationResponse.getDemographics());
+		packetDto.setFields(demographics);
 		packetDto.setAudits(auditList);
 		packetDto.setMetaInfo(metaInfo);
-		packetDto.setDocuments(migrationResponse.getDocuments());
+		packetDto.setDocuments(documents);
 		packetDto.setBiometrics(biometrics);
 		RequestWrapper<PacketDto> request = new RequestWrapper<>();
 		request.setId(ID);
@@ -508,6 +521,39 @@ public class LegacyDataValidator {
 			registrationStatusService.addRegistrationStatus(dto, moduleId, moduleName);
 			regProcLogger.info("Successfully created record in registration for ondemand packet : {} ",
 					regEntity.getRegistrationId());
+		}
+
+		private Map<String, DocumentDto> getAllDocumentsByRegId(String regId, String process)
+				throws ApisResourceAccessException, PacketManagerException, JsonProcessingException, IOException {
+				
+			JSONObject docJson = utility.getRegistrationProcessorMappingJson(MappingJsonConstants.DOCUMENT);
+			Map<String, DocumentDto> documents = new HashMap<String, DocumentDto>();
+			for (Object doc : docJson.values()) {
+				Map docMap = (LinkedHashMap) doc;
+				String docValue = docMap.values().iterator().next().toString();
+					DocumentDto documentDto = getIdDocument(regId, docValue, process);
+					if (documentDto != null) {
+						documents.put(docValue, documentDto);
+					}
+
+			}
+			return documents;
+		}
+
+		private DocumentDto getIdDocument(String registrationId, String dockey, String process)
+				throws IOException, ApisResourceAccessException, PacketManagerException,
+				io.mosip.kernel.core.util.exception.JsonProcessingException {
+			Document document = priorityBasedPacketManagerService.getDocument(registrationId, dockey, process,
+					ProviderStageName.LEGACY_DATA_VALIDATOR);
+			if (document != null) {
+				DocumentDto documentDto = new DocumentDto();
+				documentDto.setDocument(document.getDocument());
+				documentDto.setFormat(document.getFormat());
+				documentDto.setType(document.getFormat());
+				documentDto.setValue(document.getValue());
+				return documentDto;
+			}
+			return null;
 		}
 
 }

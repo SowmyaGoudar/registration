@@ -294,6 +294,8 @@ public class NotificationServiceImpl implements NotificationService {
 			type = NotificationTemplateType.UIN_UPDATE;
 		else if (regtype.equalsIgnoreCase(RegistrationType.RENEWAL.toString()))
 			type = NotificationTemplateType.UIN_UPDATE;
+		else if (regtype.equalsIgnoreCase(RegistrationType.FIRSTID.toString()))
+			type = NotificationTemplateType.UIN_UPDATE;
 		return type;
 	}
 

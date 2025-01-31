@@ -338,7 +338,8 @@ public class UinGeneratorStage extends MosipVerticleAPIManager {
 					} else if (RegistrationType.UPDATE.toString().equalsIgnoreCase(object.getReg_type())
 							|| (RegistrationType.RES_UPDATE.toString()
 									.equalsIgnoreCase(object.getReg_type()))
-							|| RegistrationType.RENEWAL.toString().equalsIgnoreCase(object.getReg_type())) {
+							|| RegistrationType.RENEWAL.toString().equalsIgnoreCase(object.getReg_type())
+							|| RegistrationType.FIRSTID.toString().equalsIgnoreCase(object.getReg_type())) {
 						isTransactionSuccessful = uinUpdate(registrationId, registrationStatusDto.getRegistrationType(), uinField, object, demographicIdentity,
 								description);
 					}

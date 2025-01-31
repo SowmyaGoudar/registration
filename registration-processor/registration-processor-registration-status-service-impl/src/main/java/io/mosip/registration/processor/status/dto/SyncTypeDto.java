@@ -31,7 +31,9 @@ public enum SyncTypeDto {
 	RES_UPDATE("RES_UPDATE"),
 	
 	/** The res re-print. */
-	RES_REPRINT("RES_REPRINT");
+	RES_REPRINT("RES_REPRINT"),
+
+	FIRSTID("firstid");
 
 	/** The value. */
 	private String value;

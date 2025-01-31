@@ -35,6 +35,8 @@ public enum RegistrationType {
 	RES_REPRINT,
 
 	/** The biometric correction. */
-	BIOMETRIC_CORRECTION;
+	BIOMETRIC_CORRECTION,
+
+	FIRSTID;
 
 }

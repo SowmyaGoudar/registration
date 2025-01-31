@@ -35,7 +35,9 @@ public enum RegistrationType {
 
 	RES_REPRINT("res_reprint"),
 	
-	MIGRATOR("migrator");
+	MIGRATOR("migrator"),
+
+	FIRSTID("firstid");
 
 	private String regType;
 

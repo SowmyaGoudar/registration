@@ -116,7 +116,8 @@ public class PacketValidatorImpl implements PacketValidator {
 
 			if (process.equalsIgnoreCase(RegistrationType.UPDATE.toString())
 					|| process.equalsIgnoreCase(RegistrationType.RES_UPDATE.toString())
-					|| process.equalsIgnoreCase(RegistrationType.RENEWAL.toString())) {
+					|| process.equalsIgnoreCase(RegistrationType.RENEWAL.toString())
+					|| process.equalsIgnoreCase(RegistrationType.FIRSTID.toString())) {
 				uin = utility.getUINByHandle(id, process, ProviderStageName.PACKET_VALIDATOR);
 				if (uin == null) {
 					regProcLogger.error(LoggerFileConstant.SESSIONID.toString(),
@@ -144,7 +145,8 @@ public class PacketValidatorImpl implements PacketValidator {
 			// check if uin is in idrepisitory
 			if (RegistrationType.UPDATE.name().equalsIgnoreCase(process)
 					|| RegistrationType.RES_UPDATE.name().equalsIgnoreCase(process)
-					|| process.equalsIgnoreCase(RegistrationType.RENEWAL.toString())) {
+					|| process.equalsIgnoreCase(RegistrationType.RENEWAL.toString())
+					|| process.equalsIgnoreCase(RegistrationType.FIRSTID.toString())) {
 
 				if (!utility.uinPresentInIdRepo(String.valueOf(uin))) {
 					regProcLogger.error(LoggerFileConstant.SESSIONID.toString(),

@@ -784,7 +784,8 @@ public class ManualAdjudicationServiceImpl implements ManualAdjudicationService 
 			referenceURLs.add(referenceURL);
 			if(registrationStatusDto.getRegistrationType().equalsIgnoreCase(RegistrationType.UPDATE.name())
 					|| registrationStatusDto.getRegistrationType().equalsIgnoreCase(RegistrationType.RES_UPDATE.name())
-					|| registrationStatusDto.getRegistrationType().equalsIgnoreCase(RegistrationType.RENEWAL.name())) {
+					|| registrationStatusDto.getRegistrationType().equalsIgnoreCase(RegistrationType.RENEWAL.name())
+					|| registrationStatusDto.getRegistrationType().equalsIgnoreCase(RegistrationType.FIRSTID.name())) {
 				String nin= packetManagerService.getField(id,
 					"NIN", registrationStatusDto.getRegistrationType(), ProviderStageName.MANUAL_ADJUDICATION);
 				String uinField = utility.getUINByHandle(nin, registrationStatusDto.getRegistrationType(), ProviderStageName.MANUAL_ADJUDICATION);

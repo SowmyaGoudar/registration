@@ -424,6 +424,8 @@ public class NotificationUtility {
 			type = NotificationTemplateType.NEW_REG;
 		else if (registrationStatusDto.getRegistrationType().equalsIgnoreCase(SyncTypeDto.UPDATE.getValue()))
 			type = NotificationTemplateType.UIN_UPDATE;
+		else if (registrationStatusDto.getRegistrationType().equalsIgnoreCase(SyncTypeDto.FIRSTID.getValue()))
+			type = NotificationTemplateType.UIN_UPDATE;
 		else if (registrationStatusDto.getRegistrationType().equalsIgnoreCase(SyncTypeDto.RENEWAL.getValue()))
 			type = NotificationTemplateType.UIN_RENEWAL;
 		else if (registrationStatusDto.getRegistrationType().equalsIgnoreCase(SyncTypeDto.RES_REPRINT.getValue()))

@@ -91,8 +91,8 @@ public class CitizenshipVerificationProcessor {
 	@Autowired
 	private MigrationUtil migrationUtil;
 
-	@Value("${mosip.registration.processor.datetime.pattern}")
-	private String dateformat;
+	@Value("${registration.processor.applicant.dob.format}")
+	private String dobFormat;
 
 	public MessageDTO process(MessageDTO object) {
 
@@ -341,7 +341,7 @@ public class CitizenshipVerificationProcessor {
 
 	    regProcLogger.info("Citizenship verification proceed: Handling validation with parents NIN found");
 	    
-	    DateTimeFormatter formatter = DateTimeFormatter.ofPattern(MappingJsonConstants.DATE_FORMAT);
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dobFormat);
 
 	    String motherNIN = applicantFields.get(MappingJsonConstants.MOTHER_NIN);
 	    String fatherNIN = applicantFields.get(MappingJsonConstants.FATHER_NIN);
@@ -747,7 +747,7 @@ public class CitizenshipVerificationProcessor {
 
 	    // Retrieve and parse dates of birth for the guardian and applicant
 	    String guardianDobStr = (String) guardianInfoJson.get(MappingJsonConstants.APPLICANT_DATEOFBIRTH);
-	    DateTimeFormatter formatter = DateTimeFormatter.ofPattern(MappingJsonConstants.DATE_FORMAT);
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dobFormat);
 
 	    LocalDate guardianDob = null;
 	    LocalDate applicantDob = null;
@@ -814,7 +814,7 @@ public class CitizenshipVerificationProcessor {
 		String guardianDobStr = (String) guardianInfoJson.get(MappingJsonConstants.APPLICANT_DATEOFBIRTH);
 																										
 																											
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(MappingJsonConstants.DATE_FORMAT);
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dobFormat);
 		LocalDate parentOrGuardianDob = LocalDate.parse(guardianDobStr, formatter);
 		LocalDate applicantDob = LocalDate.parse(applicantFields.get(MappingJsonConstants.APPLICANT_DATEOFBIRTH),
 				formatter);

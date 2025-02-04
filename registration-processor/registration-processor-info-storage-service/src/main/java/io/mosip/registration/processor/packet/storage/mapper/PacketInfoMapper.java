@@ -165,7 +165,7 @@ public class PacketInfoMapper {
 
 			if (demoDto.getDateOfBirth() != null) {
 				try {
-					Date date = new SimpleDateFormat("yyyy/MM/dd").parse(demoDto.getDateOfBirth());
+					Date date = new SimpleDateFormat("dd/MM/yyyy").parse(demoDto.getDateOfBirth());
 
 					entity.setDob(getHMACHashCode(demoDto.getDateOfBirth()));
 				} catch (ParseException e) {

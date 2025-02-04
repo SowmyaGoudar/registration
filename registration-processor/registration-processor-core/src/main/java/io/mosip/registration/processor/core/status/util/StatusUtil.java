@@ -164,6 +164,8 @@ public enum StatusUtil {
 			"Introducer UIN not Found for the Given NIN"),
 	INTRODUCER_NIN_ONDEMAND_MIGRATION_FAILED(StatusConstants.IVM_VALIDAOR_MODULE_FAILED + "010",
 			"Introducer NIN Ondemand migration failed"),
+	INTRODUCER_APPLICANT_AGE_CHECK_FAILED(StatusConstants.IVM_VALIDAOR_MODULE_FAILED + "012",
+			"Applicant is not eligible to get FirstId"),
 	// printing stage
 	PRINT_REQUEST_SUCCESS(StatusConstants.PRINT_STAGE_MODULE_SUCCESS + "001", "Print request submitted"),
 	PDF_ADDED_TO_QUEUE_FAILED(StatusConstants.PRINT_STAGE_MODULE_FAILED + "001",

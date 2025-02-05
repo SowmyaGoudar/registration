@@ -95,6 +95,10 @@ public class NotificationUtility {
 
 	@Value("${mosip.default.user-preferred-language-attribute:#{null}}")
 	private String userPreferredLanguageAttribute;
+
+	@Value("${registration.processor.notification.service.email.enable.for.other.process:true}")
+	private boolean enableEmailForOtherProcess;
+
 	/** The env. */
 	@Autowired
 	private Environment env;
@@ -134,6 +138,7 @@ public class NotificationUtility {
 	private static final String RES_UPDATE=NOTIFICATION_TEMPLATE_CODE+"resident.update.";
 	private static final String TECHNICAL_ISSUE=NOTIFICATION_TEMPLATE_CODE+"technical.issue.";
 	private static final String SUP_REJECT=NOTIFICATION_TEMPLATE_CODE+"supervisor.reject.";
+	private static final String GET_FIRSTID = NOTIFICATION_TEMPLATE_CODE + "get.firstid.";
 
 
 
@@ -184,7 +189,9 @@ public class NotificationUtility {
 				if (notificationType.equalsIgnoreCase("EMAIL")
 						&& (registrationAdditionalInfoDTO.getEmail() != null
 						&& !registrationAdditionalInfoDTO.getEmail().isEmpty())) {
+					if (registrationStatusDto.getRegistrationType().equals("UPDATE") || enableEmailForOtherProcess) {
 					sendEmailNotification(registrationAdditionalInfoDTO, messageSenderDTO, attributes, description,preferredLanguage);
+				}
 				} else if (notificationType.equalsIgnoreCase("SMS") && (registrationAdditionalInfoDTO.getPhone() != null
 						&& !registrationAdditionalInfoDTO.getPhone().isEmpty())) {
 					sendSMSNotification(registrationAdditionalInfoDTO, messageSenderDTO, attributes, description,preferredLanguage);
@@ -425,7 +432,7 @@ public class NotificationUtility {
 		else if (registrationStatusDto.getRegistrationType().equalsIgnoreCase(SyncTypeDto.UPDATE.getValue()))
 			type = NotificationTemplateType.UIN_UPDATE;
 		else if (registrationStatusDto.getRegistrationType().equalsIgnoreCase(SyncTypeDto.FIRSTID.getValue()))
-			type = NotificationTemplateType.UIN_UPDATE;
+			type = NotificationTemplateType.GET_FIRSTID;
 		else if (registrationStatusDto.getRegistrationType().equalsIgnoreCase(SyncTypeDto.RENEWAL.getValue()))
 			type = NotificationTemplateType.UIN_RENEWAL;
 		else if (registrationStatusDto.getRegistrationType().equalsIgnoreCase(SyncTypeDto.RES_REPRINT.getValue()))
@@ -491,6 +498,11 @@ public class NotificationUtility {
 			MessageSenderDTO.setSmsTemplateCode(env.getProperty(SUP_REJECT+SMS));
 			MessageSenderDTO.setEmailTemplateCode(env.getProperty(SUP_REJECT+EMAIL));
 			MessageSenderDTO.setSubjectTemplateCode(env.getProperty(SUP_REJECT+SUB));
+			break;
+		case GET_FIRSTID:
+			MessageSenderDTO.setSmsTemplateCode(env.getProperty(GET_FIRSTID + SMS));
+			MessageSenderDTO.setEmailTemplateCode(env.getProperty(GET_FIRSTID + EMAIL));
+			MessageSenderDTO.setSubjectTemplateCode(env.getProperty(GET_FIRSTID + SUB));
 			break;
 		default:
 			break;

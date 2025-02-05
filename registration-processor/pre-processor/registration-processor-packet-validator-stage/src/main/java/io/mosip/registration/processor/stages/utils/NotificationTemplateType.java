@@ -29,6 +29,8 @@ public enum NotificationTemplateType {
 	/** The technical issue. */
 	TECHNICAL_ISSUE,
 	
-	SUP_REJECT
+	SUP_REJECT,
+
+	GET_FIRSTID
 	
 }

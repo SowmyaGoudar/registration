@@ -93,6 +93,7 @@ public class NotificationServiceImpl implements NotificationService {
 	private static final String MVS_PACKET_REJECTED=NOTIFICATION_TEMPLATE_CODE+"mvs.packet.rejected.";
 	private static final String PAUSED_FOR_ADDITIONAL_INFO=NOTIFICATION_TEMPLATE_CODE+"paused.for.additional.info.";
 	private static final String UIN_RENEWAL = NOTIFICATION_TEMPLATE_CODE + "uin.renewal.";
+	private static final String GET_FIRSTID = NOTIFICATION_TEMPLATE_CODE + "get.firstid.";
 
 
 	/** The core audit request builder. */
@@ -129,6 +130,9 @@ public class NotificationServiceImpl implements NotificationService {
 
 	@Value("${registration.processor.notification_service_pausedforadditonalinfo_subscriber_callback_url}")
 	private String pausedForAdditonalInfoCallbackURL;
+
+	@Value("${registration.processor.notification.service.email.enable.for.other.process:true}")
+	private boolean enableEmailForOtherProcess;
 
 	/** The rest client service. */
 	@Autowired
@@ -341,8 +345,13 @@ public class NotificationServiceImpl implements NotificationService {
 					isSMSSuccess = sendSms(id, process, attributes, regType, messageSenderDto, description);
 				} else if (notificationType.equalsIgnoreCase(NotificationTypeEnum.EMAIL.name())
 						&& isTemplateAvailable(messageSenderDto)) {
+					if (process.equals("UPDATE") || enableEmailForOtherProcess) {
 					isEmailSuccess = sendEmail(id, process, attributes, ccEMailList, regType, messageSenderDto,
 							description);
+				} else {
+					isEmailSuccess = true;
+				}
+						
 				} else {
 					throw new TemplateNotFoundException(MessageSenderStatusMessage.TEMPLATE_NOT_FOUND);
 				}
@@ -500,6 +509,11 @@ public class NotificationServiceImpl implements NotificationService {
 				messageSenderDto.setEmailTemplateCode(env.getProperty(UIN_RENEWAL + EMAIL));
 				messageSenderDto.setIdType(IdType.UIN);
 				messageSenderDto.setSubjectCode(env.getProperty(UIN_RENEWAL + SMS));
+			} else if (regType.equalsIgnoreCase(RegistrationType.FIRSTID.name())) {
+				messageSenderDto.setSmsTemplateCode(env.getProperty(GET_FIRSTID + SMS));
+				messageSenderDto.setEmailTemplateCode(env.getProperty(GET_FIRSTID + EMAIL));
+				messageSenderDto.setIdType(IdType.UIN);
+				messageSenderDto.setSubjectCode(env.getProperty(GET_FIRSTID + SMS));
 			}
 			break;
 		case DUPLICATE_UIN:

@@ -86,6 +86,7 @@ import io.mosip.registration.processor.packet.storage.dto.ApplicantInfoDto;
 import io.mosip.registration.processor.packet.storage.dto.Document;
 import io.mosip.registration.processor.packet.storage.entity.VerificationEntity;
 import io.mosip.registration.processor.packet.storage.repository.BasePacketRepository;
+import io.mosip.registration.processor.packet.storage.utils.PacketManagerService;
 import io.mosip.registration.processor.packet.storage.utils.PriorityBasedPacketManagerService;
 import io.mosip.registration.processor.packet.storage.utils.Utilities;
 import io.mosip.registration.processor.rest.client.audit.builder.AuditLogRequestBuilder;
@@ -161,6 +162,9 @@ public class MVSServiceImpl implements MVSService {
 
 	@Autowired
 	private PriorityBasedPacketManagerService packetManagerService;
+	
+	@Autowired
+	private PacketManagerService packetService;
 
 	/** The audit log request builder. */
 	@Autowired
@@ -466,11 +470,25 @@ public class MVSServiceImpl implements MVSService {
 				packetManagerService.getFields(id, demographicMap.values().stream().collect(Collectors.toList()),
 						process, ProviderStageName.MVS));
 
-		JSONArray userServiceTypeArray = new JSONArray(requestDto.getIdentity().get("userServiceType"));
-		String userServiceTypeValue = userServiceTypeArray.getJSONObject(0).getString("value");
+		String userServiceTypeValue;
+		if (process.equals("RENEWAL")) {
+			userServiceTypeValue = "Renewal";
+		} else if (process.equals("FIRSTID")) {
+			userServiceTypeValue = "GetFirst ID";
+		} else {
+			JSONArray userServiceTypeArray = new JSONArray(requestDto.getIdentity().get("userServiceType"));
+			userServiceTypeValue = userServiceTypeArray.getJSONObject(0).getString("value");
+		}
 		
 		verReq.setServiceType(userServiceTypeValue);
 		verReq.setSchemaVersion(requestDto.getIdentity().get("IDSchemaVersion"));
+		
+		List<String> tags = new ArrayList<String>();
+		tags.add("AGE_GROUP");
+		tags.add("ID_OBJECT-foundLink");
+		Map<String, String> tagsPresent = packetService.getTags(id, tags);
+		verReq.setFoundLink(tagsPresent.get("ID_OBJECT-foundLink"));
+		verReq.setAgeGroup(tagsPresent.get("AGE_GROUP"));
 		
 		// set documents
 		JSONObject docJson = utility.getRegistrationProcessorMappingJson(MappingJsonConstants.DOCUMENT);

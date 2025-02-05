@@ -78,6 +78,7 @@ import io.mosip.registration.processor.packet.storage.dto.ApplicantInfoDto;
 import io.mosip.registration.processor.packet.storage.entity.VerificationEntity;
 import io.mosip.registration.processor.packet.storage.entity.VerificationPKEntity;
 import io.mosip.registration.processor.packet.storage.repository.BasePacketRepository;
+import io.mosip.registration.processor.packet.storage.utils.PacketManagerService;
 import io.mosip.registration.processor.packet.storage.utils.PriorityBasedPacketManagerService;
 import io.mosip.registration.processor.packet.storage.utils.Utilities;
 import io.mosip.registration.processor.rest.client.audit.builder.AuditLogRequestBuilder;
@@ -134,6 +135,9 @@ public class VerificationServiceTest {
 
 	@Mock
 	private PriorityBasedPacketManagerService packetManagerService;
+	
+	@Mock
+	private PacketManagerService packetService;
 
 	@Mock
 	private JsonUtil jsonUtil;
@@ -341,6 +345,9 @@ public class VerificationServiceTest {
 				.thenReturn(biometricRecord);
 		Mockito.when(cbeffutil.createXML(any())).thenReturn(new byte[120]);
 		Mockito.when(packetManagerService.getMetaInfo(anyString(), anyString(), any())).thenReturn(metaInfo);
+		
+		Mockito.when(packetService.getTags(anyString(), any())).thenReturn(metaInfo);
+		
 		Mockito.when(utility.getRegistrationProcessorMappingJson(any())).thenReturn(docObject)
 				.thenReturn(regProcessorIdentityJson);
 		Mockito.when(mosipQueueManager.send(any(), anyString(), anyString(), anyInt())).thenReturn(true);

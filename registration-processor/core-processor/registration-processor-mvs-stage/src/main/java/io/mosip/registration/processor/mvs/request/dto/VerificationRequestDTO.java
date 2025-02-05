@@ -16,4 +16,6 @@ public class VerificationRequestDTO {
 	private String refId;
 	private String schemaVersion;
 	private String statusComment;
+	private String foundLink;
+	private String ageGroup;
 }

@@ -399,7 +399,7 @@ public enum StatusUtil {
 	CITIZENSHIP_VERIFICATION_NIN_USAGE_EXCEEDED(StatusConstants.CITIZENSHIP_VERIFICATION + "005",
 			"CVS failed due to NIN is used more than the specified Number of times with "),
 	CITIZENSHIP_VERIFICATION_AGE_DIFFERENCE_FAILED(StatusConstants.CITIZENSHIP_VERIFICATION + "007",
-			"CVS failed due to Age difference with the applicant is less than 15 years with "),
+			"CVS failed due to Age difference with the applicant is less than 20 years with "),
 	CITIZENSHIP_VERIFICATION_PARENT_INFO_PROCESSING_ERROR(StatusConstants.CITIZENSHIP_VERIFICATION + "008", "Error processing Parent information"),
 	CITIZENSHIP_VERIFICATION_UIN_NOT_FOUND(StatusConstants.CITIZENSHIP_VERIFICATION + "009",
 			"CVS failed due to NIN not found in repo data with"),
@@ -418,6 +418,8 @@ public enum StatusUtil {
 			"Citizenship Verification packet on hold as parent ondemand migration is in progress"),
 	CITIZENSHIP_VERIFICATION_ONDEMAND_MIGRATION_FAILED(StatusConstants.CITIZENSHIP_VERIFICATION + "021",
 			"Citizenship Verification ondemand migration failed"),
+	CITIZENSHIP_VERIFICATION_AGE_15_DIFFERENCE_FAILED(StatusConstants.CITIZENSHIP_VERIFICATION + "022",
+			"CVS failed due to Age difference with the applicant is less than 15 years with "),
 	// Legacy data validation stage
 	LEGACY_DATA_VALIDATION_SUCCESS(StatusConstants.LEGACY_DATA_VALIDATION_SUCCESS + "001",
 			"Legacy data validation  success"),

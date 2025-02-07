@@ -460,8 +460,8 @@ public class CitizenshipVerificationProcessor {
 					|| !checkApplicantAgeWithParentOrGuardian(applicantDob, parentOrGuardianDob, 15)) {
 				logAndSetStatusError(registrationStatusDto,
 						parentType + "'s age difference with the applicant is less than 15 years.",
-						StatusUtil.CITIZENSHIP_VERIFICATION_AGE_DIFFERENCE_FAILED.getCode(),
-						StatusUtil.CITIZENSHIP_VERIFICATION_AGE_DIFFERENCE_FAILED.getMessage() + parentType
+						StatusUtil.CITIZENSHIP_VERIFICATION_AGE_15_DIFFERENCE_FAILED.getCode(),
+						StatusUtil.CITIZENSHIP_VERIFICATION_AGE_15_DIFFERENCE_FAILED.getMessage() + parentType
 								+ " information",
 						RegistrationStatusCode.PROCESSING.toString(), description,
 						applicantFields.get("registrationId"));

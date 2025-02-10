@@ -502,18 +502,18 @@ public class NotificationServiceImpl implements NotificationService {
 				messageSenderDto.setSmsTemplateCode(env.getProperty(UIN_UPDATE+SMS));
 				messageSenderDto.setEmailTemplateCode(env.getProperty(UIN_UPDATE+EMAIL));
 				messageSenderDto.setIdType(IdType.UIN);
-				messageSenderDto.setSubjectCode(env.getProperty(UIN_UPDATE+SMS));
+				messageSenderDto.setSubjectCode(env.getProperty(UIN_UPDATE+SUB));
 			} else if (regType.equalsIgnoreCase(RegistrationType.RENEWAL.name())
 			) {
 				messageSenderDto.setSmsTemplateCode(env.getProperty(UIN_RENEWAL + SMS));
 				messageSenderDto.setEmailTemplateCode(env.getProperty(UIN_RENEWAL + EMAIL));
 				messageSenderDto.setIdType(IdType.UIN);
-				messageSenderDto.setSubjectCode(env.getProperty(UIN_RENEWAL + SMS));
+				messageSenderDto.setSubjectCode(env.getProperty(UIN_RENEWAL + SUB));
 			} else if (regType.equalsIgnoreCase(RegistrationType.FIRSTID.name())) {
 				messageSenderDto.setSmsTemplateCode(env.getProperty(GET_FIRSTID + SMS));
 				messageSenderDto.setEmailTemplateCode(env.getProperty(GET_FIRSTID + EMAIL));
 				messageSenderDto.setIdType(IdType.UIN);
-				messageSenderDto.setSubjectCode(env.getProperty(GET_FIRSTID + SMS));
+				messageSenderDto.setSubjectCode(env.getProperty(GET_FIRSTID + SUB));
 			}
 			break;
 		case DUPLICATE_UIN:
@@ -523,7 +523,7 @@ public class NotificationServiceImpl implements NotificationService {
 			messageSenderDto.setSubjectCode(env.getProperty(DUPLICATE_UIN+SUB));
 			break;
 		case TECHNICAL_ISSUE:
-			messageSenderDto.setSmsTemplateCode(env.getProperty(TECHNICAL_ISSUE+SMS));
+			messageSenderDto.setSmsTemplateCode(env.getProperty(TECHNICAL_ISSUE + SMS));
 			messageSenderDto.setEmailTemplateCode(env.getProperty(TECHNICAL_ISSUE+EMAIL));
 			messageSenderDto.setIdType(IdType.RID);
 			messageSenderDto.setSubjectCode(env.getProperty(TECHNICAL_ISSUE+SUB));

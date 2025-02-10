@@ -1061,7 +1061,10 @@ public class UinGeneratorStage extends MosipVerticleAPIManager {
 			IdrepoDraftReprocessableException {
 
 		IdResponseDTO idResponse = null;
-		String uin = idRepoService.getUinByRid(matchedRegId, utility.getGetRegProcessorDemographicIdentity());
+		JSONObject jsonObject = idRepoService.getIdJsonFromIDRepo(matchedRegId,
+				utility.getGetRegProcessorDemographicIdentity());
+		String uin = JsonUtil.getJSONValue(jsonObject, "UIN");
+		String nin = JsonUtil.getJSONValue(jsonObject, "NIN");
 
 
 		RequestDto requestDto = new RequestDto();
@@ -1074,6 +1077,7 @@ public class UinGeneratorStage extends MosipVerticleAPIManager {
 
 			JSONObject identityObject = new JSONObject();
 			identityObject.put(UINConstants.UIN, uin);
+			identityObject.put("NIN", nin);
 			String schemaVersion = packetManagerService.getFieldByMappingJsonKey(lostPacketRegId, MappingJsonConstants.IDSCHEMA_VERSION, process, ProviderStageName.UIN_GENERATOR);
 			identityObject.put(idschemaversion, convertIdschemaToDouble ? Double.valueOf(schemaVersion) : schemaVersion);
 			regProcLogger.info("Fields to be updated "+updateInfo);

@@ -328,7 +328,7 @@ public class MVSServiceImpl implements MVSService {
 			messageDTO.setInternalError(false);
 			messageDTO.setRid(regId);
 			messageDTO.setReg_type(registrationStatusDto.getRegistrationType());
-
+			messageDTO.setWorkflowInstanceId(registrationStatusDto.getWorkflowInstanceId());
 			isTransactionSuccessful = successFlow(mvsResponseDTO, registrationStatusDto, messageDTO,
 					description);
 			registrationStatusDto.setUpdatedBy(USER);

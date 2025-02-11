@@ -368,6 +368,7 @@ public class BiometricExtractionStage extends MosipVerticleAPIManager{
 			if (response.getErrors().get(0).getErrorCode().equalsIgnoreCase(ID_REPO_KEY_MANAGER_ERROR)) {
 				throw new IdrepoDraftReprocessableException(error.getErrorCode(), error.getMessage());
 			} else {
+				idrepoDraftService.idrepoDiscardDraft(registrationId);
 				throw new IdrepoDraftException(error.getErrorCode(), error.getMessage());
 			}
         }

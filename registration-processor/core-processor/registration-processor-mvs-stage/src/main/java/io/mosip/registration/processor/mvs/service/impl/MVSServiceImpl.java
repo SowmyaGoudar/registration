@@ -477,6 +477,8 @@ public class MVSServiceImpl implements MVSService {
 			userServiceTypeValue = "GetFirst ID";
 		} else if (process.equals("LOST")) {
 			userServiceTypeValue = "Replacement";
+		} else if (process.equals("UPDATE")) {
+			userServiceTypeValue = "Update";
 		} else {
 			JSONArray userServiceTypeArray = new JSONArray(requestDto.getIdentity().get("userServiceType"));
 			userServiceTypeValue = userServiceTypeArray.getJSONObject(0).getString("value");

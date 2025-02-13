@@ -334,6 +334,10 @@ public class MVSServiceImpl implements MVSService {
 			registrationStatusDto.setUpdatedBy(USER);
 			regProcLogger.info(LoggerFileConstant.SESSIONID.toString(),
 					LoggerFileConstant.REGISTRATIONID.toString(), regId, description.getMessage());
+			regProcLogger.info("nainital"+LoggerFileConstant.SESSIONID.toString(),
+					LoggerFileConstant.REGISTRATIONID.toString(), regId, messageDTO.toString());
+			regProcLogger.info("nainital"+LoggerFileConstant.SESSIONID.toString(),
+					LoggerFileConstant.REGISTRATIONID.toString(), regId, registrationStatusDto.toString());
 
 		} catch (TablenotAccessibleException e) {
 			messageDTO.setInternalError(true);
@@ -347,6 +351,11 @@ public class MVSServiceImpl implements MVSService {
 			description.setCode(PlatformErrorMessages.RPR_TABLE_NOT_ACCESSIBLE.getCode());
 			regProcLogger.error(LoggerFileConstant.SESSIONID.toString(), LoggerFileConstant.REGISTRATIONID.toString(),
 					regId, e.getMessage() + ExceptionUtils.getStackTrace(e));
+
+			regProcLogger.info("nainital"+LoggerFileConstant.SESSIONID.toString(),
+					LoggerFileConstant.REGISTRATIONID.toString(), regId, messageDTO.toString());
+			regProcLogger.info("nainital"+LoggerFileConstant.SESSIONID.toString(),
+					LoggerFileConstant.REGISTRATIONID.toString(), regId, registrationStatusDto.toString());
 		} catch (NoRecordAssignedException e) {
 			messageDTO.setIsValid(false);
 			messageDTO.setInternalError(false);
@@ -360,6 +369,11 @@ public class MVSServiceImpl implements MVSService {
 			description.setCode(PlatformErrorMessages.RPR_MVS_NO_ASSIGNED_RECORD.getCode());
 			regProcLogger.error(LoggerFileConstant.SESSIONID.toString(), LoggerFileConstant.REGISTRATIONID.toString(),
 					regId, e.getMessage() + ExceptionUtils.getStackTrace(e));
+
+			regProcLogger.info("nainital"+LoggerFileConstant.SESSIONID.toString(),
+					LoggerFileConstant.REGISTRATIONID.toString(), regId, messageDTO.toString());
+			regProcLogger.info("nainital"+LoggerFileConstant.SESSIONID.toString(),
+					LoggerFileConstant.REGISTRATIONID.toString(), regId, registrationStatusDto.toString());
 		} catch (Exception e) {
 			messageDTO.setInternalError(true);
 			registrationStatusDto.setLatestTransactionStatusCode(
@@ -372,7 +386,17 @@ public class MVSServiceImpl implements MVSService {
 			description.setCode(PlatformErrorMessages.UNKNOWN_EXCEPTION.getCode());
 			regProcLogger.error(LoggerFileConstant.SESSIONID.toString(), LoggerFileConstant.REGISTRATIONID.toString(),
 					regId, e.getMessage() + ExceptionUtils.getStackTrace(e));
+
+			regProcLogger.info("nainital"+LoggerFileConstant.SESSIONID.toString(),
+					LoggerFileConstant.REGISTRATIONID.toString(), regId, messageDTO.toString());
+			regProcLogger.info("nainital"+LoggerFileConstant.SESSIONID.toString(),
+					LoggerFileConstant.REGISTRATIONID.toString(), regId, registrationStatusDto.toString());
 		} finally {
+
+			regProcLogger.info("nainital"+LoggerFileConstant.SESSIONID.toString(),
+					LoggerFileConstant.REGISTRATIONID.toString(), regId, messageDTO.toString());
+			regProcLogger.info("nainital"+LoggerFileConstant.SESSIONID.toString(),
+					LoggerFileConstant.REGISTRATIONID.toString(), regId, registrationStatusDto.toString());
 			updateStatus(messageDTO, registrationStatusDto, isTransactionSuccessful, description,
 					PlatformSuccessMessages.RPR_MVS_SUCCESS);
 			mVSStage.sendMessage(messageDTO);

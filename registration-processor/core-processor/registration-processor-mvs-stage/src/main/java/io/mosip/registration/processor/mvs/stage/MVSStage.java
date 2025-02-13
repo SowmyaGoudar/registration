@@ -174,17 +174,12 @@ public class MVSStage extends MosipVerticleAPIManager {
 			throw new QueueConnectionNotFound(PlatformErrorMessages.RPR_PRT_QUEUE_CONNECTION_NULL.getMessage());
 		}
 
-//		MessageDTO message = new MessageDTO();
-//		message.setRid("10040100290000220241107093633");
-//		message.setReg_type("NEW");
-//		message.setWorkflowInstanceId("1a50e167-c822-4bbb-8948-744c449f5380");
-//		message.setIteration(1);
-//		process(message);
 	}
 
 	@Override
 	public void start() {
-		router.setRoute(this.postUrl(getVertx(), MessageBusAddress.MANUAL_ADJUDICATION_BUS_IN, MessageBusAddress.MANUAL_ADJUDICATION_BUS_OUT));
+		router.setRoute(
+				this.postUrl(getVertx(), MessageBusAddress.MVS_BUS_IN, MessageBusAddress.MVS_BUS_OUT));
 		this.createServer(router.getRouter(), getPort());
 	}
 

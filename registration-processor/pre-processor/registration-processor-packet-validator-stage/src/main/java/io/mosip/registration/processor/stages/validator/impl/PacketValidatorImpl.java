@@ -32,6 +32,8 @@ import io.mosip.registration.processor.core.exception.ApisResourceAccessExceptio
 import io.mosip.registration.processor.core.exception.PacketManagerException;
 import io.mosip.registration.processor.core.exception.RegistrationProcessorCheckedException;
 import io.mosip.registration.processor.core.exception.util.PlatformErrorMessages;
+import io.mosip.registration.processor.core.idrepo.dto.CardDetailDto;
+import io.mosip.registration.processor.core.idrepo.dto.ResponseDTO;
 import io.mosip.registration.processor.core.logger.RegProcessorLogger;
 import io.mosip.registration.processor.core.packet.dto.FieldValue;
 import io.mosip.registration.processor.core.packet.dto.packetvalidator.PacketValidationDto;
@@ -155,6 +157,24 @@ public class PacketValidatorImpl implements PacketValidator {
 					packetValidationDto.setPacketValidaionFailureMessage(StatusUtil.UIN_NOT_FOUND_IDREPO.getMessage());
 					packetValidationDto.setPacketValidatonStatusCode(StatusUtil.UIN_NOT_FOUND_IDREPO.getCode());
 					return false;
+				}
+			}
+		}
+
+		if (process.equalsIgnoreCase(RegistrationType.FIRSTID.toString())) {
+			ResponseDTO responseDTO = utility.getIdrepoResponseByHandle(id, process,
+					ProviderStageName.PACKET_VALIDATOR);
+			boolean isValidFirstID=true;
+			if (responseDTO != null) {
+				List<CardDetailDto> cardDetailsDtoList = responseDTO.getCardDetails();
+				for (CardDetailDto cardDetailDto : cardDetailsDtoList) {
+					if (cardDetailDto.getCardNumber() != null && !cardDetailDto.getCardNumber().isEmpty()) {
+						isValidFirstID = false;
+						break;
+					}
+				}
+				if (!isValidFirstID) {
+					throw new IdRepoAppException(PlatformErrorMessages.RPR_PVM_ALREADY_CARD_EXISTS.getMessage());
 				}
 			}
 		}

@@ -3,7 +3,6 @@ package io.mosip.registration.processor.core.idrepo.dto;
 import java.util.List;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 /**
  * The Class ResponseDTO.
@@ -24,4 +23,5 @@ public class ResponseDTO {
 	/** The status. */
 	private String status;
 
+	private List<CardDetailDto> cardDetails;
 }

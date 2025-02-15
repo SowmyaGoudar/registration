@@ -1051,4 +1051,15 @@ public class Utilities {
 		return response;
 	}
 
+	public ResponseDTO getIdrepoResponseByHandle(String id, String process, ProviderStageName stageName)
+			throws IOException, ApisResourceAccessException, PacketManagerException, JsonProcessingException {
+		regProcLogger.debug(LoggerFileConstant.SESSIONID.toString(), LoggerFileConstant.REGISTRATIONID.toString(), id,
+				"Utilities::getIdrepoResponseByHandle()::entry");
+		String handle = packetManagerService.getFieldByMappingJsonKey(id, MappingJsonConstants.NIN, process, stageName);
+		regProcLogger.debug(LoggerFileConstant.SESSIONID.toString(), LoggerFileConstant.REGISTRATIONID.toString(), id,
+				"Utilities::getIdrepoResponseByHandle()::handleRetrieved");
+		ResponseDTO responseDTO = retrieveIdrepoResponseObjWithNIN(handle);
+		return responseDTO;
+	}
+
 }

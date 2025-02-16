@@ -418,9 +418,6 @@ public enum PlatformErrorMessages {
 	RPR_PVM_INVALID_ARGUMENT_EXCEPTION(PlatformConstants.RPR_PACKET_VALIDATOR_MODULE + "019",
 			"Invalid Argument"),
 
-	RPR_PVM_ALREADY_CARD_EXISTS(PlatformConstants.RPR_PACKET_VALIDATOR_MODULE + "020",
-			"Already card is present for applicant"),
-
 
 	/** The packet classification failed. */
 	PACKET_CLASSIFICATION_FAILED(PlatformConstants.RPR_PACKET_CLASSIFIER_MODULE + "000", "Packet Classification failed"),

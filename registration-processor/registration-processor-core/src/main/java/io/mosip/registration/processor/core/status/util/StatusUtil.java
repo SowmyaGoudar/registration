@@ -70,6 +70,8 @@ public enum StatusUtil {
 			"Biometric Signature validation failed"),
 	PACKET_CONSENT_VALIDATION(StatusConstants.PACKET_VALIDATOR_MODULE_FAILED + "017",
 			"Consent is not agreed for the packet to process further"),
+	PVM_ALREADY_CARD_EXISTS(StatusConstants.PACKET_VALIDATOR_MODULE_FAILED + "018",
+			"Already card is present for applicant"),
 
 	// packet classifier stage
 	PACKET_CLASSIFICATION_SUCCESS(StatusConstants.PACKET_CLASSIFIER_MODULE_SUCCESS + "001",

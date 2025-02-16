@@ -174,7 +174,10 @@ public class PacketValidatorImpl implements PacketValidator {
 					}
 				}
 				if (!isValidFirstID) {
-					throw new IdRepoAppException(PlatformErrorMessages.RPR_PVM_ALREADY_CARD_EXISTS.getMessage());
+					packetValidationDto
+							.setPacketValidaionFailureMessage(StatusUtil.PVM_ALREADY_CARD_EXISTS.getMessage());
+					packetValidationDto.setPacketValidatonStatusCode(StatusUtil.PVM_ALREADY_CARD_EXISTS.getCode());
+					return false;
 				}
 			}
 		}

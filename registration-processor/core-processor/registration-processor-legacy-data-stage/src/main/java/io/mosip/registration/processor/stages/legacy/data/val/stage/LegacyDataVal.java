@@ -162,8 +162,9 @@ public class LegacyDataVal {
 					} else {
 						regProcLogger.info("ondemand migration api response is null  for registration id : {}",
 								registrationId);
-						throw new DataMigrationPacketCreationException(StatusUtil.LEGACY_DATA_FAILED.getMessage(),
-								StatusUtil.LEGACY_DATA_FAILED.getCode());
+						throw new DataMigrationPacketCreationException(
+								StatusUtil.LEGACY_DATA_DATA_MIGRATION_API_FAILED.getMessage(),
+								StatusUtil.LEGACY_DATA_DATA_MIGRATION_API_FAILED.getCode());
 					}
 
 			} else {

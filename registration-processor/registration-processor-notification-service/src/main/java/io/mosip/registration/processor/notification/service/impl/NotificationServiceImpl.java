@@ -94,6 +94,7 @@ public class NotificationServiceImpl implements NotificationService {
 	private static final String PAUSED_FOR_ADDITIONAL_INFO=NOTIFICATION_TEMPLATE_CODE+"paused.for.additional.info.";
 	private static final String UIN_RENEWAL = NOTIFICATION_TEMPLATE_CODE + "uin.renewal.";
 	private static final String GET_FIRSTID = NOTIFICATION_TEMPLATE_CODE + "get.firstid.";
+	private static final String ONDEMAND = NOTIFICATION_TEMPLATE_CODE + "ondemand.";
 
 
 	/** The core audit request builder. */
@@ -533,6 +534,12 @@ public class NotificationServiceImpl implements NotificationService {
 			messageSenderDto.setEmailTemplateCode(env.getProperty(MVS_PACKET_REJECTED+EMAIL));
 			messageSenderDto.setIdType(IdType.RID);
 			messageSenderDto.setSubjectCode(env.getProperty(MVS_PACKET_REJECTED+SUB));
+			break;
+		case ONDEMAND:
+			messageSenderDto.setSmsTemplateCode(env.getProperty(ONDEMAND + SMS));
+			messageSenderDto.setEmailTemplateCode(env.getProperty(ONDEMAND + EMAIL));
+			messageSenderDto.setIdType(IdType.RID);
+			messageSenderDto.setSubjectCode(env.getProperty(ONDEMAND + SUB));
 			break;
 		default:
 			break;

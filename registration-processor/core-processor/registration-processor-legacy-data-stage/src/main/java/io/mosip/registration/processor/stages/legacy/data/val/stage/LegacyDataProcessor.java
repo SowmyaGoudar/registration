@@ -1,6 +1,8 @@
 package io.mosip.registration.processor.stages.legacy.data.val.stage;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -158,6 +160,10 @@ public class LegacyDataProcessor {
 			String moduleId = description.getCode();
 			String moduleName = ModuleName.LEGACY_DATA.toString();
 			registrationStatusService.updateRegistrationStatus(registrationStatusDto, moduleId, moduleName);
+			Map<String, String> attributes = new HashMap<>();
+			attributes.put("FAILURE_CODE", registrationStatusDto.getStatusCode());
+			attributes.put("FAILURE_COMMENT", description.getStatusComment());
+			object.setNotificationAttributes(attributes);
 			updateAudit(description, isTransactionSuccessful, moduleId, moduleName, registrationId);
 		}
 
@@ -176,6 +182,7 @@ public class LegacyDataProcessor {
 				registrationStatusMapperUtil.getStatusCode(registrationExceptionTypeCode));
 		description.setMessage(platformErrorMessages.getMessage());
 		description.setCode(platformErrorMessages.getCode());
+		description.setStatusComment(statusUtil.getMessage());
 		regProcLogger.error("Error in  process  for registration id  {} {} {} {} {}",
 				registrationStatusDto.getRegistrationId(), description.getCode(), platformErrorMessages.getMessage(),
 				e.getMessage(), ExceptionUtils.getStackTrace(e));

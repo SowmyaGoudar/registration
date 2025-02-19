@@ -48,6 +48,7 @@ import io.mosip.registration.processor.core.exception.ApisResourceAccessExceptio
 import io.mosip.registration.processor.core.exception.DataMigrationException;
 import io.mosip.registration.processor.core.exception.PacketManagerException;
 import io.mosip.registration.processor.core.exception.ValidationFailedException;
+import io.mosip.registration.processor.core.exception.util.PlatformErrorMessages;
 import io.mosip.registration.processor.core.exception.util.PlatformSuccessMessages;
 import io.mosip.registration.processor.core.http.RequestWrapper;
 import io.mosip.registration.processor.core.http.ResponseWrapper;
@@ -209,9 +210,12 @@ public class LegacyDataValidator {
 						registrationStatusDto.setSubStatusCode(StatusUtil.ON_DEMAND_PACKET_CREATION_FAILED.getCode());
 						registrationStatusDto.setStatusCode(RegistrationStatusCode.PROCESSING.toString());
 						description.setMessage(
-								PlatformSuccessMessages.RPR_LEGACY_DATA_VALIDATE_ONDEMAND_PACKET.getMessage() + " -- "
+								PlatformErrorMessages.RPR_LEGACY_DATA_VAL_ON_DEMAND_PACKET_CREATION_FAILED.getMessage()
+										+ " -- "
 										+ registrationId);
-						description.setCode(PlatformSuccessMessages.RPR_LEGACY_DATA_VALIDATE_ONDEMAND_PACKET.getCode());
+						description.setCode(
+								PlatformErrorMessages.RPR_LEGACY_DATA_VAL_ON_DEMAND_PACKET_CREATION_FAILED.getCode());
+						description.setStatusComment(StatusUtil.ON_DEMAND_PACKET_CREATION_FAILED.getMessage());
 						object.setIsValid(true);
 						object.setInternalError(true);
 					}

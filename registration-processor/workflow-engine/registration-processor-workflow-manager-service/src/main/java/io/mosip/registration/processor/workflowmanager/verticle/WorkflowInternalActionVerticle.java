@@ -475,9 +475,9 @@ public class WorkflowInternalActionVerticle extends MosipVerticleAPIManager {
 			if (registrationStatusDto.getRegistrationStageName().contains(ProviderStageName.MVS.getValue())) {
 				workflowCompletedEventDTO.setErrorCode(RegistrationExceptionTypeCode.MVS_PACKET_REJECTED.name());
 			} else if (registrationStatusDto.getRegistrationStageName()
-					.contains(ProviderStageName.LEGACY_DATA_VALIDATOR.getValue())
+					.contains("LegacyDataValidatorStage")
 					|| registrationStatusDto.getRegistrationStageName()
-							.contains(ProviderStageName.LEGACY_DATA.getValue())) {
+							.contains("LegacyDataStage")) {
 				workflowCompletedEventDTO
 						.setErrorCode(RegistrationExceptionTypeCode.ON_DEMAND_MIGRATION_REJECTED.name());
 			}else {
@@ -486,9 +486,9 @@ public class WorkflowInternalActionVerticle extends MosipVerticleAPIManager {
 		}
 		if (registrationStatusDto.getStatusCode().equalsIgnoreCase(RegistrationStatusCode.FAILED.toString())) {
 			if (registrationStatusDto.getRegistrationStageName()
-					.contains(ProviderStageName.LEGACY_DATA_VALIDATOR.getValue())
+					.contains("LegacyDataValidatorStage")
 					|| registrationStatusDto.getRegistrationStageName()
-							.contains(ProviderStageName.LEGACY_DATA.getValue())) {
+							.contains("LegacyDataStage")) {
 				workflowCompletedEventDTO
 						.setErrorCode(RegistrationExceptionTypeCode.ON_DEMAND_MIGRATION_FAILED.name());
 			} else {

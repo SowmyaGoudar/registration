@@ -9,8 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.mosip.registration.processor.core.util.JsonUtil;
-import io.mosip.registration.processor.packet.storage.utils.Utilities;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.json.JSONException;
 import org.json.simple.JSONObject;
@@ -52,10 +50,12 @@ import io.mosip.registration.processor.core.logger.LogDescription;
 import io.mosip.registration.processor.core.logger.RegProcessorLogger;
 import io.mosip.registration.processor.core.packet.dto.AdditionalInfoRequestDto;
 import io.mosip.registration.processor.core.status.util.StatusUtil;
+import io.mosip.registration.processor.core.util.JsonUtil;
 import io.mosip.registration.processor.core.workflow.dto.WorkflowCompletedEventDTO;
 import io.mosip.registration.processor.core.workflow.dto.WorkflowPausedForAdditionalInfoEventDTO;
 import io.mosip.registration.processor.packet.storage.utils.IdSchemaUtil;
 import io.mosip.registration.processor.packet.storage.utils.PacketManagerService;
+import io.mosip.registration.processor.packet.storage.utils.Utilities;
 import io.mosip.registration.processor.rest.client.audit.builder.AuditLogRequestBuilder;
 import io.mosip.registration.processor.status.code.RegistrationStatusCode;
 import io.mosip.registration.processor.status.dto.InternalRegistrationStatusDto;
@@ -474,12 +474,27 @@ public class WorkflowInternalActionVerticle extends MosipVerticleAPIManager {
 		if (registrationStatusDto.getStatusCode().equalsIgnoreCase(RegistrationStatusCode.REJECTED.toString())) {
 			if (registrationStatusDto.getRegistrationStageName().contains(ProviderStageName.MVS.getValue())) {
 				workflowCompletedEventDTO.setErrorCode(RegistrationExceptionTypeCode.MVS_PACKET_REJECTED.name());
-			} else {
+			} else if (registrationStatusDto.getRegistrationStageName()
+					.contains(ProviderStageName.LEGACY_DATA_VALIDATOR.getValue())
+					|| registrationStatusDto.getRegistrationStageName()
+							.contains(ProviderStageName.LEGACY_DATA.getValue())) {
+				workflowCompletedEventDTO
+						.setErrorCode(RegistrationExceptionTypeCode.ON_DEMAND_MIGRATION_REJECTED.name());
+			}else {
 				workflowCompletedEventDTO.setErrorCode(RegistrationExceptionTypeCode.PACKET_REJECTED.name());
 			}
 		}
 		if (registrationStatusDto.getStatusCode().equalsIgnoreCase(RegistrationStatusCode.FAILED.toString())) {
-			workflowCompletedEventDTO.setErrorCode(RegistrationExceptionTypeCode.PACKET_FAILED.name());
+			if (registrationStatusDto.getRegistrationStageName()
+					.contains(ProviderStageName.LEGACY_DATA_VALIDATOR.getValue())
+					|| registrationStatusDto.getRegistrationStageName()
+							.contains(ProviderStageName.LEGACY_DATA.getValue())) {
+				workflowCompletedEventDTO
+						.setErrorCode(RegistrationExceptionTypeCode.ON_DEMAND_MIGRATION_FAILED.name());
+			} else {
+				workflowCompletedEventDTO.setErrorCode(RegistrationExceptionTypeCode.PACKET_FAILED.name());
+			}
+
 		}
 
 		webSubUtil.publishEvent(workflowCompletedEventDTO);

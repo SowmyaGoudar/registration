@@ -23,6 +23,8 @@ public enum NotificationTemplateType {
 	MVS_PACKET_REJECTED,
 	
 	/** THe Lost UIN. */
-	LOST_UIN
+	LOST_UIN,
+	
+	ONDEMAND
 
 }

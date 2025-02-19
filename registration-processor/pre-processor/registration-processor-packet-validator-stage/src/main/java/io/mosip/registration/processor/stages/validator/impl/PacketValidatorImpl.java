@@ -162,6 +162,7 @@ public class PacketValidatorImpl implements PacketValidator {
 		}
 
 		if (process.equalsIgnoreCase(RegistrationType.FIRSTID.toString())) {
+			try {
 			ResponseDTO responseDTO = utility.getIdrepoResponseByHandle(id, process,
 					ProviderStageName.PACKET_VALIDATOR);
 			boolean isValidFirstID=true;
@@ -179,6 +180,11 @@ public class PacketValidatorImpl implements PacketValidator {
 					packetValidationDto.setPacketValidatonStatusCode(StatusUtil.PVM_ALREADY_CARD_EXISTS.getCode());
 					return false;
 				}
+			}
+		} catch (Exception e) {
+			// TODO this catch block need to be removed after complete migration
+			regProcLogger.error(LoggerFileConstant.SESSIONID.toString(), LoggerFileConstant.REGISTRATIONID.toString(),
+					id, "ERROR =======>" + StatusUtil.UIN_NOT_FOUND_IDREPO.getMessage());
 			}
 		}
 			// document validation
